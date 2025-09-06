@@ -70,6 +70,11 @@ services:
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         networks:
             - sail
+    composer:
+        image: composer:2
+        working_dir: /var/www/html
+        volumes:
+            - .:/var/www/html
 networks:
     sail:
         driver: bridge
