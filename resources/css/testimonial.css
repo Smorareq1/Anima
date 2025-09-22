@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+.testimonial-card {
+    background: rgba(0, 0, 0, 0.20);
+    padding: 1.5rem;
+    border-radius: 10px;
+    max-width: 500px;
+    text-align: left;
+    font-size: 0.9rem;
+}
+.testimonial-title{
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+}
+.testimonial-text {
+    margin-bottom: 1rem;
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 200;
+}
+
+.testimonial-footer {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.testimonial-name {
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 200;
+}
+.testimonial-rating {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.testimonial-card{
+    margin-top:auto;
+}
+
+.star {
+    flex-shrink: 0;
+}
+
+.testimonial-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    background: #FFFFFF;
+    cursor: pointer;
+}
+
+.dot.active {
+    background: #1D6363;
+}
+
+.testimonial-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.testimonial-photo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
