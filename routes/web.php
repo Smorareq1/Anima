@@ -8,3 +8,8 @@ Route::get('/', function () {
         'mensaje' => 'Bienvenido a Anima 🚀',
     ]);
 })->name('home');
+
+//ruta de registro
+Route::get('/register', function () {
+    return Inertia::render('Register');
+})->name('register');
