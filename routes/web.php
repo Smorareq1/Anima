@@ -1,8 +1,8 @@
 <?php
 
 
-use App\Http\Controllers\app\home\HomeController;
-use App\Http\Controllers\app\register\RegisterController;
+use App\Http\Controllers\App\home\HomeController;
+use App\Http\Controllers\App\register\RegisterController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 

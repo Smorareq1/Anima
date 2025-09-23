@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\app\register;
+namespace App\Http\Controllers\App\register;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
