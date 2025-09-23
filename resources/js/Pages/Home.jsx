@@ -1,12 +1,14 @@
 import { route } from 'ziggy-js';
+import Header from '../Components/Header';
+import Hero from '../Components/Hero';
+import SpotifySecurity from '../Components/SpotifySecurity';
 
 export default function Home({ mensaje }) {
     return (
         <div>
-            <h1>{mensaje}</h1>
-            <a href={route('Home')}>Ir al inicio</a> <br />
-            <a href={route('Register')}>registro</a> <br />
-            <a href={route('Login')}>login</a>
+            <Header />
+            <Hero />
+            <SpotifySecurity />
         </div>
     );
 }
