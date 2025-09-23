@@ -3,10 +3,10 @@ import "../../css/auth.css";
 import TestimonialCard from "../Components/TestimonialCard.jsx";
 import Logo from "../../images/logo.png";
 import SpotifyButton from "../Components/SpotifyRegButton.jsx";
-import RegisterForm from "../Components/RegisterForm.jsx";
-import {Link} from "@inertiajs/react";
+import LoginForm from "../Components/LoginForm.jsx";
+import { Link } from "@inertiajs/react"
 
-export default function Register() {
+export default function Login() {
     const leftContent = (
         <div className = "leftContent">
             <div className="logo-container">
@@ -30,7 +30,7 @@ export default function Register() {
 
     const rightContent = (
         <div className="register-container">
-            <RegisterForm />
+            <LoginForm />
             <div className="divider">
                 <span className="dot"></span>
             </div>

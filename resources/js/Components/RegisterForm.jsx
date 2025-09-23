@@ -1,6 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { router } from "@inertiajs/react";
+import { route } from 'ziggy-js';
 
 
 export default function RegisterForm() {
@@ -111,7 +112,9 @@ export default function RegisterForm() {
                     onChange={handleChange}
                 />
             </div>
-
+            <a href={route('Login')} className="redirect-link">
+                ¿Ya tenés una cuenta? Iniciá sesión
+            </a>
             <button type="submit" className="btn-primary">
                 Empezar
             </button>
