@@ -206,6 +206,13 @@ html, body {
     height: 20px;
 }
 
+.redirect-link {
+    text-align: center;
+    font-size: 1rem;
+    color: #1D6363;
+    font-family: 'Outfit', sans-serif;
+}
+
 
 @media (max-width: 768px) {
     .auth-container {

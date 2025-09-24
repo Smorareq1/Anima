@@ -17,7 +17,7 @@ export default function SpotifyButton() {
     return (
         <button type="button" className="btn-spotify" onClick={handleSpotifyLogin}>
             <img src={SpotifyLogo} alt="Spotify" className="spotify-icon" />
-            Registrate con Spotify
+            Utilizá Ánima con Spotify
         </button>
     );
 }

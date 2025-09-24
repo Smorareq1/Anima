@@ -1,0 +1,495 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+:root {
+    --color-primary: #1D6363;
+    --color-secondary: #CDE8C9;
+    --color-accent: #f9bc60;
+    --color-light: #e8e4e6;
+    --color-dark: #001e1d;
+    --color-white: #ffffff;
+}
+
+/*barra de navegacion*/
+.topBar {
+    background-color: var(--color-secondary);
+    text-align: center;
+    padding: 6px 0;
+    font-size: 1rem;
+    font-family: 'Outfit', sans-serif;
+    color: var(--color-dark);
+}
+
+.mainBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 5%;
+    background-color: var(--color-white);
+    border-bottom: 1px solid #ddd;
+    font-family: 'Outfit', sans-serif;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logoNav {
+    display: flex;
+    align-items: center;
+    gap: 68px;
+}
+
+.logoSection {
+    display: flex;
+    align-items: center;
+    gap:8px;
+}
+
+.logo {
+    width: 28px;
+    height: 28px;
+}
+
+
+.nav ul {
+    display: flex;
+    gap: 75px;
+    list-style: none;
+}
+
+.nav a {
+    text-decoration: none;
+    color: var(--color-dark);
+    font-weight: 500;
+}
+
+/* Botones */
+.authButtons {
+    display: flex;
+    gap: 20px;
+}
+
+.btnOutline,
+.btnPrimary {
+    font-size:1rem;
+    padding: 10px 24px;
+    display: inline-block;
+    text-decoration: none;
+}
+.btnOutline {
+    background: transparent;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btnPrimary {
+    background: var(--color-primary);
+    border: none;
+    color: var(--color-white);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/*hero*/
+
+.hero {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 5%;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+    font-family: 'Outfit', sans-serif;
+}
+/* Bloque principal */
+/* Primera fila: texto + imagen */
+.hero-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 60px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.hero-text {
+    flex: 1;
+    max-width: 600px;
+}
+
+.hero-text .tag {
+    background-color: var(--color-secondary);
+    color: var(--color-dark);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-bottom: 16px;
+}
+
+.hero-text .tag2{
+    color: var(--color-secondary);
+    background-color: var(--color-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-bottom: 16px;
+}
+
+.hero-text h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin-bottom: 16px;
+}
+
+.hero-text p {
+    font-size: 1.1rem;
+    color: #444;
+    margin-bottom: 24px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.hero-spotify {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.hero-spotify img {
+    width: 100px;
+    height: auto;
+}
+
+/* --- Imagen principal derecha --- */
+.hero-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.hero-image img {
+    max-width: 400px;
+    width: 100%;
+    height: auto;
+}
+
+/*  Segunda fila  */
+.hero-feature {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.hero-feature-img {
+    flex: 1;
+    max-width: 350px;
+    height: auto;
+}
+
+.hero-feature-text {
+    flex: 2;
+}
+
+.hero-feature-text .tag {
+    background-color: var(--color-secondary);
+    color: var(--color-dark);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 12px;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.hero-feature-text h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--color-dark);
+}
+
+.hero-feature-text p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+/*seguridad spotify */
+.spotify-security {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 60px;
+    background-color: #F9FBFA;
+    padding: 60px 5%;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-image: url("../images/decoration/elipses2.png");
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    background-size: 60%;
+}
+
+/* Lado izquierdo */
+.spotify-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.spotify-logo {
+    width: 200px;
+    height: auto;
+}
+
+.spotify-left p {
+    font-size: 1.1rem;
+    color: #444;
+    line-height: 1.5;
+    max-width: 400px;
+    font-weight: 200;
+}
+
+.btnPrimary2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    width: auto;
+}
+
+/* Lado derecho */
+.spotify-right {
+    flex: 2;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+}
+
+.security-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.security-item img.icon-circle {
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-secondary);
+    border-radius: 50%;
+    padding: 8px;
+}
+
+.security-item h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--color-dark);
+}
+
+.security-item p {
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.4;
+    font-weight: 300;
+}
+
+/* responsive de spotify */
+@media (max-width: 992px) {
+    .spotify-security {
+        flex-direction: column;
+        gap: 40px;
+        padding: 40px 5%;
+        align-items: center;
+        text-align: center;
+    }
+
+    .security-item{
+        align-items: center;
+        text-align: center;
+    }
+    .spotify-right {
+        grid-template-columns: 1fr;
+        align-items: center;
+        text-align:center;
+    }
+
+    .spotify-left {
+        align-items: center;
+        text-align: center;
+    }
+
+    .spotify-left p {
+        max-width: 100%;
+    }
+}
+
+/*responsive header y heroes*/
+@media (max-width: 992px) {
+    /* barra de navegacion */
+    .mainBar {
+        padding: 12px 20px;
+    }
+
+    .logoNav {
+        gap: 32px;
+    }
+
+    .nav ul {
+        gap: 32px;
+    }
+
+    .authButtons {
+        gap: 12px;
+    }
+
+    .btnOutline,
+    .btnPrimary {
+        padding: 8px 18px;
+        font-size: 0.95rem;
+    }
+
+    /*hero*/
+    .hero {
+        padding: 40px 5%;
+        gap: 40px;
+    }
+
+    .hero-main {
+        gap: 40px;
+    }
+
+    .hero-text h1 {
+        font-size: 2.2rem;
+    }
+
+    .hero-text p {
+        font-size: 1rem;
+    }
+
+    .hero-image img {
+        max-width: 320px;
+    }
+
+    .hero-feature {
+        gap: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* barra de navegacion */
+    .mainBar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .logoNav {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .nav ul {
+        gap: 20px;
+        font-size: 0.95rem;
+    }
+
+    .authButtons {
+        align-self: flex-end;
+    }
+
+    /*hero*/
+    .hero-main {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-text {
+        max-width: 100%;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+    .hero-spotify {
+        align-items: center;
+    }
+
+    .hero-feature {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-feature-text {
+        flex: unset;
+    }
+}
+
+
+@media (max-width: 480px) {
+    /* barra de navegacion */
+    .nav ul {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .authButtons {
+        width: 100%;
+        justify-content: space-around;
+    }
+
+    .btnOutline,
+    .btnPrimary {
+        flex: 1;
+        text-align: center;
+    }
+    /*hero*/
+    .hero {
+        padding: 30px 20px;
+        gap: 30px;
+    }
+
+    .hero-text h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero-feature-text h2 {
+        font-size: 1.5rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .hero-buttons a {
+        width: 100%;
+        text-align: center;
+    }
+
+    .hero-spotify img {
+        width: 80px;
+    }
+}
