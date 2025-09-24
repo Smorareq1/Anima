@@ -28,6 +28,7 @@
     border: 1px solid var(--color-primary);
     border-radius: 8px;
     overflow: hidden;
+    color: var(--color-primary);
 }
 
 .upload-tabs .tab {
@@ -38,6 +39,7 @@
     cursor: pointer;
     font-weight: 500;
     color: var(--color-primary);
+    fill: var(--color-primary);
     font-family: "Outfit", sans-serif;
     transition: all 0.2s ease-in-out;
 }
@@ -203,3 +205,5 @@
     height: 50px;
     color: var(--color-primary);
 }
+
+

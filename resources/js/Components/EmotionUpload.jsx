@@ -48,6 +48,8 @@ export default function EmotionUpload() {
     // --- Enviar al backend ---
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        router.get(route("dashboard")) // prueba de ruta
         if (!file) return; // mostrar un mensaje de error aqui
 
         const formData = new FormData();
@@ -142,7 +144,7 @@ export default function EmotionUpload() {
                     </button>
                 </div>
             )}
-            <a href={route('Home')} className="redirect-link">
+            <a href={route('Dashboard')} className="redirect-link">
                 ¿No quieres tomarte una foto ahora? Podés hacerlo después.
             </a>
             <button className="generate-btn" onClick={handleSubmit}>

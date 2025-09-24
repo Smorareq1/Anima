@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+:root {
+    --color-primary: #1D6363;
+    --color-secondary: #CDE8C9;
+    --color-accent: #f9bc60;
+    --color-light: #e8e4e6;
+    --color-dark: #001e1d;
+    --color-white: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    background-color: var(--color-light);
+    color: var(--color-dark);
+}
+
+.dashboard-sidebar {
+    width: 220px;
+    background-color: var(--color-secondary);
+    padding: 20px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+.dashboard-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-white);
+}
+
+.dashboard-topbar {
+    height: 60px;
+    border-bottom: 1px solid var(--color-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    background-color: var(--color-white);
+}
+
+.dashboard-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: var(--color-white);
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 220px;
+    background-color: var(--color-secondary);
+    padding: 20px 0 20px 0;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    justify-content: center;
+    width:100%;
+}
+
+.sidebar-logo img {
+    width: 100px;
+    height: auto;
+    display:block;
+}
+
+.sidebar-logo h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+    padding: 10px 12px;
+    text-decoration: none;
+    color: var(--color-primary);
+    font-weight: 500;
+    transition: background 0.2s ease, color 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+.icon2{
+    margin-left: 15px;
+    color: white;
+}
+.sidebar-item:hover {
+    background-color: white;
+    color: var(--color-primary);
+    fill: var(--color-primary);
+}
+.sidebar-item:hover .icon{
+    color: var(--color-primary);
+}
+
+.sidebar-item.active {
+    background-color: var(--color-white);
+    color: var(--color-primary);
+}
+.sidebar-item.active .icon{
+    color: var(--color-primary);
+}
+

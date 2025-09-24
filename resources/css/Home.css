@@ -18,6 +18,10 @@
     font-family: 'Outfit', sans-serif;
     color: var(--color-dark);
 }
+.logo2{
+    width: 170px;
+    height: auto;
+}
 
 .mainBar {
     display: flex;
