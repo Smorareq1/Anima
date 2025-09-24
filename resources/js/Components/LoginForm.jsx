@@ -59,7 +59,9 @@ export default function LoginForm() {
                     onChange={handleChange}
                 />
             </div>
-
+            <a href={route('Register')} className="redirect-link">
+                ¿No tienes una cuenta? Regístrate.
+            </a>
             <button type="submit" className="btn-primary">
                 Iniciar sesión
             </button>
