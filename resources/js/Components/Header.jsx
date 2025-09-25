@@ -14,7 +14,7 @@ const Header = () => {
             <div className="mainBar">
                 <div className="logoNav">
                     <div className="logoSection">
-                        <img src={logo} alt="Ánima logo" className="logo" />
+                        <img src={logo} alt="Ánima logo" className="logo2" />
                     </div>
 
                     <nav className="nav">

@@ -50,7 +50,7 @@ html, body {
     background-color: #CDE8C9;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     padding: 2rem;
     text-align: center;
@@ -81,7 +81,7 @@ html, body {
 }
 
 .auth-right {
-    flex: 0 0 60%;
+    flex: 1;
     background-color: #fff;
     display: flex;
     flex-direction: column;
@@ -213,6 +213,14 @@ html, body {
     font-family: 'Outfit', sans-serif;
 }
 
+.leftContentUpload .slogan-title{
+    font-size: 2.7rem;
+    margin-top: 4rem;
+}
+.leftContentUpload .slogan-sub{
+    font-size: 1.5rem;
+    font-weight:300;
+}
 
 @media (max-width: 768px) {
     .auth-container {

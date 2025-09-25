@@ -28,6 +28,9 @@ export default function RegisterForm() {
         // añadir validaciones básicas, poner mensajes de error abajo de cada input, y enviar solamente si pasa validaciones
 
 
+        // redirigir (prueba) mover esto luego de la respuesta del backend
+        router.get(route('emotion.index'));
+
         console.log("Datos del formulario:", formData); //debug frontend
 
         // envio con inertia
