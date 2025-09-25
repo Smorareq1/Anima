@@ -1,0 +1,209 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+:root {
+    --color-primary: #1D6363;
+    --color-secondary: #CDE8C9;
+    --color-accent: #f9bc60;
+    --color-light: #e8e4e6;
+    --color-dark: #001e1d;
+    --color-white: #ffffff;
+}
+
+.emotion-upload-container {
+    max-width: 825px;
+    margin: 0 auto;
+    padding: 2rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    font-family: "Outfit", sans-serif;
+    gap: 1.5rem;
+
+}
+
+/* Tabs */
+.upload-tabs {
+    display: flex;
+    border: 1px solid var(--color-primary);
+    border-radius: 8px;
+    overflow: hidden;
+    color: var(--color-primary);
+}
+
+.upload-tabs .tab {
+    flex: 1;
+    padding: 0.7rem;
+    background: var(--color-white);
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--color-primary);
+    fill: var(--color-primary);
+    font-family: "Outfit", sans-serif;
+    transition: all 0.2s ease-in-out;
+}
+
+.icon {
+    width: 28px;
+    height: 28px;
+}
+
+.upload-tabs .tab:hover {
+    background: var(--color-primary);
+}
+
+.upload-tabs .tab:hover .icon {
+    color: var(--color-white);
+}
+
+.upload-tabs .tab.active {
+    background: var(--color-primary);
+}
+.upload-tabs .tab.active .icon {
+    color: var(--color-white);
+}
+
+
+/* Caja de upload */
+.upload-box {
+    border: 2px dashed var(--color-secondary);
+    border-radius: 8px;
+    padding: 7rem;
+    text-align: center;
+    color: var(--color-primary);
+    background: var(--color-white);
+}
+
+.upload-label {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.upload-icon {
+    font-size: 2rem;
+    color: var(--color-primary);
+}
+
+.upload-btn {
+    display: inline-block;
+    border: 1px solid var(--color-primary);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    color: var(--color-primary);
+    font-weight: 500;
+    font-family: "Outfit", sans-serif;
+    background: var(--color-white);
+    transition: all 0.2s ease-in-out;
+}
+
+.upload-btn:hover {
+    background: var(--color-primary);
+    color: var(--color-white);
+}
+
+/* Preview */
+.file-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--color-secondary);
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+}
+
+.file-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.file-info {
+    flex: 1;
+}
+
+.file-name {
+    font-weight: 500;
+    font-family: "Outfit", sans-serif;
+}
+
+.file-size {
+    font-size: 0.9rem;
+    color: #666;
+    font-family: "Outfit", sans-serif;
+}
+
+.file-remove {
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--color-primary);
+}
+
+/* Botón submit */
+.generate-btn {
+    border: 1px solid var(--color-primary);
+    border-radius: 8px;
+    padding: 0.8rem;
+    background: var(--color-white);
+    color: var(--color-primary);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all 0.2s ease-in-out;
+}
+.generate-btn:hover {
+    background: var(--color-primary);
+    color: var(--color-white);
+}
+
+.camera-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    border: 2px dashed var(--color-secondary);
+    border-radius: 8px;
+    padding: 1.4rem;
+}
+
+.capture-btn {
+    border: 1px solid var(--color-primary);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    background: var(--color-white);
+    color: var(--color-primary);
+    font-weight: 500;
+    cursor: pointer;
+    font-family: "Outfit", sans-serif;
+    transition: all 0.2s ease-in-out;
+}
+.capture-btn:hover {
+    background: var(--color-primary);
+    color: var(--color-white);
+}
+
+.redirect-link {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    font-family: 'Outfit', sans-serif;
+}
+.upload-tabs,
+.upload-box,
+.file-preview,
+.generate-btn {
+    width: 100%;
+}
+.icon-large{
+    width: 50px;
+    height: 50px;
+    color: var(--color-primary);
+}
+
+

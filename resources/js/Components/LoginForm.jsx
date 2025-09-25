@@ -23,6 +23,8 @@ export default function LoginForm() {
 
         console.log("Datos del formulario:", formData); //debug frontend
 
+        router.get(route("Dashboard")) // prueba de ruta
+
         // envio con inertia
         router.post(route("login"), formData, {
             onSuccess: (page) => {
@@ -59,7 +61,9 @@ export default function LoginForm() {
                     onChange={handleChange}
                 />
             </div>
-
+            <a href={route('Register')} className="redirect-link">
+                ¿No tienes una cuenta? Regístrate.
+            </a>
             <button type="submit" className="btn-primary">
                 Iniciar sesión
             </button>
