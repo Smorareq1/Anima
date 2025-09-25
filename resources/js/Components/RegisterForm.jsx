@@ -29,7 +29,7 @@ export default function RegisterForm() {
 
 
         // redirigir (prueba) mover esto luego de la respuesta del backend
-        router.get(route('emotion.index'));
+        router.get(route('first.upload'));
 
         console.log("Datos del formulario:", formData); //debug frontend
 

@@ -1,17 +1,25 @@
 import "../../css/dashboard.css";
 import Sidebar from "../Components/Sidebar.jsx";
 import Topbar from "../Components/Topbar.jsx";
+import React, {useState} from "react";
 
 export default function DashboardLayout({children}) {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     return (
         <div className="dashboard-container">
-            <aside className="dashboard-sidebar">
+            <aside className={`dashboard-sidebar ${sidebarOpen ? "active" : ""}`}>
                 <Sidebar />
             </aside>
+            {sidebarOpen && (
+                <div
+                    className="sidebar-overlay"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
 
             <div className="dashboard-main">
                 <header className="dashboard-topbar">
-                    {/*<Topbar />*/}
+                    <Topbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
                 </header>
 
                 <main className="dashboard-content">

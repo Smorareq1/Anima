@@ -4,6 +4,7 @@ import {Link} from "@inertiajs/react";
 import Logo from "../../images/logo.png";
 import AuthLayout from "../Components/AuthLayout.jsx";
 import "../../css/auth.css";
+import {route} from "ziggy-js";
 
 export default function FirstTimeUpload() {
     const leftContent = (
@@ -28,7 +29,12 @@ export default function FirstTimeUpload() {
     );
 
     const rightContent = (
-        <EmotionUpload />
+        <>
+            <EmotionUpload />
+            <a href={route('Dashboard')} className="redirect-link">
+                ¿No quieres tomarte una foto ahora? Podés hacerlo después.
+            </a>
+        </>
     );
 
     return <AuthLayout leftContent={leftContent} rightContent={rightContent} />;

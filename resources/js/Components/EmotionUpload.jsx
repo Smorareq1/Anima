@@ -144,9 +144,6 @@ export default function EmotionUpload() {
                     </button>
                 </div>
             )}
-            <a href={route('Dashboard')} className="redirect-link">
-                ¿No quieres tomarte una foto ahora? Podés hacerlo después.
-            </a>
             <button className="generate-btn" onClick={handleSubmit}>
                 Generar recomendación
             </button>
