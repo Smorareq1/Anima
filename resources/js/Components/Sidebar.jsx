@@ -34,7 +34,7 @@ export default function Sidebar() {
                 </Link>
 
                 <Link
-                    href={route("recommend")} // cambiar
+                    href={route("recommend")}
                     className={`sidebar-item ${route().current("recommend") ? "active" : ""}`}
                 >
                     <RecommendIcon className="icon3" />
@@ -50,8 +50,8 @@ export default function Sidebar() {
                 </Link>
 
                 <Link
-                    href={route("Home")} // cambiar
-                    className={`sidebar-item ${route().current("history") ? "active" : ""}`}
+                    href={route("Record")}
+                    className={`sidebar-item ${route().current("Record") ? "active" : ""}`}
                 >
                     <RecordIcon className="icon3" />
                     Historial
