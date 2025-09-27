@@ -55,8 +55,10 @@
 .dashboard-content {
     flex: 1;
     padding: 20px;
-    overflow-y: auto;
     background-color: var(--color-white);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
 }
 
 .sidebar {
@@ -112,6 +114,10 @@
     margin-left: 15px;
     color: white;
 }
+.icon3{
+    margin-left: 15px;
+    color: var(--color-primary);
+}
 .sidebar-item:hover {
     background-color: white;
     color: var(--color-primary);
@@ -129,3 +135,78 @@
     color: var(--color-primary);
 }
 
+/* --- RESPONSIVE SIDEBAR --- */
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+
+    .dashboard-sidebar {
+        position: fixed;
+        top: 0;
+        left: -220px;
+        height: 100%;
+        width: 220px;
+        transition: left 0.3s ease;
+        z-index: 1000;
+    }
+
+    .dashboard-sidebar.active {
+        left: 0;
+    }
+
+    .dashboard-main {
+        flex: 1;
+        margin-left: 0;
+    }
+
+    .dashboard-topbar {
+        position: relative;
+        z-index: 3;
+    }
+
+    /* Botón hamburger */
+    .sidebar-toggle {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--color-primary);
+    }
+}
+
+@media (min-width: 769px) {
+    .sidebar-toggle {
+        display: none;
+    }
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 999; /* debajo del sidebar */
+}
+
+@media (max-width: 768px) {
+    .dashboard-sidebar {
+        z-index: 1000;
+    }
+}
+.recommend-header{
+    padding: 10px;
+}
+.recommend-header h1{
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--color-dark);
+}
+.recommend-header p{
+    font-size: 1rem;
+    color: var(--color-dark);
+    margin-top: 5px;
+}

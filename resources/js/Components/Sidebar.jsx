@@ -21,7 +21,7 @@ export default function Sidebar() {
                     href={route("Dashboard")}
                     className={`sidebar-item ${route().current("Dashboard") ? "active" : ""}`}
                 >
-                    <HomeIcon className="icon2" />
+                    <HomeIcon className="icon3" />
                     Inicio
                 </Link>
 
@@ -29,15 +29,15 @@ export default function Sidebar() {
                     href={route("Home")} // cambiar
                     className={`sidebar-item ${route().current("explore") ? "active" : ""}`}
                 >
-                    <ExploreIcon className="icon2" />
+                    <ExploreIcon className="icon3" />
                     Explorar
                 </Link>
 
                 <Link
-                    href={route("Home")} // cambiar
+                    href={route("recommend")}
                     className={`sidebar-item ${route().current("recommend") ? "active" : ""}`}
                 >
-                    <RecommendIcon className="icon" />
+                    <RecommendIcon className="icon3" />
                     Recomendar
                 </Link>
 
@@ -45,15 +45,15 @@ export default function Sidebar() {
                     href={route("Home")} // cambiar
                     className={`sidebar-item ${route().current("playlists") ? "active" : ""}`}
                 >
-                    <PlaylistsIcon className="icon2" />
+                    <PlaylistsIcon className="icon3" />
                     Playlists
                 </Link>
 
                 <Link
-                    href={route("Home")} // cambiar
-                    className={`sidebar-item ${route().current("history") ? "active" : ""}`}
+                    href={route("Record")}
+                    className={`sidebar-item ${route().current("Record") ? "active" : ""}`}
                 >
-                    <RecordIcon className="icon2" />
+                    <RecordIcon className="icon3" />
                     Historial
                 </Link>
 
@@ -61,7 +61,7 @@ export default function Sidebar() {
                     href={route("Home")} // cambiar
                     className={`sidebar-item ${route().current("favorites") ? "active" : ""}`}
                 >
-                    <FavoritesIcon className="icon2" />
+                    <FavoritesIcon className="icon3" />
                     Favoritas
                 </Link>
             </nav>
