@@ -8,6 +8,7 @@ use App\Services\Spotify\SpotifyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
 class SpotifyController extends Controller
@@ -31,7 +32,6 @@ class SpotifyController extends Controller
     {
         $user = $service->handleCallback();
         Auth::login($user, remember: true);
-
-        return redirect()->route('Dashboard');
+        return Inertia::render('Dashboard/HomeDashboard');
     }
 }
