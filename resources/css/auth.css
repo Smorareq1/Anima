@@ -110,6 +110,11 @@ html, body {
     gap: 1rem;
 }
 
+.register-form .error-message{
+     color: #ff0000;
+     font-size: 1rem
+}
+
 .form-title {
     font-size: 1.5rem;
     font-weight: bold;
