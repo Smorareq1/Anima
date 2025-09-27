@@ -1,50 +1,40 @@
 <?php
 
+// app/Http/Controllers/App/Spotify/SpotifyController.php
 namespace App\Http\Controllers\App\Spotify;
 
 use App\Http\Controllers\Controller;
 use App\Services\Spotify\SpotifyService;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
-use Exception;
 
 class SpotifyController extends Controller
 {
-    protected $spotifyService;
-
-    // Inyectamos nuestro servicio para usarlo en los métodos
-    public function __construct(SpotifyService $spotifyService)
+    public function redirect(Request $request)
     {
-        $this->spotifyService = $spotifyService;
-    }
+        Log::info('Redirecting to Spotify');
 
-    /**
-     * Redirige al usuario a Spotify para que autorice la aplicación.
-     */
-    public function redirect(): RedirectResponse
-    {
-        return Socialite::driver('spotify')
-            ->scopes(['user-read-email']) // Pide los permisos que necesites
+        $mode = $request->query('mode', \Auth::check() ? 'link' : 'login');
+
+        $response = Socialite::driver('spotify')
+            ->scopes(['user-read-email'])
+            ->redirectUrl(config('services.spotify.redirect')) // <- FORZADO
+            ->with(['state' => $mode])
             ->redirect();
+
+        // Debug temporal (borra esto luego):
+        Log::info('spotify_auth_url', ['url' => $response->getTargetUrl()]);
+
+        return $response;
     }
 
-    /**
-     * Maneja la respuesta (callback) de Spotify.
-     */
-    public function callback(): RedirectResponse
+    public function callback(Request $request, SpotifyService $service)
     {
-        try {
-            $user = $this->spotifyService->handleCallback();
+        $user = $service->handleCallback(); // devuelve el User resuelto
+        Auth::login($user, remember: true);
 
-            // Inicia sesión para el usuario encontrado o creado
-            Auth::login($user, true); // 'true' para "recordar" la sesión
-
-            return redirect()->intended('/dashboard'); // Redirige al dashboard o a donde quieras
-
-        } catch (Exception $e) {
-            // Manejo de errores (ej. el usuario denegó el acceso)
-            return redirect()->route('login')->with('error', 'No se pudo autenticar con Spotify.');
-        }
+        return redirect()->route('Dashboard');
     }
 }
