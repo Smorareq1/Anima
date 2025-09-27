@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 
 class SpotifyController extends Controller
 {
@@ -28,10 +29,19 @@ class SpotifyController extends Controller
             ->redirect();
     }
 
+
     public function callback(Request $request, SpotifyService $service)
     {
-        $user = $service->handleCallback();
-        Auth::login($user, remember: true);
-        return Inertia::render('Dashboard/HomeDashboard');
+        try {
+            $user = $service->handleCallback();
+            Auth::login($user, remember: true);
+        } catch (InvalidStateException $e) {
+            // Si alguien entra a /spotify/callback sin una sesión OAuth válida (o refresca)
+            return redirect()->route('Login')->with('error', 'La sesión de Spotify caducó. Intenta de nuevo.');
+        }
+
+        // ¡Importante! Redirigir, no renderizar aquí.
+        return redirect()->intended(route('Dashboard'));
     }
+
 }
