@@ -1,74 +1,83 @@
 services:
     laravel.test:
         build:
-            context: './vendor/laravel/sail/runtimes/8.4'
+            context: "./vendor/laravel/sail/runtimes/8.4"
             dockerfile: Dockerfile
             args:
-                WWWGROUP: '${WWWGROUP}'
-        image: 'sail-8.4/app'
+                WWWGROUP: "${WWWGROUP:-1000}"
+        image: "sail-8.4/app"
+        restart: unless-stopped
         extra_hosts:
-            - 'host.docker.internal:host-gateway'
+            - "host.docker.internal:host-gateway"
         ports:
-            - '${APP_PORT:-80}:80'
-            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+            - "${APP_PORT:-8080}:80"
+            - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
         environment:
-            WWWUSER: '${WWWUSER}'
-            LARAVEL_SAIL: 1
-            XDEBUG_MODE: 'off'  # CAMBIO: Desactivar Xdebug
-            IGNITION_LOCAL_SITES_PATH: '${PWD}'
+            LARAVEL_SAIL: "1"
+            XDEBUG_MODE: "${XDEBUG_MODE:-off}"
+            WWWUSER: "${WWWUSER:-1000}"
+            WWWGROUP: "${WWWGROUP:-1000}"
         volumes:
-            - '.:/var/www/html:cached'  # CAMBIO: Añadir :cached
+            - .:/var/www/html:delegated          # Código (host) -> contenedor (rápido)
+            - vendor:/var/www/html/vendor        # vendor queda en contenedor
+            - node_modules:/var/www/html/node_modules  # node_modules en contenedor
+        tmpfs:
+            - /tmp
+        depends_on:
+            pgsql:
+                condition: service_healthy
+            redis:
+                condition: service_started
+            mailpit:
+                condition: service_started
         networks:
             - sail
-        depends_on:
-            - pgsql
-            - redis
-            - mailpit
-        # CAMBIO: Remover selenium de depends_on
 
     pgsql:
-        image: 'postgres:15'
+        image: "postgres:15"
+        restart: unless-stopped
         ports:
-            - '${FORWARD_DB_PORT:-5433}:5432'
+            - "${FORWARD_DB_PORT:-5433}:5432"
         environment:
-            POSTGRES_DB: '${DB_DATABASE}'
-            POSTGRES_USER: '${DB_USERNAME}'
-            POSTGRES_PASSWORD: '${DB_PASSWORD}'
+            POSTGRES_DB: "${DB_DATABASE}"
+            POSTGRES_USER: "${DB_USERNAME}"
+            POSTGRES_PASSWORD: "${DB_PASSWORD}"
         volumes:
-            - 'sail-pgsql:/var/lib/postgresql/data'
+            - sail-pgsql:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE} -h 127.0.0.1 || exit 1"]
+            interval: 5s
+            timeout: 3s
+            retries: 20
         networks:
             - sail
 
     redis:
-        image: 'redis:alpine'
+        image: "redis:alpine"
+        restart: unless-stopped
         ports:
-            - '${FORWARD_REDIS_PORT:-6379}:6379'
+            - "${FORWARD_REDIS_PORT:-6379}:6379"
+        command: ["redis-server", "--appendonly", "yes"]
         volumes:
-            - 'sail-redis:/data'
+            - sail-redis:/data
         networks:
             - sail
 
     mailpit:
-        image: 'axllent/mailpit:latest'
+        image: "axllent/mailpit:latest"
+        restart: unless-stopped
         ports:
-            - '${FORWARD_MAILPIT_PORT:-1025}:1025'
-            - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
-        networks:
-            - sail
-
-    composer:
-        image: composer:2
-        working_dir: /var/www/html
-        volumes:
-            - .:/var/www/html
+            - "${FORWARD_MAILPIT_PORT:-1025}:1025"
+            - "${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
         networks:
             - sail
 
 networks:
     sail:
         driver: bridge
+
 volumes:
+    vendor:
+    node_modules:
     sail-pgsql:
-        driver: local
     sail-redis:
-        driver: local
