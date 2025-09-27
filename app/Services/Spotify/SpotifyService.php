@@ -14,58 +14,61 @@ class SpotifyService
 {
     public function handleCallback(): User
     {
+        // Socialite stateful (no ->stateless())
         $spotifyUser = Socialite::driver('spotify')->user();
-        $mode = request()->input('state', Auth::check() ? 'link' : 'login');
+
+        // Recupera tu modo guardado en el redirect (login|link)
+        $mode = session()->pull('spotify.mode', Auth::check() ? 'link' : 'login');
 
         return DB::transaction(function () use ($spotifyUser, $mode) {
-            // upsert de la cuenta conectada por provider + provider_id
-            $connected = ConnectedAccount::updateOrCreate(
-                [
-                    'provider' => 'spotify',
-                    'provider_id' => $spotifyUser->getId(),
-                ],
-                [
-                    'token'         => $spotifyUser->token ?? null,
-                    'refresh_token' => $spotifyUser->refreshToken ?? null,
-                    'expires_at'    => $spotifyUser->expiresIn
-                        ? now()->addSeconds($spotifyUser->expiresIn)
-                        : null,
-                ]
-            );
+            // ¿Ya existe la cuenta conectada?
+            $existing = ConnectedAccount::where('provider', 'spotify')
+                ->where('provider_id', $spotifyUser->getId())
+                ->first();
 
-            // Si ya está vinculada a un usuario y estamos en login, úsalo
-            if ($connected->user && $mode !== 'link') {
-                return $connected->user;
-            }
-
-            // Si estamos linkeando y hay usuario autenticado, asociar a ese
+            // 1) Resolver el User de la app
             if ($mode === 'link' && Auth::check()) {
-                $connected->user()->associate(Auth::user());
-                $connected->save();
-                return Auth::user();
+                // Vincular a la sesión actual
+                $user = Auth::user();
+
+            } elseif ($existing && $existing->user) {
+                // Reusar el user ya vinculado (login)
+                $user = $existing->user;
+
+            } else {
+                $email = $spotifyUser->getEmail();
+                $name  = $spotifyUser->getName() ?: 'Spotify User';
+                $pwd   = bcrypt(Str::random(40));
+
+                $user = $email
+                    ? User::firstOrCreate(['email' => $email], ['name' => $name, 'password' => $pwd])
+                    : User::firstOrCreate(
+                        ['email' => 'spotify_'.$spotifyUser->getId().'@example.invalid'],
+                        ['name' => $name, 'password' => $pwd]
+                    );
             }
 
-            // Flujo de login normal: buscar/crear por email
-            $email = $spotifyUser->getEmail(); // puede venir null
-            $name  = $spotifyUser->getName() ?: 'Spotify User';
+            // 2) Crear/actualizar la ConnectedAccount SIEMPRE con user_id
+            $connected = $existing ?: new ConnectedAccount([
+                'provider'    => 'spotify',
+                'provider_id' => $spotifyUser->getId(),
+            ]);
 
-            // Opción A: si tu columna password es NOT NULL, genera una aleatoria segura
-            $randomPassword = bcrypt(Str::random(40));
+            $connected->token         = $spotifyUser->token ?? null;
+            $connected->refresh_token = $spotifyUser->refreshToken ?? null;
+            $connected->expires_at    = !empty($spotifyUser->expiresIn)
+                ? now()->addSeconds((int) $spotifyUser->expiresIn)
+                : null;
 
-            $user = $email
-                ? User::firstOrCreate(
-                    ['email' => $email],
-                    ['name' => $name, 'password' => $randomPassword]
-                )
-                : User::create([
-                    // si no hay email, crea uno sintético (o muestra UI pidiendo correo)
-                    'email'    => "spotify_{$spotifyUser->getId()}@example.invalid",
-                    'name'     => $name,
-                    'password' => $randomPassword,
-                ]);
-
+            // Asociar con el usuario resuelto (evita el NOT NULL violation)
             $connected->user()->associate($user);
             $connected->save();
+
+            // (Opcional) Completar nombre si estaba vacío
+            if (empty($user->name) && $spotifyUser->getName()) {
+                $user->name = $spotifyUser->getName();
+                $user->save();
+            }
 
             return $user;
         });

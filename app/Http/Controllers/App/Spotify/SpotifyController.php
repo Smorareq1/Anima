@@ -16,23 +16,20 @@ class SpotifyController extends Controller
     {
         Log::info('Redirecting to Spotify');
 
-        $mode = $request->query('mode', \Auth::check() ? 'link' : 'login');
+        $mode = $request->query('mode', Auth::check() ? 'link' : 'login');
 
-        $response = Socialite::driver('spotify')
+        // Guarda tu modo en sesión (NO usar state para esto)
+        session(['spotify.mode' => $mode]);
+
+        return Socialite::driver('spotify')
             ->scopes(['user-read-email'])
-            ->redirectUrl(config('services.spotify.redirect')) // <- FORZADO
-            ->with(['state' => $mode])
+            ->redirectUrl(config('services.spotify.redirect'))
             ->redirect();
-
-        // Debug temporal (borra esto luego):
-        Log::info('spotify_auth_url', ['url' => $response->getTargetUrl()]);
-
-        return $response;
     }
 
     public function callback(Request $request, SpotifyService $service)
     {
-        $user = $service->handleCallback(); // devuelve el User resuelto
+        $user = $service->handleCallback();
         Auth::login($user, remember: true);
 
         return redirect()->route('Dashboard');
