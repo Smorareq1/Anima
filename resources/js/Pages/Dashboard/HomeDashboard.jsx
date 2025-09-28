@@ -7,8 +7,9 @@ export default function HomeDashboard() {
 
     return (
         <DashboardLayout>
-            <h1>Bienvenido al Dashboard</h1>
-            <p>Este es el contenido inicial.</p>
+            <div>
+                <h1>Bienvenido, {props.auth.user.username}</h1>
+            </div>
         </DashboardLayout>
     );
 }
