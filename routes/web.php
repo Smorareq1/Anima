@@ -1,35 +1,39 @@
 <?php
 
-
 use App\Http\Controllers\App\home\HomeController;
 use App\Http\Controllers\App\register\RegisterController;
 use App\Http\Controllers\App\login\LoginController;
 use App\Http\Controllers\App\Spotify\SpotifyController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\App\Emotion\EmotionController;
 use App\Http\Controllers\App\dashboard\DashboardController;
 use App\Http\Controllers\App\dashboard\RecordController;
 
 Route::get('/', [HomeController::class, 'index'])->name('Home');
-Route::get('/register', [RegisterController::class, 'index'])->name('Register');
-Route::get('/login', [LoginController::class, 'index'])->name('Login');
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('Dashboard');
 
-Route::prefix('spotify')->name('spotify.')->group(function () {
-    Route::get('/redirect', [SpotifyController::class, 'redirect'])->name('redirect');
-    Route::get('/callback', [SpotifyController::class, 'callback'])->name('callback');
+Route::prefix('auth')->name('auth.')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('/register', [RegisterController::class, 'index'])->name('register.show');
+        Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+
+        Route::get('/login', [LoginController::class, 'index'])->name('login.show');
+        Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+    });
+    Route::middleware('auth')->group(function () {
+        Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+    });
 });
 
-Route::get('/first-upload', [EmotionController::class, 'firstTime'])
-    ->name('first.upload');
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('Dashboard');
 
-Route::get('/recommend', [EmotionController::class, 'recommend'])
-    ->name('recommend');
+    Route::prefix('spotify')->name('spotify.')->group(function () {
+        Route::get('/redirect', [SpotifyController::class, 'redirect'])->name('redirect');
+        Route::get('/callback', [SpotifyController::class, 'callback'])->name('callback');
+    });
 
-// Endpoint compartido
-Route::post('/emotion/upload', [EmotionController::class, 'upload'])
-    ->name('emotion.upload');
-
-Route::get('/records', [RecordController::class, 'index'])
-    ->name('Record');
+    Route::get('/first-upload', [EmotionController::class, 'firstTime'])->name('first.upload');
+    Route::get('/recommend', [EmotionController::class, 'recommend'])->name('recommend');
+    Route::post('/emotion/upload', [EmotionController::class, 'upload'])->name('emotion.upload');
+    Route::get('/records', [RecordController::class, 'index'])->name('Record');
+});

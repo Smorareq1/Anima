@@ -10,22 +10,22 @@ const validationSchema = Yup.object({
         .required("Campo obligatorio")
         .min(2, "El nombre debe tener al menos 2 caracteres")
         .max(50, "El nombre no puede exceder los 50 caracteres"),
-    
+
     apellido: Yup.string()
         .required("Campo obligatorio")
         .min(2, "El apellido debe tener al menos 2 caracteres")
         .max(50, "El apellido no puede exceder los 50 caracteres"),
-    
+
     usuario: Yup.string()
         .required("Campo obligatorio")
         .min(3, "El usuario debe tener al menos 3 caracteres")
         .max(20, "El usuario no puede exceder los 20 caracteres")
         .matches(/^[a-zA-Z0-9_]+$/, "El usuario solo puede contener letras, números y guiones bajos"),
-    
+
     correo: Yup.string()
         .email("Ingresa un correo electrónico válido")
         .required("Campo obligatorio"),
-    
+
     password: Yup.string()
         .required("Campo obligatorio")
         .min(8, "La contraseña debe tener al menos 8 caracteres")
@@ -33,7 +33,7 @@ const validationSchema = Yup.object({
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
             "La contraseña debe contener al menos una mayúscula, una minúscula y un número"
         ),
-    
+
     password_confirmation: Yup.string()
         .required("Confirma tu contraseña")
         .oneOf([Yup.ref('password')], "Las contraseñas no coinciden")
@@ -50,37 +50,36 @@ export default function RegisterForm() {
             password_confirmation: "",
         },
         validationSchema: validationSchema,
-        onSubmit: (values, { setSubmitting }) => {
-            console.log("Datos del formulario:", values);
-            router.get(route('first.upload'));
-            
-            router.post(route("register"), values, {
-                onSuccess: (page) => {
-                    console.log("Registro exitoso:", page.props);
-                    setSubmitting(false);
-                    // Redirigir después de registro exitoso
-                    router.get(route('first.upload'));
+        onSubmit: (values, { setSubmitting, setFieldError }) => {
+            const payload = {
+                first_name: values.nombre,
+                last_name: values.apellido,
+                username: values.usuario,
+                email: values.correo,
+                password: values.password,
+                password_confirmation: values.password_confirmation,
+            };
+
+            router.post(route("auth.register.store"), payload, {
+                onSuccess: () => {
+                    console.log("Registro exitoso!");
                 },
                 onError: (errors) => {
                     console.error("Errores del servidor:", errors);
-                    setSubmitting(false);
-                    
-                    // Manejar errores del backend
-                    if (errors.correo) {
-                        formik.setFieldError('correo', errors.correo);
-                    }
-                    if (errors.usuario) {
-                        formik.setFieldError('usuario', errors.usuario);
-                    }
+                    if (errors.email) setFieldError('correo', errors.email);
+                    if (errors.username) setFieldError('usuario', errors.username);
                 },
+                onFinish: () => {
+                    setSubmitting(false);
+                }
             });
         },
     });
 
     // Función auxiliar para mostrar errores
     const getFieldError = (fieldName) => {
-        return formik.touched[fieldName] && formik.errors[fieldName] 
-            ? formik.errors[fieldName] 
+        return formik.touched[fieldName] && formik.errors[fieldName]
+            ? formik.errors[fieldName]
             : null;
     };
 
@@ -104,7 +103,7 @@ export default function RegisterForm() {
                         <div className="error-message">{getFieldError('nombre')}</div>
                     )}
                 </div>
-                
+
                 <div className="form-group">
                     <label htmlFor="apellido">Apellido</label>
                     <input
@@ -138,7 +137,7 @@ export default function RegisterForm() {
                         <div className="error-message">{getFieldError('usuario')}</div>
                     )}
                 </div>
-                
+
                 <div className="form-group">
                     <label htmlFor="correo">Correo</label>
                     <input
@@ -188,12 +187,12 @@ export default function RegisterForm() {
                 )}
             </div>
 
-            <a href={route('Login')} className="redirect-link">
+            <a href={route('auth.login.show')} className="redirect-link">
                 ¿Ya tenés una cuenta? Iniciá sesión
             </a>
-            
-            <button 
-                type="submit" 
+
+            <button
+                type="submit"
                 className="btn-primary"
                 disabled={formik.isSubmitting}
             >

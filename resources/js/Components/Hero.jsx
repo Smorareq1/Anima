@@ -21,7 +21,7 @@ const Hero = () => {
                     </p>
 
                     <div className="hero-buttons">
-                        <Link href={route("Register")} className="btnPrimary">
+                        <Link href={route("auth.register.show")} className="btnPrimary">
                             Empieza ahora
                         </Link>
                         <Link href={route("Home")} className="btnOutline">
