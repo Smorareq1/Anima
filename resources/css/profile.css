@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+:root {
+    --color-primary: #1D6363;
+    --color-secondary: #CDE8C9;
+    --color-accent: #f9bc60;
+    --color-light: #e8e4e6;
+    --color-dark: #001e1d;
+    --color-white: #ffffff;
+}
+
+/* Fondo oscuro */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+/* Caja del modal */
+.modal {
+    background: var(--color-white);
+    width: 500px;
+    max-width: 90%;
+    border-radius: 12px;
+    padding: 30px;
+    position: relative;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* Botón cerrar */
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #333;
+}
+
+.modal-title {
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Avatar */
+.profile-avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #d8ead8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;        /* asegura que la imagen no se deforme */
+    display: block;
+    border-radius: 50%;
+}
+
+.btn-outline {
+    padding: 8px 16px;
+    border: 1px solid var(--color-primary);
+    background: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--color-primary);
+}
+
+/* Formulario */
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.profile-form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    color: #444;
+}
+
+.profile-form input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
