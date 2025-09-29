@@ -27,8 +27,8 @@ const Header = () => {
                 </div>
 
                 <div className="authButtons">
-                    <Link href={route("Login")} className="btnOutline">Inicia sesión</Link>
-                    <Link href={route("Register")} className="btnPrimary">Regístrate</Link>
+                    <Link href={route("auth.login.show")} className="btnOutline">Inicia sesión</Link>
+                    <Link href={route("auth.register.show")} className="btnPrimary">Regístrate</Link>
                 </div>
             </div>
         </header>

@@ -14,7 +14,7 @@ export default function CTASection() {
                         Dejá que ÁNIMA transforme tu estado de ánimo en canciones.
                     </p>
                     <div className="cta-buttons">
-                        <Link href={route("Register")} className="btnPrimary2">
+                        <Link href={route("auth.register.show")} className="btnPrimary2">
                             Empieza ahora
                         </Link>
                     </div>

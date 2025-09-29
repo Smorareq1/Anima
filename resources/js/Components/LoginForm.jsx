@@ -1,54 +1,49 @@
 import React from "react";
-import { useState } from "react";
-import { router } from "@inertiajs/react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { router, Link } from "@inertiajs/react";
 import { route } from 'ziggy-js';
 
+const validationSchema = Yup.object({
+    email: Yup.string().email("Correo inválido").required("Campo obligatorio"),
+    password: Yup.string().required("Campo obligatorio"),
+});
 
 export default function LoginForm() {
-    const [formData, setFormData] = useState({
-        usuario: "",
-        password: "",
+    const formik = useFormik({
+        initialValues: {
+            email: "",
+            password: "",
+        },
+        validationSchema,
+        onSubmit: (values, { setSubmitting, setFieldError }) => {
+            router.post(route("auth.login.store"), values, {
+                onError: (errors) => {
+                    if (errors.email) {
+                        setFieldError('email', errors.email);
+                    }
+                },
+                onFinish: () => {
+                    setSubmitting(false);
+                }
+            });
+        }
     });
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: value,
-        });
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        console.log("Datos del formulario:", formData); //debug frontend
-
-        router.get(route("Dashboard")) // prueba de ruta
-
-        // envio con inertia
-        router.post(route("login"), formData, {
-            onSuccess: (page) => {
-                console.log("Respuesta backend (props):", page.props);
-            },
-            onError: (errors) => {
-                console.error("Errores de validación:", errors);
-                // aca poner los errores parte del backend, por ejemplo si la contraseña es inval
-            },
-        });
-    };
     return (
-        <form className="register-form" onSubmit={handleSubmit}>
+        <form className="register-form" onSubmit={formik.handleSubmit}>
             <h2 className="form-title">Inicia sesión</h2>
 
             <div className="form-group">
-                <label htmlFor="usuario">Usuario</label>
+                <label htmlFor="usuario">Correo Electrónico</label>
                 <input
-                    type="text"
-                    id="usuario"
-                    name="usuario"
-                    value={formData.usuario}
-                    onChange={handleChange}
+                    type="email"
+                    id="email"
+                    name="email"
+                    {...formik.getFieldProps('email')}
                 />
+                {formik.touched.email && formik.errors.email ? (
+                    <div className="error-message">{formik.errors.email}</div>
+                ) : null}
             </div>
 
             <div className="form-group">
@@ -57,11 +52,13 @@ export default function LoginForm() {
                     type="password"
                     id="password"
                     name="password"
-                    value={formData.password}
-                    onChange={handleChange}
+                    {...formik.getFieldProps('password')}
                 />
+                {formik.touched.password && formik.errors.password ? (
+                    <div className="error-message">{formik.errors.password}</div>
+                ) : null}
             </div>
-            <a href={route('Register')} className="redirect-link">
+            <a href={route('auth.register.show')} className="redirect-link">
                 ¿No tienes una cuenta? Regístrate.
             </a>
             <button type="submit" className="btn-primary">
