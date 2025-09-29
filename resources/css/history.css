@@ -9,16 +9,11 @@
     --color-white: #ffffff;
 }
 
-.history-playlists {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-}
 
 .playlist-card {
-    position: relative;
-    width: 220px;
-    height: 220px;
+    width: 100%;
+    aspect-ratio: 1/1;
+    max-width:350px;
     border-radius: 12px;
     background-size: cover;
     background-position: center;
@@ -26,6 +21,7 @@
     color: var(--color-white);
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
 }
 
 
@@ -85,7 +81,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 16px;
 }
 
 .emotion-summary-header h3 {
@@ -99,6 +95,7 @@
     font-size: 0.8rem;
     color: var(--color-primary);
     text-decoration: none;
+    margin-left: 15px;
 }
 
 .emotion-summary-list {
@@ -138,18 +135,165 @@
     text-align: center;
 }
 .history-body {
-    flex: 1;
     display: flex;
     gap: 30px;
     min-height: 0;
 }
-
-.history-playlists {
+.history-playlists-column {
     flex: 3;
+    display: flex;
+    flex-direction: column;
+}
+.history-playlists {
+    flex: 1;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 20px;
-    overflow: auto;
-    place-items:center;
+    align-items:center;
+    justify-items: center;
+}
+.history-summary-column {
+    flex: 1;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+}
+.pagination {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    justify-content: center;
 }
 
+.pagination a {
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: var(--color-light);
+    text-decoration: none;
+    color: var(--color-dark);
+    font-weight: 500;
+}
+
+.pagination a.active {
+    background: var(--color-primary);
+    color: var(--color-white);
+}
+
+
+/* Desktop (≥ 768px): dos columnas */
+@media (min-width: 768px) {
+    .history-body {
+        display: flex;
+        gap: 30px;
+    }
+
+    .history-playlists {
+        flex: 3;
+    }
+
+    .history-summary {
+        flex: 1;
+    }
+}
+
+@media (max-width: 992px) {
+    .history-playlists {
+        place-items: center;
+    }
+}
+.emotion-summary {
+    background: var(--color-light);
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+}
+
+.emotion-summary.open {
+    max-height: 1500px;
+}
+
+.emotion-summary.collapsed {
+    max-height: 50px; /* solo se ve el header */
+}
+
+
+.toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--color-primary);
+    margin-left: 15px;
+}
+
+
+/* Mobile (< 768px): stack */
+@media (max-width: 767px) {
+    .history-body {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .history-summary {
+        flex: none;
+        order: -1;
+        min-height: auto;
+    }
+
+    .emotion-summary {
+        padding: 10px;
+        flex: none;
+        min-height:auto;
+    }
+
+    .emotion-summary-item {
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 10px;
+        font-size: 0.8rem;
+        padding: 8px;
+        align-items: center;
+    }
+
+    .emotion-icon {
+        font-size: 1.2rem;
+        margin-bottom: 0;
+    }
+    .emotion-summary-list {
+        overflow: visible;
+    }
+    .history-summary-column{
+        order: -1;
+    }
+}
+
+/* Ajustes de grid para diferentes tamaños de pantalla */
+@media (min-width: 1200px) {
+    .history-playlists {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+    .history-playlists {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .playlist-card{
+        max-width:225px;
+    }
+}
+
+@media (max-width: 767px) {
+    .history-playlists {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+@media (max-width: 480px) {
+    .history-playlists {
+        grid-template-columns: 1fr;
+    }
+}
