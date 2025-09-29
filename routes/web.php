@@ -11,6 +11,11 @@ use App\Http\Controllers\App\dashboard\RecordController;
 
 Route::get('/', [HomeController::class, 'index'])->name('Home');
 
+Route::prefix('spotify')->name('spotify.')->group(function () {
+    Route::get('/redirect', [SpotifyController::class, 'redirect'])->name('redirect');
+    Route::get('/callback', [SpotifyController::class, 'callback'])->name('callback');
+});
+
 Route::prefix('auth')->name('auth.')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/register', [RegisterController::class, 'index'])->name('register.show');
@@ -26,11 +31,6 @@ Route::prefix('auth')->name('auth.')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('Dashboard');
-
-    Route::prefix('spotify')->name('spotify.')->group(function () {
-        Route::get('/redirect', [SpotifyController::class, 'redirect'])->name('redirect');
-        Route::get('/callback', [SpotifyController::class, 'callback'])->name('callback');
-    });
 
     Route::get('/first-upload', [EmotionController::class, 'firstTime'])->name('first.upload');
     Route::get('/recommend', [EmotionController::class, 'recommend'])->name('recommend');
