@@ -4,7 +4,7 @@ import "../../../css/profile.css";
 import { useForm } from "@inertiajs/react";
 import avatar from "../../../images/avatar.png";
 
-export default function ProfileModal({ isOpen, onClose, user }) {
+export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
     const { data, setData, post, processing, errors } = useForm({
         first_name: user?.first_name || "",
         last_name: user?.last_name || "",
@@ -139,7 +139,7 @@ export default function ProfileModal({ isOpen, onClose, user }) {
                     <button type="submit" className="btn-outline" disabled={processing}>
                         Guardar cambios
                     </button>
-                    <SpotifyRegButton />
+                    <SpotifyRegButton disabled = {hasSpotify}/>
                 </form>
             </div>
         </div>

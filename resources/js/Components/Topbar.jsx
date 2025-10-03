@@ -3,9 +3,10 @@ import { usePage, Link } from "@inertiajs/react";
 import "../../css/topbar.css";
 import avatar from "../../images/avatar.png";
 import ProfileModal from "./modal/ProfileModal.jsx";
+import CompleteProfileModal from "./modal/CompleteProfileModal.jsx"; //Solo para probarlo
 
 export default function Topbar({ onToggleSidebar }) {
-    const { auth } = usePage().props;
+    const { auth, hasSpotify } = usePage().props;
     const user = auth.user;
 
     const [open, setOpen] = useState(false);
@@ -59,6 +60,7 @@ export default function Topbar({ onToggleSidebar }) {
                                 isOpen={modalOpen}
                                 onClose={() => setModalOpen(false)}
                                 user={user}
+                                hasSpotify={hasSpotify}
                             />
 
                             <Link
