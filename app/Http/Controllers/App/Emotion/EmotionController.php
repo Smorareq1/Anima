@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Log;
 
 class EmotionController extends Controller
 {
@@ -39,28 +40,36 @@ class EmotionController extends Controller
             'create_playlist' => 'nullable|boolean',
         ]);
 
-        $limit = (int) $request->input('limit', 12);
+        $limit  = (int) $request->input('limit', 12);
         $create = (bool) $request->input('create_playlist', false);
 
         // 1) Guardar imagen
         $path = $request->file('photo')->store('emotions', 'public');
         if (!$path) {
+            // Para Inertia, redirigimos con error
+            if ($request->header('X-Inertia')) {
+                return redirect()->back()->withErrors(['photo' => 'Error al guardar imagen'])->withInput();
+            }
             return response()->json(['error' => 'Error al guardar imagen'], 500);
         }
 
         try {
             // 2) Detectar emociones
-            $fullPath = \Storage::disk('public')->path($path);
+            $fullPath = Storage::disk('public')->path($path);
             $emotions = $rekognition->detectEmotion($fullPath, 3);
 
             if (empty($emotions)) {
                 \Storage::disk('public')->delete($path);
+
+                if ($request->header('X-Inertia')) {
+                    return redirect()->back()->withErrors(['photo' => 'No se detectaron emociones en la imagen'])->withInput();
+                }
                 return response()->json(['error' => 'No se detectaron emociones en la imagen'], 400);
             }
 
-            \Log::info('Emociones detectadas:', $emotions);
+            Log::info('Emociones detectadas:', $emotions);
 
-            // 3) NUEVO: usar método mejorado (con cache de pool + híbrido)
+            // 3) Recomendaciones multi-emoción (service mejorado)
             $recs = $spotify->recommendByEmotionsEnhanced(\Auth::user(), $emotions, $limit);
 
             // 4) Crear playlist si se solicitó y hay token de usuario
@@ -73,56 +82,46 @@ class EmotionController extends Controller
                 }
             }
 
-            return response()->json([
+            // Payload
+            $payload = [
                 'message'          => 'Análisis y recomendaciones generadas',
                 'emotions'         => $emotions,
+                'emotions_used'    => $recs['emotions_used'] ?? null, // ← NUEVO
                 'method_used'      => $recs['method'] ?? 'hybrid',
                 'emotion'          => $recs['emotion'] ?? null,
                 'confidence'       => $recs['confidence'] ?? null,
+                'market'           => $recs['market'] ?? config('services.spotify.default_market', 'US'), // ← NUEVO
                 'tracks'           => $recs['tracks'] ?? [],
                 'created_playlist' => $playlist ? [
                     'id'   => $playlist['id'],
                     'name' => $playlist['name'],
                     'url'  => $playlist['external_urls']['spotify'] ?? null,
                 ] : null,
-            ]);
+            ];
+
+            return response()->json($payload);
 
         } catch (\Throwable $e) {
-            \Log::error('Error completo en upload:', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+            Log::error('Error completo en upload:', [
+                'message'  => $e->getMessage(),
+                'trace'    => $e->getTraceAsString(),
                 'emotions' => $emotions ?? null,
             ]);
+
+            if ($request->header('X-Inertia')) {
+                return redirect()->back()->withErrors(['photo' => 'Error al procesar la solicitud: '.$e->getMessage()]);
+            }
 
             return response()->json([
                 'error' => 'Error al procesar la solicitud: ' . $e->getMessage()
             ], 500);
+
         } finally {
             // Limpiar imagen temporal
             if (isset($path)) {
-                \Storage::disk('public')->delete($path);
+                Storage::disk('public')->delete($path);
             }
         }
     }
 
-
-    public function testAPI(SpotifyService $spotify)
-    {
-        try {
-            $user = auth()->check() ? auth()->user() : null;
-            $results = $spotify->testSpotifyAPI($user);
-
-            return response()->json([
-                'success' => true,
-                'data' => $results
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ], 500);
-        }
-    }
 }

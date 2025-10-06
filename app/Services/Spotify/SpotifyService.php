@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use InvalidArgumentException;
 use Laravel\Socialite\Facades\Socialite;
 
 class SpotifyService
@@ -34,9 +35,6 @@ class SpotifyService
         ]);
     }
 
-    /**
-     * OAuth callback de Spotify: vincula o crea usuario y guarda tokens.
-     */
     public function handleCallback(): User
     {
         try {
@@ -105,11 +103,6 @@ class SpotifyService
             ->where('user_id', $user->id)
             ->first();
     }
-
-    /**
-     * Garantiza un token de usuario válido (refresca si es necesario).
-     * Devuelve null si no hay conexión/token.
-     */
     private function ensureUserToken(?ConnectedAccount $conn): ?string
     {
         if (!$conn || !$conn->token) {
@@ -170,8 +163,6 @@ class SpotifyService
             }
         });
     }
-
-    /** Token de app (client credentials) con cache. */
     private function appToken(): string
     {
         return Cache::remember('spotify:app_token', now()->addMinutes(50), function () {
@@ -226,7 +217,6 @@ class SpotifyService
             throw new \RuntimeException('Error al comunicarse con Spotify API: ' . $e->getMessage());
         }
     }
-
     /** Wrapper POST hacia la API de Spotify con manejo de errores. */
     private function apiPost(string $path, string $token, array $json = []): array
     {
@@ -256,173 +246,171 @@ class SpotifyService
     }
 
     /**
-     * *** Método principal mejorado ***
-     * Recomendaciones híbridas + audio features + scoring + diversificación + cache por emoción.
+     * *** Método principal MEJORADO con multi-emoción ***
+     * - Usa top-3 emociones ponderadas por confidence.
+     * - Cachea por firma (emociones + market).
+     * - Híbrido (categorías+search+top) con reparto por pesos.
+     * - Audio features scoring multi-emoción.
+     * - Diversificación y normalización.
      */
     public function recommendByEmotionsEnhanced(?User $user, array $emotions, int $limit = 12): array
     {
         if (empty($emotions)) {
-            throw new \InvalidArgumentException('Se requiere al menos una emoción');
+            throw new InvalidArgumentException('Se requiere al menos una emoción');
         }
 
         $connected = $user ? $this->connectionFor($user) : null;
         $userToken = $this->ensureUserToken($connected);
         $token     = $userToken ?: $this->appToken();
 
-        $mainEmotion = strtoupper($emotions[0]['type'] ?? 'HAPPY');
-        $market      = config('services.spotify.default_market', 'US');
+        // Puedes usar 'from_token' si hay userToken para que Spotify adapte país real del usuario
+        $market    = config('services.spotify.default_market', 'US');
 
-        // 1) pool cacheado por emoción
-        $cachedPool = $this->getCachedEmotionPool($mainEmotion);
+        // 1) Seleccionar top-3 emociones y normalizar pesos
+        $topEmotions     = $this->pickTopEmotions($emotions, 3);
+        $dominantEmotion = $topEmotions[0]['type'] ?? 'HAPPY';
+
+        // 2) Cache por firma (emociones + market)
+        $signature = $this->emotionSignature($topEmotions, $market);
+        $cachedPool = $this->getCachedEmotionPoolBySignature($signature);
 
         if ($cachedPool && count($cachedPool) >= $limit) {
-            Log::info('Using cached pool for emotion: ' . $mainEmotion);
+            Log::info('Using cached pool for signature: ' . $signature);
             shuffle($cachedPool);
             $tracks = array_slice($cachedPool, 0, $limit);
+            $method = 'cached';
         } else {
-            // 2) híbrido (categorías + search + tops)
-            $tracks = $this->getHybridRecommendations($token, $mainEmotion, $emotions, $market, $limit * 3);
+            // 3) Híbrido multi-emoción (categorías + search + top)
+            $budget = $limit * 3; // generar más y luego filtrar/ordenar
+            $all = [];
 
-            // 3) audio features match
-            $tracks = $this->filterByAudioFeatures($tracks, $mainEmotion, $token);
+            // 40% categorías ponderadas por pesos por emoción
+            $catLimit = (int) floor($budget * 0.4);
+            $all = array_merge($all, $this->getTracksFromCategoriesMulti($token, $topEmotions, $market, $catLimit));
 
-            // 4) scoring multicriterio
-            $tracks = $this->applyMultiCriteriaScoring($tracks, $mainEmotion);
+            // 40% búsqueda compuesta
+            $searchLimit = (int) floor($budget * 0.4);
+            $all = array_merge($all, $this->getTracksFromSearchMulti($token, $topEmotions, $market, $searchLimit));
 
-            // 5) cache pool
-            $this->cacheEmotionPool($mainEmotion, $tracks);
+            // 20% top (neutral)
+            $topLimit = max(1, $budget - $catLimit - $searchLimit);
+            $all = array_merge($all, $this->getTopTracks($token, $dominantEmotion, $market, $topLimit));
+
+            // Dedupe por track id
+            $seen = [];
+            $unique = [];
+            foreach ($all as $t) {
+                $id = $t['id'] ?? null;
+                if ($id && !isset($seen[$id])) {
+                    $unique[] = $t;
+                    $seen[$id] = true;
+                }
+            }
+
+            // 4) Audio features: score multi-emoción (promedio ponderado de coincidencias)
+            $ranked = $this->filterByAudioFeaturesMulti($unique, $topEmotions, $token);
+
+            // 5) Scoring multicriterio adicional (usamos la dominante para pesos prácticos)
+            $ranked = $this->applyMultiCriteriaScoring($ranked, $dominantEmotion);
+
+            // 6) Cachear pool por firma
+            $this->cacheEmotionPoolBySignature($signature, $ranked);
+
+            $tracks = $ranked;
+            $method = 'hybrid';
         }
 
-        // 6) diversificar artistas y dedupe
+        // 7) Diversificación artistas y corte al límite
         $tracks = $this->diversifyTracks($tracks, $limit);
+        $final  = array_slice($tracks, 0, $limit);
 
-        // 7) guardar historial (opcional/no bloqueante)
+        // 8) Historial (si existe tabla)
         if ($user) {
-            $this->saveUserEmotionHistory($user, $emotions, $tracks);
+            $this->saveUserEmotionHistory($user, $emotions, $final);
         }
 
         return [
-            'emotion'         => $mainEmotion,
-            'confidence'      => $emotions[0]['confidence'] ?? 0,
-            'tracks'          => $this->formatTracks(array_slice($tracks, 0, $limit)),
-            'method'          => $cachedPool ? 'cached' : 'hybrid',
-            'used_user_token' => (bool) $userToken,
+            'emotion'          => $dominantEmotion,
+            'confidence'       => $topEmotions[0]['confidence'] ?? 0,
+            'emotions_used'    => $topEmotions, // [{type, confidence, weight}]
+            'tracks'           => $this->formatTracks($final),
+            'method'           => $method,
+            'used_user_token'  => (bool) $userToken,
+            'market'           => $market,
         ];
     }
 
-    /**
-     * Sistema híbrido que combina múltiples fuentes.
-     */
-    private function getHybridRecommendations(string $token, string $emotion, array $emotions, string $market, int $limit): array
+    /* =========================
+     *   Multi-emoción helpers
+     * ========================= */
+
+    private function pickTopEmotions(array $emotions, int $k = 3): array
     {
-        $allTracks = [];
-        $sources   = [];
+        $norm = array_map(function ($e) {
+            return [
+                'type'       => strtoupper($e['type'] ?? 'HAPPY'),
+                'confidence' => (float) ($e['confidence'] ?? 0),
+            ];
+        }, $emotions);
 
-        // 40% categorías
-        try {
-            $categoryTracks = $this->getTracksFromCategories($token, $emotion, $market, (int) ($limit * 0.4));
-            $allTracks      = array_merge($allTracks, $categoryTracks);
-            $sources[]      = 'categories';
-        } catch (\Exception $e) {
-            Log::warning('Could not get tracks from categories: ' . $e->getMessage());
+        usort($norm, fn($a, $b) => $b['confidence'] <=> $a['confidence']);
+        $top = array_slice($norm, 0, $k);
+
+        $sum = array_sum(array_column($top, 'confidence')) ?: 1.0;
+        foreach ($top as &$t) {
+            $t['weight'] = ($t['confidence'] > 0) ? ($t['confidence'] / $sum) : (1.0 / max(1, count($top)));
+        }
+        return $top;
+    }
+    private function emotionSignature(array $topEmotions, string $market): string
+    {
+        $parts = array_map(fn($e) => strtoupper($e['type']), $topEmotions);
+        sort($parts);
+        return implode('-', $parts) . ':' . strtoupper($market);
+    }
+    private function getCompositeSearchTerms(array $topEmotions, int $maxTerms): array
+    {
+        $lists = [];
+        foreach ($topEmotions as $e) {
+            $terms = $this->getEnhancedSearchTerms($e['type']);
+            $lists[] = array_values($terms);
         }
 
-        // 40% search
-        try {
-            $searchTracks = $this->getTracksFromSearch($token, $emotion, $market, (int) ($limit * 0.4));
-            $allTracks    = array_merge($allTracks, $searchTracks);
-            $sources[]    = 'search';
-        } catch (\Exception $e) {
-            Log::warning('Could not get tracks from search: ' . $e->getMessage());
-        }
-
-        // 20% top
-        try {
-            $topTracks  = $this->getTopTracks($token, $emotion, $market, (int) ($limit * 0.2));
-            $allTracks  = array_merge($allTracks, $topTracks);
-            $sources[]  = 'top';
-        } catch (\Exception $e) {
-            Log::warning('Could not get top tracks: ' . $e->getMessage());
-        }
-
-        Log::info('Hybrid recommendations sources used: ' . implode(', ', $sources));
-
-        // dedupe por id
-        $unique   = [];
-        $seenIds  = [];
-        foreach ($allTracks as $t) {
-            $id = $t['id'] ?? null;
-            if ($id && !isset($seenIds[$id])) {
-                $unique[]       = $t;
-                $seenIds[$id]   = true;
+        $out = [];
+        for ($i = 0; $i < $maxTerms; $i++) {
+            foreach ($lists as $list) {
+                if (isset($list[$i])) $out[] = $list[$i];
             }
         }
-
-        return $unique;
+        return array_values(array_unique($out));
     }
 
-    /**
-     * Tracks desde categorías relevantes (elige playlists al azar dentro de cada categoría).
-     */
-    private function getTracksFromCategories(string $token, string $emotion, string $market, int $limit): array
+    /* ===============================
+     *   Híbrido multi-emoción
+     * =============================== */
+
+    /** Categorías multi: reparte el budget según weights de las emociones */
+    private function getTracksFromCategoriesMulti(string $token, array $topEmotions, string $market, int $limit): array
     {
-        $categoryMap = [
-            'HAPPY'     => ['party', 'pop', 'dance', 'latin', 'summer'],
-            'SAD'       => ['chill', 'indie', 'acoustic', 'rainy_day', 'soul'],
-            'CALM'      => ['focus', 'sleep', 'wellness', 'jazz', 'classical'],
-            'ANGRY'     => ['workout', 'rock', 'metal', 'hiphop', 'edm'],
-            'SURPRISED' => ['pop', 'trending', 'viral', 'dance', 'party'],
-            'CONFUSED'  => ['alternative', 'indie', 'chill', 'focus'],
-            'DISGUSTED' => ['rock', 'metal', 'punk', 'alternative'],
-            'FEAR'      => ['soundtrack', 'classical', 'ambient', 'chill'],
-        ];
+        $out = [];
+        $remaining = $limit;
 
-        $categories = $categoryMap[strtoupper($emotion)] ?? $categoryMap['HAPPY'];
-        $tracks     = [];
+        foreach ($topEmotions as $idx => $e) {
+            $share = $e['weight'] ?? (1 / max(1, count($topEmotions)));
+            $budget = ($idx === array_key_last($topEmotions))
+                ? $remaining
+                : max(1, (int) round($limit * $share));
+            $remaining -= $budget;
 
-        foreach ($categories as $categoryId) {
-            if (count($tracks) >= $limit) break;
-
-            try {
-                $response = $this->apiGet("browse/categories/{$categoryId}/playlists", $token, [
-                    'country' => $market,
-                    'limit'   => 5,
-                ]);
-
-                $playlists = $response['playlists']['items'] ?? [];
-                if (empty($playlists)) continue;
-
-                $playlist = $playlists[array_rand($playlists)];
-
-                $tracksResponse = $this->apiGet("playlists/{$playlist['id']}/tracks", $token, [
-                    'market' => $market,
-                    'limit'  => 20,
-                    'offset' => random_int(0, 50),
-                ]);
-
-                $items = $tracksResponse['items'] ?? [];
-                foreach ($items as $item) {
-                    if (!empty($item['track'])) {
-                        $tracks[] = $item['track'];
-                        if (count($tracks) >= $limit) break;
-                    }
-                }
-
-            } catch (\Exception $e) {
-                Log::debug("Could not get category {$categoryId}: " . $e->getMessage());
-                continue;
-            }
+            $out = array_merge($out, $this->getTracksFromCategories($token, $e['type'], $market, $budget));
         }
-
-        return $tracks;
+        return $out;
     }
 
-    /**
-     * Búsqueda (Search API) con términos mejorados.
-     */
-    private function getTracksFromSearch(string $token, string $emotion, string $market, int $limit): array
+    /** Search multi: usa términos compuestos (mezcla round-robin) */
+    private function getTracksFromSearchMulti(string $token, array $topEmotions, string $market, int $limit): array
     {
-        $terms  = $this->getEnhancedSearchTerms($emotion);
+        $terms  = $this->getCompositeSearchTerms($topEmotions, 12);
         $tracks = [];
 
         foreach ($terms as $term) {
@@ -454,6 +442,7 @@ class SpotifyService
 
     /**
      * Top tracks vía playlist “Top 50 Global” (simple y robusto).
+     * (Se deja como apoyo neutro; si quieres, puedes hacer variantes por emoción).
      */
     private function getTopTracks(string $token, string $emotion, string $market, int $limit): array
     {
@@ -489,10 +478,14 @@ class SpotifyService
         }
     }
 
+    /* ==========================================
+     *   Audio features: score multi-emoción
+     * ========================================== */
+
     /**
-     * Filtrado/orden por audio features contra rangos por emoción.
+     * Ordena por score promedio ponderado de coincidencia a los rangos de las emociones seleccionadas.
      */
-    private function filterByAudioFeatures(array $tracks, string $emotion, string $token): array
+    private function filterByAudioFeaturesMulti(array $tracks, array $topEmotions, string $token): array
     {
         if (empty($tracks)) return [];
 
@@ -512,28 +505,42 @@ class SpotifyService
                 }
             }
 
-            $ranges = $this->getEmotionAudioRanges($emotion);
-            $scored = [];
+            // Precalcular rangos por emoción
+            $rangesByEmotion = [];
+            foreach ($topEmotions as $e) {
+                $rangesByEmotion[$e['type']] = $this->getEmotionAudioRanges($e['type']);
+            }
 
+            $scored = [];
             foreach ($tracks as $t) {
                 $id = $t['id'] ?? null;
                 if (!$id || !isset($allFeatures[$id])) {
+                    // sin features => score neutro
                     $scored[] = ['track' => $t, 'score' => 0.5];
                     continue;
                 }
 
                 $features = $allFeatures[$id];
-                $score    = $this->calculateEmotionMatchScore($features, $ranges);
 
-                $scored[] = [
-                    'track'    => $t,
-                    'score'    => $score,
-                    'features' => $features,
-                ];
+                // promedio ponderado de score por emoción
+                $weighted = 0.0;
+                $wSum = 0.0;
+                foreach ($topEmotions as $e) {
+                    $w = (float) ($e['weight'] ?? 0);
+                    $ranges = $rangesByEmotion[$e['type']] ?? null;
+                    if ($w <= 0 || !$ranges) continue;
+
+                    $s = $this->calculateEmotionMatchScore($features, $ranges);
+                    $weighted += $w * $s;
+                    $wSum += $w;
+                }
+                $finalScore = ($wSum > 0) ? ($weighted / $wSum) : 0.5;
+
+                $scored[] = ['track' => $t, 'score' => $finalScore, 'features' => $features];
             }
 
-            usort($scored, fn ($a, $b) => $b['score'] <=> $a['score']);
-            return array_map(fn ($x) => $x['track'], $scored);
+            usort($scored, fn($a, $b) => $b['score'] <=> $a['score']);
+            return array_map(fn($x) => $x['track'], $scored);
 
         } catch (\Exception $e) {
             Log::warning('Could not get audio features: ' . $e->getMessage());
@@ -618,6 +625,7 @@ class SpotifyService
 
     /**
      * Scoring multicriterio adicional: popularidad, recencia, preview_url y explícito.
+     * Se sigue ponderando con la emoción dominante (simple y efectivo).
      */
     private function applyMultiCriteriaScoring(array $tracks, string $emotion): array
     {
@@ -646,7 +654,7 @@ class SpotifyService
                 'SAD', 'CALM' => 0.20, default => 0.25
             };
             $previewWeight = 0.10;
-            $explicitPenalty = 0.10; // pon 0 si no quieres penalizar
+            $explicitPenalty = 0.10;
 
             $score = 0.0;
             $score += $popWeight     * ($pop / 100.0);
@@ -713,30 +721,91 @@ class SpotifyService
         return $picked;
     }
 
-    /**
-     * Cache de pool por emoción (para variety/latencia).
-     */
-    private function getCachedEmotionPool(string $emotion): ?array
+    /* ======================
+     *   Cache por firma
+     * ====================== */
+
+    private function getCachedEmotionPoolBySignature(string $signature): ?array
     {
-        $key  = "spotify:emotion_pool:" . strtoupper($emotion);
+        $key  = "spotify:emotion_pool:" . $signature;
         $pool = Cache::get($key);
         return is_array($pool) ? $pool : null;
     }
 
-    private function cacheEmotionPool(string $emotion, array $tracks, int $ttlMinutes = 180): void
+    private function cacheEmotionPoolBySignature(string $signature, array $tracks, int $ttlMinutes = 180): void
     {
         $unique = [];
         $seen   = [];
         foreach ($tracks as $t) {
             $id = $t['id'] ?? null;
             if ($id && !isset($seen[$id])) {
-                $unique[]     = $t;
-                $seen[$id]    = true;
+                $unique[]  = $t;
+                $seen[$id] = true;
                 if (count($unique) >= 300) break;
             }
         }
-        $key = "spotify:emotion_pool:" . strtoupper($emotion);
+        $key = "spotify:emotion_pool:" . $signature;
         Cache::put($key, $unique, now()->addMinutes($ttlMinutes));
+    }
+
+    /* ==============================
+     *   Utilidades ya existentes
+     * ============================== */
+
+    /**
+     * Tracks desde categorías relevantes (elige playlists al azar dentro de cada categoría).
+     */
+    private function getTracksFromCategories(string $token, string $emotion, string $market, int $limit): array
+    {
+        $categoryMap = [
+            'HAPPY'     => ['party', 'pop', 'dance', 'latin', 'summer'],
+            'SAD'       => ['chill', 'indie', 'acoustic', 'rainy_day', 'soul'],
+            'CALM'      => ['focus', 'sleep', 'wellness', 'jazz', 'classical'],
+            'ANGRY'     => ['workout', 'rock', 'metal', 'hiphop', 'edm'],
+            'SURPRISED' => ['pop', 'trending', 'viral', 'dance', 'party'],
+            'CONFUSED'  => ['alternative', 'indie', 'chill', 'focus'],
+            'DISGUSTED' => ['rock', 'metal', 'punk', 'alternative'],
+            'FEAR'      => ['soundtrack', 'classical', 'ambient', 'chill'],
+        ];
+
+        $categories = $categoryMap[strtoupper($emotion)] ?? $categoryMap['HAPPY'];
+        $tracks     = [];
+
+        foreach ($categories as $categoryId) {
+            if (count($tracks) >= $limit) break;
+
+            try {
+                $response = $this->apiGet("browse/categories/{$categoryId}/playlists", $token, [
+                    'country' => $market,
+                    'limit'   => 5,
+                ]);
+
+                $playlists = $response['playlists']['items'] ?? [];
+                if (empty($playlists)) continue;
+
+                $playlist = $playlists[array_rand($playlists)];
+
+                $tracksResponse = $this->apiGet("playlists/{$playlist['id']}/tracks", $token, [
+                    'market' => $market,
+                    'limit'  => 20,
+                    'offset' => random_int(0, 50),
+                ]);
+
+                $items = $tracksResponse['items'] ?? [];
+                foreach ($items as $item) {
+                    if (!empty($item['track'])) {
+                        $tracks[] = $item['track'];
+                        if (count($tracks) >= $limit) break;
+                    }
+                }
+
+            } catch (\Exception $e) {
+                Log::debug("Could not get category {$categoryId}: " . $e->getMessage());
+                continue;
+            }
+        }
+
+        return $tracks;
     }
 
     /**
