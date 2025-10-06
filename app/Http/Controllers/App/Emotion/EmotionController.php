@@ -36,14 +36,16 @@ class EmotionController extends Controller
 
         $path = $request->file('photo')->store('emotions', 'public');
         $fullPath = Storage::disk('public')->path($path);
-        $emotion = $this->rekognition->detectEmotion($fullPath);
+        $emotions = $this->rekognition->detectEmotion($fullPath, 3); //Limite de emociones
+        $mainEmotion = $emotions[0]['type'] ?? 'UNKNOWN';
 
-        // Storage::disk('public')->delete($path);
+        Storage::disk('public')->delete($path);
 
         return response()->json([
             'message' => 'Archivo recibido y analizado correctamente',
             'path' => $path,
-            'emotion' => $emotion,
+            'main_emotion' => $mainEmotion,
+            'emotions' => $emotions,
         ]);
     }
 }

@@ -17,7 +17,7 @@ class RekognitionService
         ]);
     }
 
-    public function detectEmotion($imagePath)
+    public function detectEmotion($imagePath, $limit)
     {
         $bytes = file_get_contents($imagePath);
 
@@ -30,6 +30,13 @@ class RekognitionService
 
         usort($emotions, fn($a, $b) => $b['Confidence'] <=> $a['Confidence']);
 
-        return $emotions[0]['Type'] ?? 'UNKNOWN';
+        //Limitar cantidad
+        $topEmotions = array_slice($emotions, 0, $limit);
+
+        // Devolver formato simplificado
+        return array_map(fn($e) => [
+            'type' => $e['Type'],
+            'confidence' => round($e['Confidence'], 2)
+        ], $topEmotions);
     }
 }
