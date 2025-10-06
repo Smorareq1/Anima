@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/first-upload', [EmotionController::class, 'firstTime'])->name('first.upload');
     Route::get('/recommend', [EmotionController::class, 'recommend'])->name('recommend');
-    Route::post('/emotion/upload', [EmotionController::class, 'upload'])->name('emotion.upload');
     Route::get('/records', [RecordController::class, 'index'])->name('Record');
+
+    Route::prefix('emotion')->name('emotion.')->group(function () {
+        Route::post('/emotion/upload', [EmotionController::class, 'upload'])->name('upload');
+    });
 });

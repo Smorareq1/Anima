@@ -3,11 +3,21 @@
 namespace App\Http\Controllers\App\Emotion;
 
 use App\Http\Controllers\Controller;
+use App\Services\amazon\RekognitionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class EmotionController extends Controller
 {
+
+    protected $rekognition;
+
+    public function __construct(RekognitionService $rekognition)
+    {
+        $this->rekognition = $rekognition;
+    }
+
     public function firstTime()
     {
         return Inertia::render('FirstTimeUpload');
@@ -25,10 +35,15 @@ class EmotionController extends Controller
         ]);
 
         $path = $request->file('photo')->store('emotions', 'public');
+        $fullPath = Storage::disk('public')->path($path);
+        $emotion = $this->rekognition->detectEmotion($fullPath);
+
+        // Storage::disk('public')->delete($path);
 
         return response()->json([
-            'message' => 'Archivo recibido correctamente',
+            'message' => 'Archivo recibido y analizado correctamente',
             'path' => $path,
+            'emotion' => $emotion,
         ]);
     }
 }
