@@ -8,12 +8,16 @@ use App\Services\Spotify\SpotifyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
+use App\Services\amazon\RekognitionService;
+
 
 class SpotifyController extends Controller
 {
+
     public function redirect(Request $request)
     {
         Log::info('Redirecting to Spotify');
@@ -24,11 +28,10 @@ class SpotifyController extends Controller
         session(['spotify.mode' => $mode]);
 
         return Socialite::driver('spotify')
-            ->scopes(['user-read-email'])
+            ->scopes(config('services.spotify.scopes'))
             ->redirectUrl(config('services.spotify.redirect'))
             ->redirect();
     }
-
 
     public function callback(Request $request, SpotifyService $service)
     {
@@ -43,5 +46,4 @@ class SpotifyController extends Controller
 
         return redirect()->intended(route('Dashboard'));
     }
-
 }

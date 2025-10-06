@@ -4,6 +4,7 @@ use App\Http\Controllers\App\home\HomeController;
 use App\Http\Controllers\App\register\RegisterController;
 use App\Http\Controllers\App\login\LoginController;
 use App\Http\Controllers\App\Spotify\SpotifyController;
+use App\Services\Spotify\SpotifyService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\App\Emotion\EmotionController;
 use App\Http\Controllers\App\dashboard\DashboardController;
@@ -38,5 +39,28 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('emotion')->name('emotion.')->group(function () {
         Route::post('/emotion/upload', [EmotionController::class, 'upload'])->name('upload');
+        Route::get('/emotion/test-api', [EmotionController::class, 'testAPI'])->name('test.api');
     });
 });
+
+Route::get('/spotify-test-public', function (SpotifyService $spotify) {
+    try {
+        $results = $spotify->testSpotifyAPI(null);
+        return response()->json($results);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+});
+
+Route::get('/test-basic', function () {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'Routes are working',
+        'timestamp' => now()->toISOString()
+    ]);
+});
+
