@@ -39,6 +39,9 @@ return [
         'client_id' => env('SPOTIFY_CLIENT_ID'),
         'client_secret' => env('SPOTIFY_CLIENT_SECRET'),
         'redirect' => env('SPOTIFY_REDIRECT_URI'),
+        'base_uri' => 'https://api.spotify.com/v1/',
+        'accounts_uri' => 'https://accounts.spotify.com/api/',
+        'default_market' => env('SPOTIFY_DEFAULT_MARKET'),
     ],
 
 ];
