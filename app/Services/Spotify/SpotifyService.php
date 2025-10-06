@@ -1,5 +1,6 @@
 <?php
 // app/Services/Spotify/SpotifyService.php
+
 namespace App\Services\Spotify;
 
 use App\Models\User;
@@ -8,10 +9,11 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 use Laravel\Socialite\Facades\Socialite;
 
 class SpotifyService
@@ -22,15 +24,19 @@ class SpotifyService
     public function __construct()
     {
         $this->api = new Client([
-            'base_uri' => config('services.spotify.base_uri'),
-            'timeout' => 10,
+            'base_uri' => rtrim((string) config('services.spotify.base_uri'), '/') . '/',
+            'timeout'  => 10,
         ]);
+
         $this->accounts = new Client([
-            'base_uri' => config('services.spotify.accounts_uri'),
-            'timeout' => 10,
+            'base_uri' => rtrim((string) config('services.spotify.accounts_uri'), '/') . '/',
+            'timeout'  => 10,
         ]);
     }
 
+    /**
+     * OAuth callback de Spotify: vincula o crea usuario y guarda tokens.
+     */
     public function handleCallback(): User
     {
         try {
@@ -52,10 +58,10 @@ class SpotifyService
             } elseif ($existing && $existing->user) {
                 $user = $existing->user;
             } else {
-                $email = $spotifyUser->getEmail();
+                $email    = $spotifyUser->getEmail();
                 $username = $spotifyUser->getName() ?: 'Spotify User';
-                $avatar = $spotifyUser->getAvatar();
-                $pwd = bcrypt(Str::random(40));
+                $avatar   = $spotifyUser->getAvatar();
+                $pwd      = bcrypt(Str::random(40));
 
                 $user = User::firstOrCreate(
                     ['email' => $email ?? 'spotify_'.$spotifyUser->getId().'@example.invalid'],
@@ -79,9 +85,9 @@ class SpotifyService
                 'provider_id' => $spotifyUser->getId(),
             ]);
 
-            $connected->token = $spotifyUser->token ?? null;
+            $connected->token         = $spotifyUser->token ?? null;
             $connected->refresh_token = $spotifyUser->refreshToken ?? null;
-            $connected->expires_at = !empty($spotifyUser->expiresIn)
+            $connected->expires_at    = !empty($spotifyUser->expiresIn)
                 ? now()->addSeconds((int) $spotifyUser->expiresIn)
                 : null;
 
@@ -92,7 +98,7 @@ class SpotifyService
         });
     }
 
-    /** Obtiene la cuenta conectada a Spotify (si existe) */
+    /** Obtiene la cuenta conectada de Spotify para el usuario (si existe). */
     private function connectionFor(User $user): ?ConnectedAccount
     {
         return ConnectedAccount::where('provider', 'spotify')
@@ -100,13 +106,17 @@ class SpotifyService
             ->first();
     }
 
+    /**
+     * Garantiza un token de usuario válido (refresca si es necesario).
+     * Devuelve null si no hay conexión/token.
+     */
     private function ensureUserToken(?ConnectedAccount $conn): ?string
     {
         if (!$conn || !$conn->token) {
             return null;
         }
 
-        // Si el token aún es válido (con 5 min de margen)
+        // Token con 5 minutos de margen
         if ($conn->expires_at && Carbon::parse($conn->expires_at)->subMinutes(5)->isFuture()) {
             return $conn->token;
         }
@@ -116,11 +126,9 @@ class SpotifyService
             return $conn->token;
         }
 
-        // Lock para evitar múltiples refreshes concurrentes
         $lockKey = "spotify:refresh:{$conn->id}";
 
         return Cache::lock($lockKey, 10)->get(function () use ($conn) {
-            // Re-verificar por si otro proceso ya actualizó el token
             $conn->refresh();
             if ($conn->expires_at && Carbon::parse($conn->expires_at)->subMinutes(5)->isFuture()) {
                 return $conn->token;
@@ -139,11 +147,11 @@ class SpotifyService
                     ],
                 ]);
 
-                $data = json_decode((string)$resp->getBody(), true);
+                $data = json_decode((string) $resp->getBody(), true);
 
                 $conn->token = $data['access_token'] ?? $conn->token;
                 if (!empty($data['expires_in'])) {
-                    $conn->expires_at = now()->addSeconds((int)$data['expires_in']);
+                    $conn->expires_at = now()->addSeconds((int) $data['expires_in']);
                 }
                 if (!empty($data['refresh_token'])) {
                     $conn->refresh_token = $data['refresh_token'];
@@ -155,17 +163,18 @@ class SpotifyService
             } catch (RequestException $e) {
                 Log::error('Failed to refresh Spotify token', [
                     'user_id' => $conn->user_id,
-                    'status' => $e->getCode(),
-                    'error' => $e->getMessage()
+                    'status'  => $e->getCode(),
+                    'error'   => $e->getMessage()
                 ]);
-                return $conn->token; // Devolver el token expirado como fallback
+                return $conn->token; // fallback
             }
         });
     }
 
+    /** Token de app (client credentials) con cache. */
     private function appToken(): string
     {
-        return Cache::remember('spotify:app_token', now()->addMinutes(50), function() {
+        return Cache::remember('spotify:app_token', now()->addMinutes(50), function () {
             try {
                 $resp = $this->accounts->post('token', [
                     'form_params' => ['grant_type' => 'client_credentials'],
@@ -175,7 +184,7 @@ class SpotifyService
                             ),
                     ],
                 ]);
-                $data = json_decode((string)$resp->getBody(), true);
+                $data = json_decode((string) $resp->getBody(), true);
 
                 if (empty($data['access_token'])) {
                     throw new \RuntimeException('No access token received from Spotify');
@@ -186,30 +195,30 @@ class SpotifyService
             } catch (RequestException $e) {
                 Log::error('Failed to get Spotify app token', [
                     'status' => $e->getCode(),
-                    'error' => $e->getMessage()
+                    'error'  => $e->getMessage()
                 ]);
                 throw new \RuntimeException('Error al obtener token de aplicación de Spotify');
             }
         });
     }
 
-    private function apiGet(string $path, string $token, array $query = [])
+    /** Wrapper GET hacia la API de Spotify con manejo de errores. */
+    private function apiGet(string $path, string $token, array $query = []): array
     {
         try {
             $res = $this->api->get(ltrim($path, '/'), [
                 'headers' => ['Authorization' => "Bearer {$token}"],
                 'query'   => $query,
             ]);
-            return json_decode((string)$res->getBody(), true);
+            return json_decode((string) $res->getBody(), true) ?? [];
 
         } catch (RequestException $e) {
             Log::error("Spotify API GET error: {$path}", [
-                'status' => $e->getCode(),
+                'status'  => $e->getCode(),
                 'message' => $e->getMessage(),
-                'query' => $query
+                'query'   => $query
             ]);
 
-            // Si es 401, el token probablemente expiró
             if ($e->getCode() === 401) {
                 throw new \RuntimeException('Token de Spotify expirado o inválido');
             }
@@ -218,7 +227,8 @@ class SpotifyService
         }
     }
 
-    private function apiPost(string $path, string $token, array $json = [])
+    /** Wrapper POST hacia la API de Spotify con manejo de errores. */
+    private function apiPost(string $path, string $token, array $json = []): array
     {
         try {
             $res = $this->api->post(ltrim($path, '/'), [
@@ -228,13 +238,13 @@ class SpotifyService
                 ],
                 'json' => $json,
             ]);
-            return json_decode((string)$res->getBody(), true);
+            return json_decode((string) $res->getBody(), true) ?? [];
 
         } catch (RequestException $e) {
             Log::error("Spotify API POST error: {$path}", [
-                'status' => $e->getCode(),
+                'status'  => $e->getCode(),
                 'message' => $e->getMessage(),
-                'body' => $json
+                'body'    => $json
             ]);
 
             if ($e->getCode() === 401) {
@@ -245,165 +255,11 @@ class SpotifyService
         }
     }
 
-    private function availableGenreSeeds(string $token): array
-    {
-        return Cache::remember('spotify:available_genres', now()->addDays(7), function() use ($token) {
-            try {
-                $data = $this->apiGet('recommendations/available-genre-seeds', $token);
-                return $data['genres'] ?? [];
-            } catch (\Exception $e) {
-                // Fallback: usar lista hardcodeada si el endpoint falla
-                Log::warning('Failed to fetch Spotify genres, using fallback list', [
-                    'error' => $e->getMessage()
-                ]);
-                return $this->getFallbackGenres();
-            }
-        });
-    }
-
-    private function getFallbackGenres(): array
-    {
-        return [
-            'acoustic', 'afrobeat', 'alt-rock', 'alternative', 'ambient', 'anime',
-            'black-metal', 'bluegrass', 'blues', 'bossanova', 'brazil', 'breakbeat',
-            'british', 'cantopop', 'chicago-house', 'children', 'chill', 'classical',
-            'club', 'comedy', 'country', 'dance', 'dancehall', 'death-metal', 'deep-house',
-            'detroit-techno', 'disco', 'disney', 'drum-and-bass', 'dub', 'dubstep',
-            'edm', 'electro', 'electronic', 'emo', 'folk', 'forro', 'french', 'funk',
-            'garage', 'german', 'gospel', 'goth', 'grindcore', 'groove', 'grunge',
-            'guitar', 'happy', 'hard-rock', 'hardcore', 'hardstyle', 'heavy-metal',
-            'hip-hop', 'holidays', 'honky-tonk', 'house', 'idm', 'indian', 'indie',
-            'indie-pop', 'industrial', 'iranian', 'j-dance', 'j-idol', 'j-pop', 'j-rock',
-            'jazz', 'k-pop', 'kids', 'latin', 'latino', 'malay', 'mandopop', 'metal',
-            'metal-misc', 'metalcore', 'minimal-techno', 'movies', 'mpb', 'new-age',
-            'new-release', 'opera', 'pagode', 'party', 'philippines-opm', 'piano',
-            'pop', 'pop-film', 'post-dubstep', 'power-pop', 'progressive-house', 'psych-rock',
-            'punk', 'punk-rock', 'r-n-b', 'rainy-day', 'reggae', 'reggaeton', 'road-trip',
-            'rock', 'rock-n-roll', 'rockabilly', 'romance', 'sad', 'salsa', 'samba',
-            'sertanejo', 'show-tunes', 'singer-songwriter', 'ska', 'sleep', 'songwriter',
-            'soul', 'soundtracks', 'spanish', 'study', 'summer', 'swedish', 'synth-pop',
-            'tango', 'techno', 'trance', 'trip-hop', 'turkish', 'work-out', 'world-music'
-        ];
-    }
-
-    private function genresForEmotions(array $emotions, int $max = 3): array
-    {
-        // DEBUG: Ver las emociones de entrada
-        \Log::info('genresForEmotions - Input:', [
-            'emotions' => $emotions,
-            'max' => $max
-        ]);
-
-        $map = [
-            'HAPPY'     => ['pop', 'dance', 'latin', 'edm', 'happy'],
-            'SAD'       => ['acoustic', 'indie', 'folk', 'sad', 'piano'],
-            'CALM'      => ['chill', 'ambient', 'jazz', 'study', 'sleep'],
-            'ANGRY'     => ['rock', 'metal', 'punk', 'hard-rock', 'hardcore'],
-            'SURPRISED' => ['electronic', 'house', 'indie-pop', 'club', 'electro'],
-            'CONFUSED'  => ['alt-rock', 'indie', 'trip-hop', 'electronic', 'alternative'],
-            'DISGUSTED' => ['industrial', 'grunge', 'alternative', 'metal'],
-            'FEAR'      => ['goth', 'emo', 'industrial', 'metal'],
-        ];
-
-        $desired = [];
-        foreach ($emotions as $e) {
-            $type = strtoupper($e['type'] ?? '');
-
-            // DEBUG: Ver qué tipo de emoción estamos procesando
-            \Log::info('genresForEmotions - Processing emotion:', [
-                'type' => $type,
-                'has_mapping' => isset($map[$type])
-            ]);
-
-            if (isset($map[$type])) {
-                $desired = array_merge($desired, $map[$type]);
-            }
-        }
-
-        $desired = array_values(array_unique($desired));
-
-        // DEBUG: Ver géneros deseados antes del filtrado
-        \Log::info('genresForEmotions - Desired genres before filtering:', $desired);
-
-        if (empty($desired)) {
-            \Log::warning('genresForEmotions - No genres found for emotions, using fallback');
-            $desired = ['pop', 'rock', 'indie'];
-        }
-
-        // Usar lista hardcodeada en lugar de llamar a la API
-        $available = $this->getFallbackGenres();
-        $filtered = array_values(array_intersect($desired, $available));
-
-        // DEBUG: Ver géneros después del filtrado
-        \Log::info('genresForEmotions - After filtering with available:', [
-            'filtered' => $filtered,
-            'available_count' => count($available)
-        ]);
-
-        if (empty($filtered)) {
-            \Log::warning('genresForEmotions - No valid genres after filtering, using safe fallback');
-            $filtered = ['pop', 'rock', 'jazz'];
-        }
-
-        shuffle($filtered);
-        $result = array_slice($filtered, 0, max(1, min($max, count($filtered))));
-
-        // DEBUG: Ver resultado final
-        \Log::info('genresForEmotions - Final result:', $result);
-
-        return $result;
-    }
-
-    private function randomFeaturesFor(string $mainEmotion): array
-    {
-        $r = fn($min, $max) => (float) number_format($min + lcg_value() * ($max - $min), 2);
-
-        return match(strtoupper($mainEmotion)) {
-            'HAPPY'     => [
-                'target_valence' => $r(0.7, 0.95),
-                'min_energy' => 0.5,
-                'min_danceability' => 0.5
-            ],
-            'SAD'       => [
-                'target_valence' => $r(0.2, 0.45),
-                'max_energy' => 0.5,
-                'max_tempo' => 110,
-                'target_acousticness' => $r(0.5, 0.9)
-            ],
-            'CALM'      => [
-                'target_valence' => $r(0.4, 0.7),
-                'max_energy' => 0.5,
-                'max_danceability' => 0.6,
-                'max_tempo' => 115,
-                'min_acousticness' => 0.3
-            ],
-            'ANGRY'     => [
-                'target_valence' => $r(0.3, 0.6),
-                'min_energy' => 0.7,
-                'min_tempo' => 110,
-                'min_loudness' => -8
-            ],
-            'SURPRISED' => [
-                'target_valence' => $r(0.5, 0.8),
-                'min_energy' => 0.6,
-                'min_danceability' => 0.5
-            ],
-            'CONFUSED'  => [
-                'target_valence' => $r(0.4, 0.6),
-                'target_energy' => $r(0.4, 0.6)
-            ],
-            default     => [
-                'target_valence' => $r(0.45, 0.7),
-                'target_energy' => $r(0.4, 0.7)
-            ]
-        };
-    }
-
     /**
-     * Recomendaciones variadas, evitando repetidos (con intentos múltiples).
+     * *** Método principal mejorado ***
+     * Recomendaciones híbridas + audio features + scoring + diversificación + cache por emoción.
      */
-
-    public function recommendByEmotionsAlternative(?User $user, array $emotions, int $limit = 12, string $recentKey = null): array
+    public function recommendByEmotionsEnhanced(?User $user, array $emotions, int $limit = 12): array
     {
         if (empty($emotions)) {
             throw new \InvalidArgumentException('Se requiere al menos una emoción');
@@ -411,228 +267,558 @@ class SpotifyService
 
         $connected = $user ? $this->connectionFor($user) : null;
         $userToken = $this->ensureUserToken($connected);
-        $token = $userToken ?: $this->appToken();
-
-        $market = config('services.spotify.default_market', 'US');
-
-        // Set de exclusión de recientes
-        $recentKey = $recentKey ?: 'spotify:recent:' . ($user?->id ?? 'anon_' . session()->getId());
-        $recentIds = Cache::get($recentKey, []);
+        $token     = $userToken ?: $this->appToken();
 
         $mainEmotion = strtoupper($emotions[0]['type'] ?? 'HAPPY');
+        $market      = config('services.spotify.default_market', 'US');
 
-        // Mapeo de emociones a términos de búsqueda
-        $searchTerms = $this->getSearchTermsForEmotion($mainEmotion);
+        // 1) pool cacheado por emoción
+        $cachedPool = $this->getCachedEmotionPool($mainEmotion);
 
-        $collected = [];
-        $seen = [];
-        $attempts = 0;
-        $maxAttempts = 5;
+        if ($cachedPool && count($cachedPool) >= $limit) {
+            Log::info('Using cached pool for emotion: ' . $mainEmotion);
+            shuffle($cachedPool);
+            $tracks = array_slice($cachedPool, 0, $limit);
+        } else {
+            // 2) híbrido (categorías + search + tops)
+            $tracks = $this->getHybridRecommendations($token, $mainEmotion, $emotions, $market, $limit * 3);
 
-        while (count($collected) < $limit && $attempts < $maxAttempts) {
-            $attempts++;
+            // 3) audio features match
+            $tracks = $this->filterByAudioFeatures($tracks, $mainEmotion, $token);
 
-            try {
-                // Usar la API de búsqueda en lugar de recommendations
-                $searchQuery = $this->buildSearchQuery($searchTerms, $attempts);
+            // 4) scoring multicriterio
+            $tracks = $this->applyMultiCriteriaScoring($tracks, $mainEmotion);
 
-                \Log::info("Spotify search attempt {$attempts}:", [
-                    'query' => $searchQuery,
-                    'emotion' => $mainEmotion
-                ]);
-
-                // Usar el endpoint de búsqueda que SÍ funciona
-                $response = $this->apiGet('search', $token, [
-                    'q' => $searchQuery,
-                    'type' => 'track',
-                    'market' => $market,
-                    'limit' => 50,
-                    'offset' => random_int(0, 100) // Para obtener resultados variados
-                ]);
-
-                $tracks = $response['tracks']['items'] ?? [];
-
-                if (empty($tracks)) {
-                    \Log::warning("No tracks returned in attempt {$attempts}");
-                    continue;
-                }
-
-                // Filtrar por características de audio si es posible
-                $tracks = $this->filterTracksByEmotion($tracks, $mainEmotion, $token);
-
-                shuffle($tracks);
-
-                foreach ($tracks as $t) {
-                    $id = $t['id'] ?? null;
-                    if (!$id) continue;
-                    if (isset($seen[$id])) continue;
-                    if (in_array($id, $recentIds, true)) continue;
-
-                    $seen[$id] = true;
-                    $collected[] = $t;
-
-                    if (count($collected) >= $limit) break;
-                }
-
-            } catch (\Exception $e) {
-                \Log::warning("Spotify search attempt {$attempts} failed", [
-                    'error' => $e->getMessage()
-                ]);
-
-                if ($attempts >= $maxAttempts) {
-                    throw new \RuntimeException('No se pudieron obtener canciones de Spotify');
-                }
-            }
+            // 5) cache pool
+            $this->cacheEmotionPool($mainEmotion, $tracks);
         }
 
-        if (empty($collected)) {
-            throw new \RuntimeException('No se pudieron obtener recomendaciones');
+        // 6) diversificar artistas y dedupe
+        $tracks = $this->diversifyTracks($tracks, $limit);
+
+        // 7) guardar historial (opcional/no bloqueante)
+        if ($user) {
+            $this->saveUserEmotionHistory($user, $emotions, $tracks);
         }
-
-        // Actualizar recientes
-        $newRecent = array_values(array_unique(array_merge(
-            $recentIds,
-            array_map(fn($t) => $t['id'], $collected)
-        )));
-
-        if (count($newRecent) > 200) {
-            $newRecent = array_slice($newRecent, -200);
-        }
-
-        Cache::put($recentKey, $newRecent, now()->addDays(7));
-
-        // Normalizar salida
-        $items = array_map(function($t) {
-            $albumImages = $t['album']['images'] ?? [];
-            $image = null;
-
-            if (count($albumImages) > 1) {
-                $image = $albumImages[1]['url'] ?? null;
-            }
-            if (!$image && !empty($albumImages)) {
-                $image = $albumImages[0]['url'] ?? null;
-            }
-
-            return [
-                'id'     => $t['id'],
-                'uri'    => $t['uri'],
-                'name'   => $t['name'],
-                'artist' => $t['artists'][0]['name'] ?? 'Unknown Artist',
-                'album'  => $t['album']['name'] ?? 'Unknown Album',
-                'url'    => $t['external_urls']['spotify'] ?? null,
-                'image'  => $image,
-                'preview_url' => $t['preview_url'] ?? null,
-                'popularity' => $t['popularity'] ?? 0,
-            ];
-        }, $collected);
 
         return [
-            'search_terms' => $searchTerms,
-            'tracks' => $items,
-            'used_user_token' => (bool)$userToken,
+            'emotion'         => $mainEmotion,
+            'confidence'      => $emotions[0]['confidence'] ?? 0,
+            'tracks'          => $this->formatTracks(array_slice($tracks, 0, $limit)),
+            'method'          => $cachedPool ? 'cached' : 'hybrid',
+            'used_user_token' => (bool) $userToken,
         ];
     }
 
-    private function getSearchTermsForEmotion(string $emotion): array
+    /**
+     * Sistema híbrido que combina múltiples fuentes.
+     */
+    private function getHybridRecommendations(string $token, string $emotion, array $emotions, string $market, int $limit): array
     {
-        $terms = match(strtoupper($emotion)) {
+        $allTracks = [];
+        $sources   = [];
+
+        // 40% categorías
+        try {
+            $categoryTracks = $this->getTracksFromCategories($token, $emotion, $market, (int) ($limit * 0.4));
+            $allTracks      = array_merge($allTracks, $categoryTracks);
+            $sources[]      = 'categories';
+        } catch (\Exception $e) {
+            Log::warning('Could not get tracks from categories: ' . $e->getMessage());
+        }
+
+        // 40% search
+        try {
+            $searchTracks = $this->getTracksFromSearch($token, $emotion, $market, (int) ($limit * 0.4));
+            $allTracks    = array_merge($allTracks, $searchTracks);
+            $sources[]    = 'search';
+        } catch (\Exception $e) {
+            Log::warning('Could not get tracks from search: ' . $e->getMessage());
+        }
+
+        // 20% top
+        try {
+            $topTracks  = $this->getTopTracks($token, $emotion, $market, (int) ($limit * 0.2));
+            $allTracks  = array_merge($allTracks, $topTracks);
+            $sources[]  = 'top';
+        } catch (\Exception $e) {
+            Log::warning('Could not get top tracks: ' . $e->getMessage());
+        }
+
+        Log::info('Hybrid recommendations sources used: ' . implode(', ', $sources));
+
+        // dedupe por id
+        $unique   = [];
+        $seenIds  = [];
+        foreach ($allTracks as $t) {
+            $id = $t['id'] ?? null;
+            if ($id && !isset($seenIds[$id])) {
+                $unique[]       = $t;
+                $seenIds[$id]   = true;
+            }
+        }
+
+        return $unique;
+    }
+
+    /**
+     * Tracks desde categorías relevantes (elige playlists al azar dentro de cada categoría).
+     */
+    private function getTracksFromCategories(string $token, string $emotion, string $market, int $limit): array
+    {
+        $categoryMap = [
+            'HAPPY'     => ['party', 'pop', 'dance', 'latin', 'summer'],
+            'SAD'       => ['chill', 'indie', 'acoustic', 'rainy_day', 'soul'],
+            'CALM'      => ['focus', 'sleep', 'wellness', 'jazz', 'classical'],
+            'ANGRY'     => ['workout', 'rock', 'metal', 'hiphop', 'edm'],
+            'SURPRISED' => ['pop', 'trending', 'viral', 'dance', 'party'],
+            'CONFUSED'  => ['alternative', 'indie', 'chill', 'focus'],
+            'DISGUSTED' => ['rock', 'metal', 'punk', 'alternative'],
+            'FEAR'      => ['soundtrack', 'classical', 'ambient', 'chill'],
+        ];
+
+        $categories = $categoryMap[strtoupper($emotion)] ?? $categoryMap['HAPPY'];
+        $tracks     = [];
+
+        foreach ($categories as $categoryId) {
+            if (count($tracks) >= $limit) break;
+
+            try {
+                $response = $this->apiGet("browse/categories/{$categoryId}/playlists", $token, [
+                    'country' => $market,
+                    'limit'   => 5,
+                ]);
+
+                $playlists = $response['playlists']['items'] ?? [];
+                if (empty($playlists)) continue;
+
+                $playlist = $playlists[array_rand($playlists)];
+
+                $tracksResponse = $this->apiGet("playlists/{$playlist['id']}/tracks", $token, [
+                    'market' => $market,
+                    'limit'  => 20,
+                    'offset' => random_int(0, 50),
+                ]);
+
+                $items = $tracksResponse['items'] ?? [];
+                foreach ($items as $item) {
+                    if (!empty($item['track'])) {
+                        $tracks[] = $item['track'];
+                        if (count($tracks) >= $limit) break;
+                    }
+                }
+
+            } catch (\Exception $e) {
+                Log::debug("Could not get category {$categoryId}: " . $e->getMessage());
+                continue;
+            }
+        }
+
+        return $tracks;
+    }
+
+    /**
+     * Búsqueda (Search API) con términos mejorados.
+     */
+    private function getTracksFromSearch(string $token, string $emotion, string $market, int $limit): array
+    {
+        $terms  = $this->getEnhancedSearchTerms($emotion);
+        $tracks = [];
+
+        foreach ($terms as $term) {
+            if (count($tracks) >= $limit) break;
+
+            try {
+                $response = $this->apiGet('search', $token, [
+                    'q'      => $term,
+                    'type'   => 'track',
+                    'market' => $market,
+                    'limit'  => 20,
+                    'offset' => random_int(0, 100),
+                ]);
+
+                $items = $response['tracks']['items'] ?? [];
+                foreach ($items as $t) {
+                    $tracks[] = $t;
+                    if (count($tracks) >= $limit) break;
+                }
+
+            } catch (\Exception $e) {
+                Log::debug("Search failed for term {$term}: " . $e->getMessage());
+                continue;
+            }
+        }
+
+        return $tracks;
+    }
+
+    /**
+     * Top tracks vía playlist “Top 50 Global” (simple y robusto).
+     */
+    private function getTopTracks(string $token, string $emotion, string $market, int $limit): array
+    {
+        try {
+            $response = $this->apiGet('search', $token, [
+                'q'      => 'Top 50 Global',
+                'type'   => 'playlist',
+                'market' => $market,
+                'limit'  => 1,
+            ]);
+
+            $playlists = $response['playlists']['items'] ?? [];
+            if (empty($playlists)) return [];
+
+            $playlistId = $playlists[0]['id'];
+
+            $tracksResponse = $this->apiGet("playlists/{$playlistId}/tracks", $token, [
+                'market' => $market,
+                'limit'  => $limit,
+                'offset' => random_int(0, 30),
+            ]);
+
+            $tracks = [];
+            foreach (($tracksResponse['items'] ?? []) as $item) {
+                if (!empty($item['track'])) $tracks[] = $item['track'];
+            }
+
+            return $tracks;
+
+        } catch (\Exception $e) {
+            Log::debug('Could not get top tracks: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Filtrado/orden por audio features contra rangos por emoción.
+     */
+    private function filterByAudioFeatures(array $tracks, string $emotion, string $token): array
+    {
+        if (empty($tracks)) return [];
+
+        $ids = array_values(array_filter(array_map(fn ($t) => $t['id'] ?? null, $tracks)));
+        if (empty($ids)) return $tracks;
+
+        try {
+            // features por lotes de 100
+            $chunks      = array_chunk($ids, 100);
+            $allFeatures = [];
+
+            foreach ($chunks as $chunk) {
+                $response  = $this->apiGet('audio-features', $token, ['ids' => implode(',', $chunk)]);
+                $features  = $response['audio_features'] ?? [];
+                foreach ($features as $f) {
+                    if ($f && isset($f['id'])) $allFeatures[$f['id']] = $f;
+                }
+            }
+
+            $ranges = $this->getEmotionAudioRanges($emotion);
+            $scored = [];
+
+            foreach ($tracks as $t) {
+                $id = $t['id'] ?? null;
+                if (!$id || !isset($allFeatures[$id])) {
+                    $scored[] = ['track' => $t, 'score' => 0.5];
+                    continue;
+                }
+
+                $features = $allFeatures[$id];
+                $score    = $this->calculateEmotionMatchScore($features, $ranges);
+
+                $scored[] = [
+                    'track'    => $t,
+                    'score'    => $score,
+                    'features' => $features,
+                ];
+            }
+
+            usort($scored, fn ($a, $b) => $b['score'] <=> $a['score']);
+            return array_map(fn ($x) => $x['track'], $scored);
+
+        } catch (\Exception $e) {
+            Log::warning('Could not get audio features: ' . $e->getMessage());
+            return $tracks;
+        }
+    }
+
+    /**
+     * Rangos ideales de audio features por emoción.
+     */
+    private function getEmotionAudioRanges(string $emotion): array
+    {
+        return match (strtoupper($emotion)) {
             'HAPPY' => [
-                'moods' => ['happy', 'upbeat', 'feel good', 'party', 'dance', 'cheerful'],
-                'genres' => ['pop', 'dance', 'latin', 'funk'],
-                'years' => ['2020', '2021', '2022', '2023', '2024']
+                'valence'      => ['min' => 0.6, 'max' => 1.0, 'weight' => 3],
+                'energy'       => ['min' => 0.5, 'max' => 1.0, 'weight' => 2],
+                'danceability' => ['min' => 0.5, 'max' => 1.0, 'weight' => 2],
+                'tempo'        => ['min' => 120, 'max' => 180, 'weight' => 1],
             ],
             'SAD' => [
-                'moods' => ['sad', 'melancholy', 'emotional', 'heartbreak', 'lonely'],
-                'genres' => ['indie', 'acoustic', 'ballad', 'soul'],
-                'years' => ['2020', '2021', '2022', '2023']
+                'valence'      => ['min' => 0.0, 'max' => 0.4, 'weight' => 3],
+                'energy'       => ['min' => 0.0, 'max' => 0.5, 'weight' => 2],
+                'acousticness' => ['min' => 0.3, 'max' => 1.0, 'weight' => 2],
+                'tempo'        => ['min' => 60,  'max' => 110, 'weight' => 1],
             ],
             'CALM' => [
-                'moods' => ['relaxing', 'chill', 'peaceful', 'meditation', 'ambient'],
-                'genres' => ['jazz', 'classical', 'acoustic', 'lofi'],
-                'years' => ['2020', '2021', '2022', '2023']
+                'valence'      => ['min' => 0.3, 'max' => 0.7, 'weight' => 2],
+                'energy'       => ['min' => 0.0, 'max' => 0.4, 'weight' => 3],
+                'acousticness' => ['min' => 0.3, 'max' => 1.0, 'weight' => 2],
+                'tempo'        => ['min' => 60,  'max' => 100, 'weight' => 1],
             ],
             'ANGRY' => [
-                'moods' => ['angry', 'aggressive', 'intense', 'powerful'],
-                'genres' => ['rock', 'metal', 'punk', 'rap'],
-                'years' => ['2020', '2021', '2022', '2023']
+                'valence'  => ['min' => 0.0, 'max' => 0.5, 'weight' => 2],
+                'energy'   => ['min' => 0.7, 'max' => 1.0, 'weight' => 3],
+                'loudness' => ['min' => -10, 'max' => 0,  'weight' => 2],
+                'tempo'    => ['min' => 130, 'max' => 200, 'weight' => 1],
             ],
             'SURPRISED' => [
-                'moods' => ['energetic', 'exciting', 'dynamic', 'uplifting'],
-                'genres' => ['electronic', 'pop', 'edm', 'house'],
-                'years' => ['2023', '2024']
+                'valence'      => ['min' => 0.5, 'max' => 0.9, 'weight' => 2],
+                'energy'       => ['min' => 0.6, 'max' => 1.0, 'weight' => 3],
+                'danceability' => ['min' => 0.5, 'max' => 1.0, 'weight' => 1],
             ],
             default => [
-                'moods' => ['popular', 'top', 'trending'],
-                'genres' => ['pop', 'rock', 'hip-hop'],
-                'years' => ['2023', '2024']
-            ]
+                'valence' => ['min' => 0.4, 'max' => 0.7, 'weight' => 1],
+                'energy'  => ['min' => 0.4, 'max' => 0.7, 'weight' => 1],
+            ],
         };
+    }
 
+    /**
+     * Score de coincidencia (0..1) según qué tan dentro del rango está cada feature.
+     */
+    private function calculateEmotionMatchScore(array $features, array $ranges): float
+    {
+        $totalScore  = 0;
+        $totalWeight = 0;
+
+        foreach ($ranges as $feature => $range) {
+            if (!isset($features[$feature])) continue;
+
+            $value  = $features[$feature];
+            $min    = $range['min'];
+            $max    = $range['max'];
+            $weight = $range['weight'] ?? 1;
+
+            if ($value >= $min && $value <= $max) {
+                $score = 1.0;
+            } elseif ($value < $min) {
+                $distance = $min - $value;
+                $score    = max(0, 1 - ($distance * 2));
+            } else {
+                $distance = $value - $max;
+                $score    = max(0, 1 - ($distance * 2));
+            }
+
+            $totalScore  += $score * $weight;
+            $totalWeight += $weight;
+        }
+
+        return $totalWeight > 0 ? $totalScore / $totalWeight : 0.5;
+    }
+
+    /**
+     * Scoring multicriterio adicional: popularidad, recencia, preview_url y explícito.
+     */
+    private function applyMultiCriteriaScoring(array $tracks, string $emotion): array
+    {
+        $nowYear = (int) date('Y');
+
+        $scored = array_map(function ($t) use ($emotion, $nowYear) {
+            $pop        = (int) ($t['popularity'] ?? 50);      // 0..100
+            $year       = $this->extractReleaseYear($t);       // o null
+            $hasPreview = !empty($t['preview_url']);
+            $explicit   = (bool) ($t['explicit'] ?? false);
+
+            // Recency: 1 si <=2 años, luego decae
+            $recency = 0.5;
+            if ($year) {
+                $age = max(0, $nowYear - $year);
+                if     ($age <= 2)  $recency = 1.0;
+                elseif ($age <= 5)  $recency = 0.8;
+                elseif ($age <= 10) $recency = 0.6;
+                else                $recency = 0.3;
+            }
+
+            $popWeight     = match (strtoupper($emotion)) {
+                'CALM' => 0.15, 'SAD' => 0.20, default => 0.30
+            };
+            $recencyWeight = match (strtoupper($emotion)) {
+                'SAD', 'CALM' => 0.20, default => 0.25
+            };
+            $previewWeight = 0.10;
+            $explicitPenalty = 0.10; // pon 0 si no quieres penalizar
+
+            $score = 0.0;
+            $score += $popWeight     * ($pop / 100.0);
+            $score += $recencyWeight * $recency;
+            if ($hasPreview) $score += $previewWeight;
+            if ($explicit)   $score -= $explicitPenalty;
+
+            return ['t' => $t, 's' => max(0.0, min(1.0, $score))];
+        }, $tracks);
+
+        usort($scored, fn ($a, $b) => $b['s'] <=> $a['s']);
+        return array_map(fn ($x) => $x['t'], $scored);
+    }
+
+    private function extractReleaseYear(array $t): ?int
+    {
+        $date = $t['album']['release_date'] ?? null;
+        if (!$date) return null;
+        $y = (int) substr($date, 0, 4); // YYYY, YYYY-MM, YYYY-MM-DD
+        return $y > 1900 ? $y : null;
+    }
+
+    /**
+     * Diversificación: dedupe por track y limitar repetición de artista.
+     */
+    private function diversifyTracks(array $tracks, int $limit): array
+    {
+        // Dedupe por id
+        $byId = [];
+        foreach ($tracks as $t) {
+            $id = $t['id'] ?? null;
+            if ($id && !isset($byId[$id])) $byId[$id] = $t;
+        }
+        $tracks = array_values($byId);
+
+        $picked     = [];
+        $usedArtist = [];
+
+        // 1ª pasada: máximo 1 por artista
+        foreach ($tracks as $t) {
+            if (count($picked) >= $limit) break;
+            $artists = $t['artists'] ?? [];
+            $aId     = $artists[0]['id'] ?? ($artists[0]['name'] ?? null);
+            if (!$aId) continue;
+            if (isset($usedArtist[$aId])) continue;
+            $usedArtist[$aId] = 1;
+            $picked[] = $t;
+        }
+
+        // 2ª pasada: completa hasta el límite con lo que falte
+        if (count($picked) < $limit) {
+            foreach ($tracks as $t) {
+                if (count($picked) >= $limit) break;
+                $id = $t['id'] ?? null;
+                if (!$id) continue;
+                $exists = false;
+                foreach ($picked as $p) {
+                    if (($p['id'] ?? null) === $id) { $exists = true; break; }
+                }
+                if (!$exists) $picked[] = $t;
+            }
+        }
+
+        return $picked;
+    }
+
+    /**
+     * Cache de pool por emoción (para variety/latencia).
+     */
+    private function getCachedEmotionPool(string $emotion): ?array
+    {
+        $key  = "spotify:emotion_pool:" . strtoupper($emotion);
+        $pool = Cache::get($key);
+        return is_array($pool) ? $pool : null;
+    }
+
+    private function cacheEmotionPool(string $emotion, array $tracks, int $ttlMinutes = 180): void
+    {
+        $unique = [];
+        $seen   = [];
+        foreach ($tracks as $t) {
+            $id = $t['id'] ?? null;
+            if ($id && !isset($seen[$id])) {
+                $unique[]     = $t;
+                $seen[$id]    = true;
+                if (count($unique) >= 300) break;
+            }
+        }
+        $key = "spotify:emotion_pool:" . strtoupper($emotion);
+        Cache::put($key, $unique, now()->addMinutes($ttlMinutes));
+    }
+
+    /**
+     * Términos de búsqueda mejorados para Search API.
+     */
+    private function getEnhancedSearchTerms(string $emotion): array
+    {
+        $emotion = strtoupper($emotion);
+        $map = [
+            'HAPPY'     => ['happy', 'feel good', 'party', 'dance', 'summer', 'latin pop'],
+            'SAD'       => ['sad', 'melancholy', 'acoustic ballad', 'heartbreak', 'piano'],
+            'CALM'      => ['chill', 'lofi', 'relaxing', 'peaceful', 'ambient', 'jazz'],
+            'ANGRY'     => ['hard rock', 'metal', 'punk', 'aggressive', 'intense'],
+            'SURPRISED' => ['energetic', 'edm', 'house', 'uplifting', 'trending'],
+            'CONFUSED'  => ['indie', 'alternative', 'trip hop', 'electronic'],
+            'DISGUSTED' => ['grunge', 'industrial', 'alternative metal'],
+            'FEAR'      => ['dark ambient', 'goth', 'emo'],
+        ];
+
+        $terms = $map[$emotion] ?? ['popular', 'trending', 'pop', 'rock'];
+        shuffle($terms);
         return $terms;
     }
 
-    private function buildSearchQuery(array $searchTerms, int $attempt): string
+    /**
+     * Guarda historial mínimo (si existe la tabla emotion_histories). No bloquea.
+     */
+    private function saveUserEmotionHistory(User $user, array $emotions, array $tracks): void
     {
-        $queries = [];
+        try {
+            if (!Schema::hasTable('emotion_histories')) {
+                Log::info('Historial no guardado (tabla emotion_histories no existe).');
+                return;
+            }
 
-        // Variar la búsqueda según el intento
-        switch($attempt) {
-            case 1:
-                // Búsqueda por mood
-                $mood = $searchTerms['moods'][array_rand($searchTerms['moods'])];
-                $queries[] = $mood;
-                break;
+            DB::table('emotion_histories')->insert([
+                'user_id'        => $user->id,
+                'main_emotion'   => strtoupper($emotions[0]['type'] ?? 'UNKNOWN'),
+                'confidence'     => $emotions[0]['confidence'] ?? 0,
+                'top_track_id'   => $tracks[0]['id'] ?? null,
+                'top_track_name' => $tracks[0]['name'] ?? null,
+                'payload'        => json_encode([
+                    'emotions'  => $emotions,
+                    'track_ids' => array_values(array_filter(array_map(fn ($t) => $t['id'] ?? null, $tracks))),
+                ]),
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
 
-            case 2:
-                // Búsqueda por género
-                $genre = $searchTerms['genres'][array_rand($searchTerms['genres'])];
-                $queries[] = "genre:{$genre}";
-                break;
-
-            case 3:
-                // Búsqueda por año y mood
-                $year = $searchTerms['years'][array_rand($searchTerms['years'])];
-                $mood = $searchTerms['moods'][array_rand($searchTerms['moods'])];
-                $queries[] = "year:{$year} {$mood}";
-                break;
-
-            case 4:
-                // Búsqueda por género y año
-                $genre = $searchTerms['genres'][array_rand($searchTerms['genres'])];
-                $year = $searchTerms['years'][array_rand($searchTerms['years'])];
-                $queries[] = "genre:{$genre} year:{$year}";
-                break;
-
-            default:
-                // Búsqueda combinada
-                $mood = $searchTerms['moods'][array_rand($searchTerms['moods'])];
-                $genre = $searchTerms['genres'][array_rand($searchTerms['genres'])];
-                $queries[] = "{$mood} {$genre}";
-                break;
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo guardar historial de emoción: ' . $e->getMessage());
         }
-
-        return implode(' ', $queries);
     }
 
-    private function filterTracksByEmotion(array $tracks, string $emotion, string $token): array
+    /**
+     * Normaliza tracks para respuesta compacta.
+     */
+    private function formatTracks(array $tracks): array
     {
-        // Filtrar por popularidad según la emoción
-        $popularityRange = match(strtoupper($emotion)) {
-            'HAPPY' => ['min' => 50, 'max' => 100],
-            'SAD' => ['min' => 30, 'max' => 70],
-            'CALM' => ['min' => 20, 'max' => 60],
-            'ANGRY' => ['min' => 40, 'max' => 90],
-            'SURPRISED' => ['min' => 60, 'max' => 100],
-            default => ['min' => 30, 'max' => 100]
-        };
+        return array_map(function ($t) {
+            $images = $t['album']['images'] ?? [];
+            $image  = $images[1]['url'] ?? ($images[0]['url'] ?? null);
 
-        return array_filter($tracks, function($track) use ($popularityRange) {
-            $popularity = $track['popularity'] ?? 50;
-            return $popularity >= $popularityRange['min'] &&
-                $popularity <= $popularityRange['max'];
-        });
+            return [
+                'id'           => $t['id'] ?? null,
+                'uri'          => $t['uri'] ?? null,
+                'name'         => $t['name'] ?? 'Unknown',
+                'artist'       => $t['artists'][0]['name'] ?? 'Unknown Artist',
+                'album'        => $t['album']['name'] ?? 'Unknown Album',
+                'url'          => $t['external_urls']['spotify'] ?? null,
+                'image'        => $image,
+                'preview_url'  => $t['preview_url'] ?? null,
+                'popularity'   => $t['popularity'] ?? 0,
+                'explicit'     => $t['explicit'] ?? false,
+                'release_date' => $t['album']['release_date'] ?? null,
+            ];
+        }, $tracks);
     }
 
+    /**
+     * Crea playlist en la cuenta del usuario y añade URIs.
+     */
     public function createPlaylistFor(User $user, string $name, array $trackUris, bool $public = false): ?array
     {
         if (empty($trackUris)) {
@@ -640,35 +826,27 @@ class SpotifyService
         }
 
         $connected = $this->connectionFor($user);
-        $token = $this->ensureUserToken($connected);
+        $token     = $this->ensureUserToken($connected);
 
         if (!$token) {
-            Log::warning('Cannot create playlist: user not connected to Spotify', [
-                'user_id' => $user->id
-            ]);
+            Log::warning('Cannot create playlist: user not connected to Spotify', ['user_id' => $user->id]);
             return null;
         }
 
         try {
             $me = $this->apiGet('me', $token);
-
             if (empty($me['id'])) {
                 throw new \RuntimeException('No se pudo obtener el ID del usuario de Spotify');
             }
 
             $playlist = $this->apiPost("users/{$me['id']}/playlists", $token, [
-                'name' => $name,
-                'public' => $public,
+                'name'        => $name,
+                'public'      => $public,
                 'description' => 'Generada por análisis de emociones',
             ]);
 
-            // Spotify limita a 100 URIs por llamada
-            $chunks = array_chunk($trackUris, 100);
-
-            foreach ($chunks as $chunk) {
-                $this->apiPost("playlists/{$playlist['id']}/tracks", $token, [
-                    'uris' => $chunk,
-                ]);
+            foreach (array_chunk($trackUris, 100) as $chunk) {
+                $this->apiPost("playlists/{$playlist['id']}/tracks", $token, ['uris' => $chunk]);
             }
 
             return $playlist;
@@ -676,138 +854,113 @@ class SpotifyService
         } catch (\Exception $e) {
             Log::error('Failed to create Spotify playlist', [
                 'user_id' => $user->id,
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ]);
             throw new \RuntimeException('Error al crear la playlist en Spotify: ' . $e->getMessage());
         }
     }
 
+    /**
+     * (Opcional) Pruebas rápidas de conectividad/API para diagnóstico.
+     */
     public function testSpotifyAPI(?User $user = null): array
     {
         $connected = $user ? $this->connectionFor($user) : null;
         $userToken = $this->ensureUserToken($connected);
-        $token = $userToken ?: $this->appToken();
+        $token     = $userToken ?: $this->appToken();
 
         $results = [];
 
-        // Test 1: Verificar que el token funciona con un endpoint simple
+        // Test categorías
         try {
-            $response = $this->api->get('browse/categories', [
-                'headers' => ['Authorization' => "Bearer {$token}"],
-                'query' => ['limit' => 1]
-            ]);
-            $data = json_decode((string)$response->getBody(), true);
+            $data = $this->apiGet('browse/categories', $token, ['limit' => 1]);
             $results['categories_test'] = [
-                'success' => true,
+                'success'  => true,
                 'has_data' => !empty($data['categories'])
             ];
         } catch (\Exception $e) {
-            $results['categories_test'] = [
-                'success' => false,
-                'error' => $e->getMessage()
-            ];
+            $results['categories_test'] = ['success' => false, 'error' => $e->getMessage()];
         }
 
-        // Test 2: Probar el endpoint de géneros disponibles
+        // Test géneros disponibles (con fallback interno si falla)
         try {
-            $response = $this->api->get('recommendations/available-genre-seeds', [
-                'headers' => ['Authorization' => "Bearer {$token}"]
-            ]);
-            $data = json_decode((string)$response->getBody(), true);
+            $genres = $this->availableGenreSeeds($token);
             $results['genres_test'] = [
-                'success' => true,
-                'genres_count' => count($data['genres'] ?? []),
-                'sample_genres' => array_slice($data['genres'] ?? [], 0, 10)
+                'success'       => true,
+                'genres_count'  => count($genres),
+                'sample_genres' => array_slice($genres, 0, 10),
             ];
         } catch (\Exception $e) {
-            $results['genres_test'] = [
-                'success' => false,
-                'error' => $e->getMessage()
-            ];
+            $results['genres_test'] = ['success' => false, 'error' => $e->getMessage()];
         }
 
-        // Test 3: Probar recommendations con parámetros mínimos
+        // Recommendations mínimas
         try {
-            // Usar SOLO seed_genres sin ningún otro parámetro
-            $response = $this->api->get('recommendations', [
-                'headers' => ['Authorization' => "Bearer {$token}"],
-                'query' => [
-                    'seed_genres' => 'pop',
-                    'limit' => 5
-                ]
+            $data = $this->apiGet('recommendations', $token, [
+                'seed_genres' => 'pop',
+                'limit'       => 5
             ]);
-            $data = json_decode((string)$response->getBody(), true);
             $results['recommendations_minimal'] = [
-                'success' => true,
+                'success'      => true,
                 'tracks_count' => count($data['tracks'] ?? [])
             ];
         } catch (\Exception $e) {
             $results['recommendations_minimal'] = [
-                'success' => false,
-                'error' => $e->getMessage(),
+                'success'       => false,
+                'error'         => $e->getMessage(),
                 'url_attempted' => 'recommendations?seed_genres=pop&limit=5'
             ];
         }
 
-        // Test 4: Probar con market parameter
-        try {
-            $response = $this->api->get('recommendations', [
-                'headers' => ['Authorization' => "Bearer {$token}"],
-                'query' => [
-                    'seed_genres' => 'rock',
-                    'limit' => 5,
-                    'market' => 'US'
-                ]
-            ]);
-            $data = json_decode((string)$response->getBody(), true);
-            $results['recommendations_with_market'] = [
-                'success' => true,
-                'tracks_count' => count($data['tracks'] ?? [])
-            ];
-        } catch (\Exception $e) {
-            $results['recommendations_with_market'] = [
-                'success' => false,
-                'error' => $e->getMessage()
-            ];
-        }
-
-        // Test 5: Probar con audio features
-        try {
-            $response = $this->api->get('recommendations', [
-                'headers' => ['Authorization' => "Bearer {$token}"],
-                'query' => [
-                    'seed_genres' => 'pop',
-                    'limit' => 5,
-                    'market' => 'US',
-                    'target_valence' => 0.7,
-                    'min_energy' => 0.5
-                ]
-            ]);
-            $data = json_decode((string)$response->getBody(), true);
-            $results['recommendations_with_features'] = [
-                'success' => true,
-                'tracks_count' => count($data['tracks'] ?? [])
-            ];
-        } catch (\Exception $e) {
-            $results['recommendations_with_features'] = [
-                'success' => false,
-                'error' => $e->getMessage()
-            ];
-        }
-
-        // Info adicional
         $results['token_info'] = [
-            'using_user_token' => (bool)$userToken,
-            'token_length' => strlen($token),
-            'token_prefix' => substr($token, 0, 10) . '...'
+            'using_user_token' => (bool) $userToken,
+            'token_length'     => strlen($token),
+            'token_prefix'     => substr($token, 0, 10) . '...'
         ];
 
         $results['config'] = [
             'base_uri' => config('services.spotify.base_uri'),
-            'market' => config('services.spotify.default_market')
+            'market'   => config('services.spotify.default_market')
         ];
 
         return $results;
     }
 
+    /**
+     * Semillas de género (cacheadas) con fallback local si falla la API.
+     */
+    private function availableGenreSeeds(string $token): array
+    {
+        return Cache::remember('spotify:available_genres', now()->addDays(7), function () use ($token) {
+            try {
+                $data = $this->apiGet('recommendations/available-genre-seeds', $token);
+                $genres = $data['genres'] ?? [];
+                if (empty($genres)) return $this->getFallbackGenres();
+                return $genres;
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch Spotify genres, using fallback list', ['error' => $e->getMessage()]);
+                return $this->getFallbackGenres();
+            }
+        });
+    }
+
+    /** Lista local de géneros por si el endpoint falla. */
+    private function getFallbackGenres(): array
+    {
+        return [
+            'acoustic','afrobeat','alt-rock','alternative','ambient','anime','black-metal','bluegrass','blues',
+            'bossanova','brazil','breakbeat','british','cantopop','chicago-house','children','chill','classical',
+            'club','comedy','country','dance','dancehall','death-metal','deep-house','detroit-techno','disco',
+            'disney','drum-and-bass','dub','dubstep','edm','electro','electronic','emo','folk','forro','french',
+            'funk','garage','german','gospel','goth','grindcore','groove','grunge','guitar','happy','hard-rock',
+            'hardcore','hardstyle','heavy-metal','hip-hop','holidays','honky-tonk','house','idm','indian','indie',
+            'indie-pop','industrial','iranian','j-dance','j-idol','j-pop','j-rock','jazz','k-pop','kids','latin',
+            'latino','malay','mandopop','metal','metal-misc','metalcore','minimal-techno','movies','mpb','new-age',
+            'new-release','opera','pagode','party','philippines-opm','piano','pop','pop-film','post-dubstep',
+            'power-pop','progressive-house','psych-rock','punk','punk-rock','r-n-b','rainy-day','reggae','reggaeton',
+            'road-trip','rock','rock-n-roll','rockabilly','romance','sad','salsa','samba','sertanejo','show-tunes',
+            'singer-songwriter','ska','sleep','songwriter','soul','soundtracks','spanish','study','summer','swedish',
+            'synth-pop','tango','techno','trance','trip-hop','turkish','work-out','world-music'
+        ];
+    }
 }
