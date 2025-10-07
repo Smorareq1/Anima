@@ -64,7 +64,7 @@ export default function Topbar({ onToggleSidebar }) {
                             />
 
                             <Link
-                                href={route("Home")} // todo: crear ruta del logout y colocarla aqui
+                                href={route("auth.logout")} // todo: crear ruta del logout y colocarla aqui
                                 method="post"
                                 as="button"
                                 className="dropdown-item-logout"
