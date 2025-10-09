@@ -3,46 +3,109 @@ import SpotifyRegButton from "../SpotifyRegButton.jsx";
 import "../../../css/profile.css";
 import { useForm } from "@inertiajs/react";
 import avatar from "../../../images/avatar.png";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+
+const validationSchema = Yup.object({
+    first_name: Yup.string()
+        .required("El nombre es requerido")
+        .min(2, "El nombre debe tener al menos 2 caracteres")
+        .max(50, "El nombre no puede exceder 50 caracteres"),
+        
+    last_name: Yup.string()
+        .required("El apellido es requerido")
+        .min(2, "El apellido debe tener al menos 2 caracteres")
+        .max(50, "El apellido no puede exceder 50 caracteres"),
+
+    username: Yup.string()
+        .required("El usuario es requerido ")
+        .min(3, "El usuario debe tener al menos 3 caracteres")
+        .max(20, "El usuario no puede exceder 20 caracteres")
+        .matches(/^[a-zA-Z0-9_]+$/, "Solo se permiten letras, números y guiones bajos"),
+
+    email: Yup.string()
+        .required("El correo es necesario")
+        .email("Ingresa un correo válido"),
+
+    password: Yup.string()
+        .min(8, "La contraseña debe contener al menos 8 caracteres")
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Debe contener al menos una mayúscula, una minúscula y un número")
+        .nullable()
+        .transform((value) => value || null),
+
+    photo: Yup.mixed()
+        .test("fileSize", "La imagen es muy pesada (máx. 2MB)", (value) => {
+            if (!value) return true;
+            return value.size <= 2 * 1024 * 1024;
+        })
+        .test("fileType", "Solo se permiten imágenes (JPEG, PNG, JPG)", (value) => {
+            if (!value) return true;
+            return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
+        })
+});
 
 export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
-    const { data, setData, post, processing, errors } = useForm({
-        first_name: user?.first_name || "",
-        last_name: user?.last_name || "",
-        username: user?.username || "",
-        email: user?.email || "",
-        password: "",
-        photo: null,
-    });
-
     const fileInputRef = useRef(null);
     const [preview, setPreview] = useState(null);
 
+    const formik = useFormik({
+        initialValues: {
+            first_name: user?.first_name || "",
+            last_name: user?.last_name || "",
+            username: user?.username || "",
+            email: user?.email || "",
+            password: "",
+            photo: null,
+        },
+        validationSchema,
+        onSubmit: (values) =>{
+            post(route("Home"), {
+                data: values,
+                onSuccess: () => onClose(),
+            });
+        },
+    });
+
+    const { post, processing } = useForm();
+
     const handlePhotoClick = () => {
-        fileInputRef.current.click(); // dispara el input oculto
+        fileInputRef.current.click();
     };
 
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
-        setData("photo", file);
-
+        
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result); //preview de la imagen
-            };
-            reader.readAsDataURL(file);
+        // Validar el archivo antes de establecerlo
+        const fileSizeValid = file.size <= 2 * 1024 * 1024;
+        const fileTypeValid = ["image/jpeg", "image/png", "image/jpg"].includes(file.type);
+        
+        if (!fileSizeValid) {
+            formik.setFieldError("photo", "La imagen es muy pesada (máx. 2MB)");
+            return;
+        }
+        
+        if (!fileTypeValid) {
+            formik.setFieldError("photo", "Solo se permiten imágenes (JPEG, PNG, JPG)");
+            return;
+        }
+
+        formik.setFieldValue("photo", file);
+        formik.setFieldError("photo", null);
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
         }
     };
 
-
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        //colocar ruta correcta
-        post(route("Home"), {
-            onSuccess: () => onClose(), // cerrar modal al guardar
-        });
+        formik.handleSubmit();
     };
+
     if (!isOpen) return null;
 
     return (
@@ -51,8 +114,6 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
                 <button className="modal-close" onClick={onClose}>
                     ×
                 </button>
-
-                <h2 className="modal-title">Tu Perfil</h2>
 
                 <form className="profile-form" onSubmit={handleSubmit}>
                     {/* Avatar */}
@@ -80,8 +141,11 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
                             ref={fileInputRef}
                             style={{ display: "none" }}
                             onChange={handlePhotoChange}
-                            accept="image/*"
+                            accept="image/jpeg, image/png, image/jpg"
                         />
+                        {formik.errors.photo && (
+                            <span className="error">{formik.errors.photo}</span>
+                        )}
                     </div>
 
                     {/* Campos */}
@@ -89,57 +153,84 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
                         Nombre
                         <input
                             type="text"
-                            value={data.first_name}
-                            onChange={(e) => setData("first_name", e.target.value)}
+                            name="first_name"
+                            value={formik.values.first_name}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            className={formik.touched.first_name && formik.errors.first_name ? "error-input" : ""}
                         />
-                        {errors.first_name && <span className="error">{errors.first_name}</span>}
+                        {formik.touched.first_name && formik.errors.first_name && (
+                            <span className="error">{formik.errors.first_name}</span>
+                        )}
                     </label>
                     <label>
                         Apellido
                         <input
                             type="text"
-                            value={data.last_name}
-                            onChange={(e) => setData("last_name", e.target.value)}
+                            name="last_name"
+                            value={formik.values.last_name}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            className={formik.touched.last_name && formik.errors.last_name ? "error-input" : ""}
                         />
-                        {errors.last_name && <span className="error">{errors.last_name}</span>}
+                        {formik.touched.last_name && formik.errors.last_name && (
+                            <span className="error">{formik.errors.last_name}</span>
+                        )}
                     </label>
 
                     <label>
                         Usuario
                         <input
                             type="text"
-                            value={data.username}
-                            onChange={(e) => setData("username", e.target.value)}
+                            name="username"
+                            value={formik.values.username}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            className={formik.touched.username && formik.errors.username ? "error-input" : ""}
                         />
-                        {errors.username && <span className="error">{errors.username}</span>}
+                        {formik.touched.username && formik.errors.username && (
+                            <span className="error">{formik.errors.username}</span>
+                        )}
                     </label>
 
                     <label>
                         Correo
                         <input
                             type="email"
-                            value={data.email}
-                            onChange={(e) => setData("email", e.target.value)}
+                            name="email"
+                            value={formik.values.email}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            className={formik.touched.email && formik.errors.email ? "error-input" : ""}
                         />
-                        {errors.email && <span className="error">{errors.email}</span>}
+                        {formik.touched.email && formik.errors.email && (
+                            <span className="error">{formik.errors.email}</span>
+                        )}
                     </label>
 
                     <label>
                         Contraseña
                         <input
                             type="password"
+                            name="password"
                             placeholder="********"
-                            value={data.password}
-                            onChange={(e) => setData("password", e.target.value)}
+                            value={formik.values.password}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
+                            className={formik.touched.password && formik.errors.password ? "error-input" : ""}
                         />
-                        {errors.password && <span className="error">{errors.password}</span>}
+                        {formik.touched.password && formik.errors.password && (
+                            <span className="error">{formik.errors.password}</span>
+                        )}
                     </label>
 
                     {/* Botones */}
-                    <button type="submit" className="btn-outline" disabled={processing}>
+                    <div className="botones">
+                        <button type="submit" className="btn-outline" disabled={processing || !formik.isValid}>
                         Guardar cambios
-                    </button>
-                    <SpotifyRegButton disabled = {hasSpotify}/>
+                        </button>
+                        <SpotifyRegButton disabled = {hasSpotify}/>
+                    </div>
                 </form>
             </div>
         </div>
