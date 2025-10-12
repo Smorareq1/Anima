@@ -1,15 +1,26 @@
 <?php
 
 namespace App\Http\Controllers\App\dashboard;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Página inicial del dashboard
-        return Inertia::render('Dashboard/HomeDashboard');
+        // Obtener playlistData de la sesión si existe
+        $playlistData = $request->session()->get('playlistData');
+        
+        // Limpiar la sesión después de leer
+        if ($playlistData) {
+            $request->session()->forget('playlistData');
+        }
+
+        return Inertia::render('Dashboard/HomeDashboard', [
+            'playlistData' => $playlistData,
+        ]);
     }
 }

@@ -38,8 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/records', [RecordController::class, 'index'])->name('Record');
 
     Route::prefix('emotion')->name('emotion.')->group(function () {
-        Route::post('/emotion/upload', [EmotionController::class, 'upload'])->name('upload');
-        Route::get('/emotion/test-api', [EmotionController::class, 'testAPI'])->name('test.api');
+        Route::post('/upload', [EmotionController::class, 'upload'])->name('upload');
+        Route::get('/test-api', [EmotionController::class, 'testAPI'])->name('test.api');
     });
 });
 

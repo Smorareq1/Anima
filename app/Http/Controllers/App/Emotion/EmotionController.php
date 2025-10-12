@@ -99,7 +99,11 @@ class EmotionController extends Controller
                 ] : null,
             ];
 
-            return response()->json($payload);
+            
+            // Guardar en sesión flash y redirigir
+            $request->session()->put('playlistData', $payload);
+
+            return redirect()->route('Dashboard');
 
         } catch (\Throwable $e) {
             Log::error('Error completo en upload:', [
@@ -108,13 +112,9 @@ class EmotionController extends Controller
                 'emotions' => $emotions ?? null,
             ]);
 
-            if ($request->header('X-Inertia')) {
-                return redirect()->back()->withErrors(['photo' => 'Error al procesar la solicitud: '.$e->getMessage()]);
-            }
-
-            return response()->json([
-                'error' => 'Error al procesar la solicitud: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()->withErrors([
+                'photo' => 'Error al procesar la solicitud: ' . $e->getMessage()
+            ]);
 
         } finally {
             // Limpiar imagen temporal
