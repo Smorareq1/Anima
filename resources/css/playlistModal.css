@@ -1,0 +1,319 @@
+:root {
+    --color-primary: #1D6363;
+    --color-secondary: #CDE8C9;
+    --color-accent: #f9bc60;
+    --color-light: #F5F6F8;
+    --color-dark: #001e1d;
+    --color-white: #ffffff;
+}
+
+button{
+    cursor: pointer;
+}
+
+/* Fondo oscuro */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+/* Caja del modal */
+.modal {
+    background: var(--color-white);
+    width: 500px;
+    max-width: 90%;
+    border-radius: 12px;
+    padding: 30px;
+    position: relative;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* Botón cerrar */
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #333;
+}
+
+.modal-container{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-header{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modal-link{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: #F5F6F8;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.modal-link .campo{
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 5px;
+}
+
+.modal-emotions{
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.modal-emotions .emotion{
+    background-color: var(--color-primary);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.modal-emotions .emotion h3{
+    font-size: 12.5px;
+    color: var(--color-white);
+    font-weight: 100;
+}
+
+.modal-link .campo input{
+    padding: 7.5px;
+    font-weight: 100;
+    border-radius: 5px;
+    border: #D9D9D9 solid 1px;
+}
+
+.modal-container .campo button{
+    border-radius: 5px;
+    border: var(--color-primary) solid 1px;
+    background-color: var(--color-white);
+    color: var(--color-primary);
+}
+
+.modal-container h4{
+    font-weight: 300;
+}
+
+.modal-playlist{
+    display: flex;
+    justify-content: space-evenly;
+    gap: 10px;
+}
+
+.modal-info{
+    display: flex;
+    background-color: #F5F6F8;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 10px;
+    padding: 5px 10px;
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.header-info{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-info h3{
+    font-size: 15px;
+}
+
+.modal-info button{
+    border: none;
+    background-color: #F5F6F8;
+    padding: 10px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-info img{
+    width: 20px;
+    height: 20px;
+}
+
+.modal-buttons{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-buttons button{
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+}
+
+.modal-buttons .spotify{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+}
+
+.modal-buttons .playlist{
+    background-color: var(--color-white);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.modal-buttons .spotify img{
+    width: 20px;
+    height: 20px;
+}
+
+/* Contenido desplegable */
+.dropdown-content {
+    background: white;
+    max-height: 100px;
+    overflow-y: auto;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Lista de artistas - VERTICAL */
+.artists-list {
+    padding: 10px;
+}
+
+.artist-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 12px;
+}
+
+.artist-item:last-child {
+    border-bottom: none;
+}
+
+.artist-number {
+    width: 25px;
+    font-weight: bold;
+    color: #666;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.artist-name {
+    font-size: 14px;
+    color: #333;
+    flex: 1;
+}
+
+/* Lista detallada de canciones - VERTICAL */
+.tracks-list-detailed {
+    padding: 10px;
+}
+
+.track-item-detailed {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 12px;
+}
+
+.track-item-detailed:last-child {
+    border-bottom: none;
+}
+
+.track-number {
+    width: 25px;
+    font-weight: bold;
+    color: #666;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.track-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.track-info-detailed {
+    flex: 1;
+    min-width: 0;
+}
+
+.track-name {
+    font-weight: 500;
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-artist {
+    margin: 0 0 2px 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.track-album {
+    margin: 0;
+    font-size: 11px;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-popularity {
+    font-size: 12px;
+    color: #1DB954;
+    font-weight: bold;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* Scroll personalizado */
+.dropdown-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+
+
+

@@ -90,7 +90,6 @@ export default function EmotionUpload() {
     // --- Enviar al backend ---
     const handleSubmit = async (e) => {
         e.preventDefault();
-        router.get(route("Dashboard")); //Prueba ruta
 
         // Validar si no hay archivo
         if (!file) {
@@ -117,7 +116,7 @@ export default function EmotionUpload() {
         try {
             await router.post(route("emotion.upload"), formData, {
                 forceFormData: true,
-                onSuccess: () => {
+                onSuccess: (page) => {
                     console.log("Foto enviada correctamente");
                     setFile(null);
                     setShowSubmitError(false);
@@ -125,7 +124,6 @@ export default function EmotionUpload() {
                     if (videoRef.current && videoRef.current.srcObject) {
                         videoRef.current.srcObject.getTracks().forEach(track => track.stop());
                     }
-                    router.get(route("Dashboard"));
                 },
                 onError: (errors) => {
                     if (errors.photo) {
