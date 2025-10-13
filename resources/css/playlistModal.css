@@ -25,12 +25,15 @@ button{
 /* Caja del modal */
 .modal {
     background: var(--color-white);
-    width: 500px;
+    width: 700px;
     max-width: 90%;
     border-radius: 12px;
     padding: 30px;
     position: relative;
     box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    max-height: 90vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
 }
 
 /* Botón cerrar */
@@ -150,8 +153,12 @@ button{
 }
 
 .modal-info img{
-    width: 20px;
-    height: 20px;
+    width: 40px;
+    height: 40px;
+}
+.header-info img{
+    width:20px;
+    height:20px;
 }
 
 .modal-buttons{
@@ -262,27 +269,26 @@ button{
     min-width: 0;
 }
 
-.track-name {
+.track-name2 {
     font-weight: 500;
     margin: 0 0 4px 0;
-    font-size: 14px;
+    font-size: 1rem;
     color: #333;
-    white-space: nowrap;
+    white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.track-artist {
-    margin: 0 0 2px 0;
-    font-size: 12px;
+.track-artist2 {
+    font-size: 0.8rem;
     color: #666;
 }
 
 .track-album {
     margin: 0;
-    font-size: 11px;
+    font-size: 0.8rem;
     color: #999;
-    white-space: nowrap;
+    white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -314,6 +320,27 @@ button{
     background: #a8a8a8;
 }
 
+@media (max-width: 768px) {
+    .modal {
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .modal-container {
+        padding-bottom: 1.5rem;
+    }
+
+    .modal-playlist {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .dropdown-content {
+        max-height: 160px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+}
 
 
 
