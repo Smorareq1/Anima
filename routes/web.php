@@ -40,7 +40,6 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('emotion')->name('emotion.')->group(function () {
         Route::post('/upload', [EmotionController::class, 'upload'])->name('upload');
-        Route::get('/test-api', [EmotionController::class, 'testAPI'])->name('test.api');
     });
 
     Route::get('/playlist/{id}', [PlaylistController::class, 'show'])->name('playlist.show');
