@@ -12,7 +12,7 @@ class RecordController extends Controller
         //mock data
         $playlists = collect([
                 ['name' => 'Workout Energy', 'songs' => 50, 'duration' => '1h 45m', 'date' => '2025-09-20', 'emotion' => 'HAPPY', 'image' => '/images/mock/workout.jpg'],
-                ['name' => 'Chill Vibes', 'songs' => 20, 'duration' => '1h 00m', 'date' => '2025-09-21', 'emotion' => 'SAD', 'image' => '/images/mock/chill.jpg'],
+                ['name' => 'Chill Vibes', 'songs' => 20, 'duration' => '1h 00m', 'date' => '2025-09-21', 'emotion' => 'SAD', 'image' => '/images/mock/chill.png'],
                 ['name' => 'Focus Beats', 'songs' => 30, 'duration' => '1h 30m', 'date' => '2025-09-22', 'emotion' => 'CALM', 'image' => '/images/mock/focus.jpg'],
                 ['name' => 'Party Hits', 'songs' => 40, 'duration' => '2h 00m', 'date' => '2025-09-23', 'emotion' => 'SURPRISED', 'image' => '/images/mock/party.jpg'],
                 ['name' => 'Relaxing Sounds', 'songs' => 25, 'duration' => '1h 15m', 'date' => '2025-09-24', 'emotion' => 'CONFUSED', 'image' => '/images/mock/relax.jpg'],

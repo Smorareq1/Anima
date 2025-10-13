@@ -146,7 +146,7 @@ export default function EmotionUpload() {
         setMode(newMode);
         setErrors({});
         setShowSubmitError(false);
-        
+
         if (newMode === "camera") {
             startCamera();
         }
@@ -182,9 +182,9 @@ export default function EmotionUpload() {
                         width="100%"
                         height="250"
                     />
-                    <button 
-                        type="button" 
-                        className="capture-btn" 
+                    <button
+                        type="button"
+                        className="capture-btn"
                         onClick={takePhoto}
                         disabled={isSubmitting}
                     >
@@ -207,7 +207,7 @@ export default function EmotionUpload() {
                             <UploadIcon className="icon-large" />
                         </div>
                         <p>Max 120Mb, PNG, JPEG, JPG</p>
-                        <span className="upload-btn">Buscar archivo</span>
+                        <span className="upload-btn">Sube tu foto</span>
                     </label>
                     <input
                         id="fileInput"
@@ -234,9 +234,9 @@ export default function EmotionUpload() {
                             {(file.size / 1024 / 1024).toFixed(2)} Mb
                         </p>
                     </div>
-                    <button 
-                        type="button" 
-                        className="file-remove" 
+                    <button
+                        type="button"
+                        className="file-remove"
                         onClick={removeFile}
                         disabled={isSubmitting}
                     >
@@ -251,9 +251,9 @@ export default function EmotionUpload() {
                     ⚠ Debes subir una imagen antes de generar recomendaciones
                 </div>
             )}
-            
-            <button 
-                type="button" 
+
+            <button
+                type="button"
                 className="generate-btn"
                 onClick={handleSubmit}
                 disabled={isSubmitting}

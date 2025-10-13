@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\App\Emotion\EmotionController;
 use App\Http\Controllers\App\dashboard\DashboardController;
 use App\Http\Controllers\App\dashboard\RecordController;
+use App\Http\Controllers\App\dashboard\PlaylistController;
 
 Route::get('/', [HomeController::class, 'index'])->name('Home');
 
@@ -41,6 +42,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/upload', [EmotionController::class, 'upload'])->name('upload');
         Route::get('/test-api', [EmotionController::class, 'testAPI'])->name('test.api');
     });
+
+    Route::get('/playlist/{id}', [PlaylistController::class, 'show'])->name('playlist.show');
 });
 
 Route::get('/spotify-test-public', function (SpotifyService $spotify) {
