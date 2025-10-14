@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,18 +25,26 @@ class ConnectedAccount extends Model
     ];
 
     protected $casts = [
-        // Convierte el token de acceso a un string encriptado/desencriptado automáticamente.
         'token' => 'encrypted',
-
-        // Hace lo mismo para el refresh token.
         'refresh_token' => 'encrypted',
-
-        // Convierte la marca de tiempo 'expires_at' en un objeto Carbon.
         'expires_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function isExpired(): bool
+    {
+        if (!$this->expires_at) {
+            return false;
+        }
+        return Carbon::now()->greaterThan($this->expires_at);
+    }
+
+    public function isValid(): bool
+    {
+        return !empty($this->token) && !$this->isExpired();
     }
 }

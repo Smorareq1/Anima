@@ -35,13 +35,30 @@ class User extends Authenticatable
         ];
     }
 
+    public function playlists(): HasMany
+    {
+        return $this->hasMany(Playlist::class);
+    }
+    //Spotify
     public function connectedAccounts(): HasMany
     {
         return $this->hasMany(ConnectedAccount::class);
     }
-
-    public function playlists(): HasMany
+    public function spotifyAccount()
     {
-        return $this->hasMany(Playlist::class);
+        return $this->connectedAccounts()
+            ->where('provider', 'spotify')
+            ->first();
+    }
+    public function hasSpotify(): bool
+    {
+        $account = $this->spotifyAccount();
+        return $account && $account->isValid();
+    }
+    public function hasSpotifyConnected(): bool
+    {
+        return $this->connectedAccounts()
+            ->where('provider', 'spotify')
+            ->exists();
     }
 }

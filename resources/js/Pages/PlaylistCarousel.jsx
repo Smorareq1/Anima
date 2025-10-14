@@ -9,8 +9,6 @@ export default function PlaylistCarousel({ tracks }) {
         return <p className="no-tracks">No hay canciones para mostrar.</p>;
     }
 
-    console.log(tracks)
-
     const settings = {
         dots: true,
         infinite: true,
