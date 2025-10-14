@@ -29,24 +29,28 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
             return;
         }
 
-        const newPlaylist = {
-            id: crypto.randomUUID(),
-            name: playlistName,
-            emotion: playlistData?.emotion || "Desconocida",
-            confidence: playlistData?.confidence || 0,
-            created_at: new Date().toISOString(),
-            tracks: playlistData?.tracks || []
-        };
-
-        // Guardar en localStorage
-        const existing = JSON.parse(localStorage.getItem("playlists")) || [];
-        existing.push(newPlaylist);
-        localStorage.setItem("playlists", JSON.stringify(existing));
-
-        const fakeLink = `${window.location.origin}/playlist/${newPlaylist.id}`;
-        setPlaylistLink(fakeLink);
-        setPlaylistId(newPlaylist.id); // ✅ guardamos el id
-        setSaved(true);
+        router.post(route('emotion.playlists.store'), {
+            playlist_name: playlistName,
+        }, {
+            preserveScroll: true,
+            onSuccess: (page) => {
+                const createdPlaylist = page.props.flash?.playlist;
+                if (createdPlaylist) {
+                    const fakeLink = `${window.location.origin}/playlist/${createdPlaylist.id}`;
+                    setPlaylistLink(fakeLink);
+                    setPlaylistId(createdPlaylist.id);
+                    setSaved(true);
+                    console.log(saved)
+                } else {
+                    alert('La playlist se guardó, pero no se recibieron los datos de vuelta.');
+                }
+            },
+            onError: (errors) => {
+                console.error(errors);
+                const firstError = Object.values(errors)[0];
+                alert(`Error: ${firstError}`);
+            }
+        });
     };
 
     const copyToClipboard = () => {
@@ -56,11 +60,10 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
         });
     };
 
-    // ✅ Nueva función: redirigir con Inertia
     const goToPlaylist = () => {
         if (!playlistId) return;
-        onClose(); // cierra el modal
-        router.visit(`/playlist/${playlistId}`);
+        onClose();
+        router.visit(route('emotion.playlists.show', { id: playlistId }));
     };
 
     return (

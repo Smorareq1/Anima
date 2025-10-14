@@ -11,14 +11,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'username',
         'first_name',
@@ -29,21 +22,11 @@ class User extends Authenticatable
     ];
 
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -52,8 +35,30 @@ class User extends Authenticatable
         ];
     }
 
+    public function playlists(): HasMany
+    {
+        return $this->hasMany(Playlist::class);
+    }
+    //Spotify
     public function connectedAccounts(): HasMany
     {
         return $this->hasMany(ConnectedAccount::class);
+    }
+    public function spotifyAccount()
+    {
+        return $this->connectedAccounts()
+            ->where('provider', 'spotify')
+            ->first();
+    }
+    public function hasSpotify(): bool
+    {
+        $account = $this->spotifyAccount();
+        return $account && $account->isValid();
+    }
+    public function hasSpotifyConnected(): bool
+    {
+        return $this->connectedAccounts()
+            ->where('provider', 'spotify')
+            ->exists();
     }
 }

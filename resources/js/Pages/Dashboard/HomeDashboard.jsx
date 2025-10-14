@@ -8,6 +8,8 @@ export default function HomeDashboard() {
     const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
     const [playlistData, setPlaylistData] = useState(null);
 
+    console.log(props.hasSpotify)
+
     useEffect(() =>{
         if(props.playlistData){
             console.log("Datos de playlist recibidos", props.playlistData);
@@ -27,7 +29,7 @@ export default function HomeDashboard() {
                 <h1>Bienvenido, {props.auth.user.username}</h1>
             </div>
 
-            <PlaylistModal 
+            <PlaylistModal
                 isOpen={isPlaylistModalOpen}
                 onClose={closePlaylistModal}
                 playlistData={playlistData}
