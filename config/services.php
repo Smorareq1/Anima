@@ -42,6 +42,7 @@ return [
         'base_uri' => 'https://api.spotify.com/v1/',
         'accounts_uri' => 'https://accounts.spotify.com/api/',
         'default_market' => env('SPOTIFY_DEFAULT_MARKET'),
+        'scopes' => explode(',', env('SPOTIFY_SCOPES', 'user-read-email')),
     ],
 
 ];

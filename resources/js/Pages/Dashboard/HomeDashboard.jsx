@@ -8,8 +8,6 @@ export default function HomeDashboard() {
     const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
     const [playlistData, setPlaylistData] = useState(null);
 
-    console.log(props.hasSpotify)
-
     useEffect(() =>{
         if(props.playlistData){
             console.log("Datos de playlist recibidos", props.playlistData);

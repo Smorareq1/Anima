@@ -17,6 +17,7 @@ class Playlist extends Model
         'main_emotion',
         'emotions_used',
         'spotify_playlist_id',
+        'spotify_url',
     ];
 
     protected $casts = [
@@ -32,5 +33,10 @@ class Playlist extends Model
     public function tracks(): BelongsToMany
     {
         return $this->belongsToMany(Track::class);
+    }
+
+    public function isSpotifySynced(): bool
+    {
+        return !empty($this->spotify_playlist_id);
     }
 }
