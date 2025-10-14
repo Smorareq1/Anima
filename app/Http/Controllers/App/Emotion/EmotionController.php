@@ -140,4 +140,16 @@ class EmotionController extends Controller
         }
     }
 
+    public function show($id)
+    {
+        $playlist = Playlist::with('tracks')
+            ->where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        return Inertia::render('PlaylistShow', [
+            'playlist' => $playlist
+        ]);
+    }
+
 }

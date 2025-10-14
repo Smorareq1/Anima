@@ -9,6 +9,7 @@ export default function PlaylistCarousel({ tracks }) {
         return <p className="no-tracks">No hay canciones para mostrar.</p>;
     }
 
+    console.log(tracks)
 
     const settings = {
         dots: true,
@@ -48,7 +49,7 @@ export default function PlaylistCarousel({ tracks }) {
                     <div key={track.id} className="carousel-slide">
                         <div className="track-card">
                             <img
-                                src={track.image}
+                                src={track.image_url}
                                 alt={track.name}
                                 className="track-cover"
                             />
@@ -56,7 +57,7 @@ export default function PlaylistCarousel({ tracks }) {
                                 <h3 className="track-name">{track.name}</h3>
                                 <p className="track-artist">{track.artist}</p>
                                 <a
-                                    href={track.url}
+                                    href={track.spotify_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="track-link"

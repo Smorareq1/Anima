@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('emotion')->name('emotion.')->group(function () {
         Route::post('/upload', [EmotionController::class, 'upload'])->name('upload');
         Route::post('/playlists', [EmotionController::class, 'store'])->name('playlists.store');
+        Route::get('/playlist/{id}', [EmotionController::class, 'show'])->name('playlists.show');
     });
 
     Route::get('/playlist/{id}', [PlaylistController::class, 'show'])->name('playlist.show');

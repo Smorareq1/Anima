@@ -62,8 +62,8 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
 
     const goToPlaylist = () => {
         if (!playlistId) return;
-        onClose(); // cierra el modal
-        router.visit(`/playlist/${playlistId}`);
+        onClose();
+        router.visit(route('emotion.playlists.show', { id: playlistId }));
     };
 
     return (
