@@ -12,7 +12,7 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
     const [playlistName, setPlaylistName] = useState("");
     const [playlistLink, setPlaylistLink] = useState("");
     const [saved, setSaved] = useState(false);
-    const [playlistId, setPlaylistId] = useState(null); // ✅ Nuevo estado
+    const [playlistId, setPlaylistId] = useState(null);
 
     if (!isOpen) return null;
 

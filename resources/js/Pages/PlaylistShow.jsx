@@ -15,7 +15,7 @@ export default function PlaylistShow({ playlist }) {
             </DashboardLayout>
         );
     }
-
+    console.log(playlist);
     return (
         <DashboardLayout>
             <div className="playlist-view">
@@ -30,7 +30,11 @@ export default function PlaylistShow({ playlist }) {
                 <div className="playlist-header">
                     <h1 className="playlist-title">{playlist.name}</h1>
                     <p className="playlist-info">
-                        Emoción: <strong>{playlist.main_emotion}</strong>
+                        Emocion principal: <strong>{playlist.main_emotion}</strong> <br></br>
+                        Otras emociones: {playlist.emotions_used
+                        .filter(e => e.type !== playlist.main_emotion)
+                        .map(e => `${e.type}`)
+                        .join(", ")}
                     </p>
                 </div>
 
