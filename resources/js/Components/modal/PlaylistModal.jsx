@@ -34,7 +34,7 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
         }, {
             preserveScroll: true,
             onSuccess: (page) => {
-                const createdPlaylist = page.props.flash.playlist;
+                const createdPlaylist = page.props.flash?.playlist;
                 if (createdPlaylist) {
                     const fakeLink = `${window.location.origin}/playlist/${createdPlaylist.id}`;
                     setPlaylistLink(fakeLink);

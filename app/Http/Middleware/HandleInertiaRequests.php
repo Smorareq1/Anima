@@ -24,7 +24,12 @@ class HandleInertiaRequests extends Middleware
                     ? Auth::user()->only(['id', 'username', 'first_name', 'last_name', 'email', 'avatar'])
                     : null,
             ],
-            'hasSpotify' => true, /*dummy, editar con la logica */
+            'hasSpotify' => true,
+            'flash' => [
+                'message' => fn () => $request->session()->get('message'),
+                'playlist' => fn () => $request->session()->get('playlist'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
         ]);
     }
 }

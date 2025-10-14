@@ -64,7 +64,7 @@ class EmotionController extends Controller
             $emotions = $rekognition->detectEmotion($fullPath, 3);
 
             if (empty($emotions)) {
-                \Storage::disk('public')->delete($path);
+                Storage::disk('public')->delete($path);
 
                 if ($request->header('X-Inertia')) {
                     return redirect()->back()->withErrors(['photo' => 'No se detectaron emociones en la imagen'])->withInput();
@@ -75,7 +75,7 @@ class EmotionController extends Controller
             Log::info('Emociones detectadas:', $emotions);
 
             //Recomendaciones
-            $recs = $spotify->recommendByEmotionsEnhanced(\Auth::user(), $emotions, $limit);
+            $recs = $spotify->recommendByEmotionsEnhanced(Auth::user(), $emotions, $limit);
 
             // Payload
             $payload = [
