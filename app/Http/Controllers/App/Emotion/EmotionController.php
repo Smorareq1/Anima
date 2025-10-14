@@ -3,14 +3,19 @@
 namespace App\Http\Controllers\App\Emotion;
 
 use App\Http\Controllers\Controller;
+use App\Models\Playlist;
+use App\Models\Track;
 use App\Services\amazon\RekognitionService;
+use App\Services\Playlist\PlaylistService;
 use App\Services\Spotify\SpotifyService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Log;
+use Throwable;
 
 class EmotionController extends Controller
 {
@@ -69,43 +74,26 @@ class EmotionController extends Controller
 
             Log::info('Emociones detectadas:', $emotions);
 
-            // 3) Recomendaciones multi-emoción (service mejorado)
+            //Recomendaciones
             $recs = $spotify->recommendByEmotionsEnhanced(\Auth::user(), $emotions, $limit);
-
-            // 4) Crear playlist si se solicitó y hay token de usuario
-            $playlist = null;
-            if ($create && ($recs['used_user_token'] ?? false) && !empty($recs['tracks'])) {
-                $uris = array_values(array_filter(array_map(fn($t) => $t['uri'] ?? null, $recs['tracks'])));
-                $mainEmotion = $recs['emotion'] ?? ($emotions[0]['type'] ?? 'MIX');
-                if (!empty($uris)) {
-                    $playlist = $spotify->createPlaylistFor(\Auth::user(), "{$mainEmotion} Mood Mix", $uris, false);
-                }
-            }
 
             // Payload
             $payload = [
                 'message'          => 'Análisis y recomendaciones generadas',
                 'emotions'         => $emotions,
-                'emotions_used'    => $recs['emotions_used'] ?? null, // ← NUEVO
+                'emotions_used'    => $recs['emotions_used'] ?? null,
                 'method_used'      => $recs['method'] ?? 'hybrid',
                 'emotion'          => $recs['emotion'] ?? null,
                 'confidence'       => $recs['confidence'] ?? null,
-                'market'           => $recs['market'] ?? config('services.spotify.default_market', 'US'), // ← NUEVO
                 'tracks'           => $recs['tracks'] ?? [],
-                'created_playlist' => $playlist ? [
-                    'id'   => $playlist['id'],
-                    'name' => $playlist['name'],
-                    'url'  => $playlist['external_urls']['spotify'] ?? null,
-                ] : null,
             ];
 
-            
             // Guardar en sesión flash y redirigir
             $request->session()->put('playlistData', $payload);
 
             return redirect()->route('Dashboard');
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Error completo en upload:', [
                 'message'  => $e->getMessage(),
                 'trace'    => $e->getTraceAsString(),
@@ -121,6 +109,34 @@ class EmotionController extends Controller
             if (isset($path)) {
                 Storage::disk('public')->delete($path);
             }
+        }
+    }
+
+    public function store(Request $request, PlaylistService $playlistService)
+    {
+        $request->validate([
+            'playlist_name' => 'required|string|max:100',
+        ]);
+
+        $recs = session('playlistData');
+        if (empty($recs) || empty($recs['tracks'])) {
+            return back()->withErrors(['message' => 'No se encontraron datos de recomendación.']);
+        }
+
+        try {
+            $playlistName = $request->input('playlist_name');
+            $createdPlaylist = $playlistService->createPlaylistFromRecommendation($playlistName, $recs);
+            session()->forget('playlistData');
+            $createdPlaylist->load('tracks');
+            Log::info('Playlist creada con éxito:', ['playlist_id' => $createdPlaylist->id, 'user_id' => Auth::id()]);
+            return back()->with('playlist', $createdPlaylist);
+
+        } catch (Throwable $e) {
+            Log::error('Error guardando la playlist:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return back()->withErrors(['message' => 'Ocurrió un error inesperado al guardar tu playlist.']);
         }
     }
 

@@ -56,4 +56,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ConnectedAccount::class);
     }
+
+    public function playlists(): HasMany
+    {
+        return $this->hasMany(Playlist::class);
+    }
 }

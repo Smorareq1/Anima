@@ -13,12 +13,6 @@ class DashboardController extends Controller
     {
         // Obtener playlistData de la sesión si existe
         $playlistData = $request->session()->get('playlistData');
-        
-        // Limpiar la sesión después de leer
-        if ($playlistData) {
-            $request->session()->forget('playlistData');
-        }
-
         return Inertia::render('Dashboard/HomeDashboard', [
             'playlistData' => $playlistData,
         ]);
