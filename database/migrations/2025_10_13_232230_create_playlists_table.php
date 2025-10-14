@@ -23,6 +23,7 @@ return new class extends Migration
 
             // El ID que devuelve Spotify al crear la playlist.
             $table->string('spotify_playlist_id')->nullable();
+            $table->string('spotify_url')->nullable()->after('spotify_playlist_id');
 
             $table->timestamps();
         });

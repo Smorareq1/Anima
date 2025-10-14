@@ -8,6 +8,7 @@ use App\Models\ConnectedAccount;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -748,10 +749,6 @@ class SpotifyService
         Cache::put($key, $unique, now()->addMinutes($ttlMinutes));
     }
 
-    /* ==============================
-     *   Utilidades ya existentes
-     * ============================== */
-
     /**
      * Tracks desde categorías relevantes (elige playlists al azar dentro de cada categoría).
      */
@@ -886,50 +883,6 @@ class SpotifyService
     }
 
     /**
-     * Crea playlist en la cuenta del usuario y añade URIs.
-     */
-    public function createPlaylistFor(User $user, string $name, array $trackUris, bool $public = false): ?array
-    {
-        if (empty($trackUris)) {
-            throw new \InvalidArgumentException('Se requiere al menos un track para crear la playlist');
-        }
-
-        $connected = $this->connectionFor($user);
-        $token     = $this->ensureUserToken($connected);
-
-        if (!$token) {
-            Log::warning('Cannot create playlist: user not connected to Spotify', ['user_id' => $user->id]);
-            return null;
-        }
-
-        try {
-            $me = $this->apiGet('me', $token);
-            if (empty($me['id'])) {
-                throw new \RuntimeException('No se pudo obtener el ID del usuario de Spotify');
-            }
-
-            $playlist = $this->apiPost("users/{$me['id']}/playlists", $token, [
-                'name'        => $name,
-                'public'      => $public,
-                'description' => 'Generada por análisis de emociones',
-            ]);
-
-            foreach (array_chunk($trackUris, 100) as $chunk) {
-                $this->apiPost("playlists/{$playlist['id']}/tracks", $token, ['uris' => $chunk]);
-            }
-
-            return $playlist;
-
-        } catch (\Exception $e) {
-            Log::error('Failed to create Spotify playlist', [
-                'user_id' => $user->id,
-                'error'   => $e->getMessage()
-            ]);
-            throw new \RuntimeException('Error al crear la playlist en Spotify: ' . $e->getMessage());
-        }
-    }
-
-    /**
      * (Opcional) Pruebas rápidas de conectividad/API para diagnóstico.
      */
     public function testSpotifyAPI(?User $user = null): array
@@ -1031,5 +984,109 @@ class SpotifyService
             'singer-songwriter','ska','sleep','songwriter','soul','soundtracks','spanish','study','summer','swedish',
             'synth-pop','tango','techno','trance','trip-hop','turkish','work-out','world-music'
         ];
+    }
+
+    /*PLAYLISTS*/
+    public function createPlaylist(User $user, string $playlistName, string $description = ''): ?array
+    {
+        $spotifyAccount = $user->spotifyAccount();
+
+        if (!$spotifyAccount || !$spotifyAccount->isValid()) {
+            Log::warning('Usuario sin cuenta de Spotify válida', ['user_id' => $user->id]);
+            return null;
+        }
+
+        try {
+            // Obtener el Spotify User ID
+            $profileResponse = Http::withToken($spotifyAccount->token)
+                ->get('https://api.spotify.com/v1/me');
+
+            if (!$profileResponse->successful()) {
+                Log::error('Error obteniendo perfil de Spotify', [
+                    'status' => $profileResponse->status(),
+                    'body' => $profileResponse->body()
+                ]);
+                return null;
+            }
+
+            $spotifyUserId = $profileResponse->json('id');
+
+            // Crear la playlist
+            $response = Http::withToken($spotifyAccount->token)
+                ->post("https://api.spotify.com/v1/users/{$spotifyUserId}/playlists", [
+                    'name' => $playlistName,
+                    'description' => $description ?: 'Creada con detección de emociones 🎭🎵',
+                    'public' => false, // Cambiar a true si quieres que sea pública
+                ]);
+
+            if ($response->successful()) {
+                $playlistData = $response->json();
+                Log::info('Respuesta completa de Spotify al crear playlist', $playlistData);
+                Log::info('Playlist creada en Spotify', [
+                    'playlist_id' => $playlistData['id'],
+                    'user_id' => $user->id
+                ]);
+                return $playlistData;
+            }
+
+            Log::error('Error creando playlist en Spotify', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+            return null;
+
+        } catch (\Throwable $e) {
+            Log::error('Excepción al crear playlist en Spotify', [
+                'message' => $e->getMessage(),
+                'user_id' => $user->id
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Agrega canciones a una playlist de Spotify
+     */
+    public function addTracksToPlaylist(User $user, string $spotifyPlaylistId, array $trackUris): bool
+    {
+        $spotifyAccount = $user->spotifyAccount();
+
+        if (!$spotifyAccount || !$spotifyAccount->isValid()) {
+            return false;
+        }
+
+        try {
+            // Spotify permite máximo 100 tracks por request
+            $chunks = array_chunk($trackUris, 100);
+
+            foreach ($chunks as $chunk) {
+                $response = Http::withToken($spotifyAccount->token)
+                    ->post("https://api.spotify.com/v1/playlists/{$spotifyPlaylistId}/tracks", [
+                        'uris' => $chunk,
+                    ]);
+
+                if (!$response->successful()) {
+                    Log::error('Error agregando tracks a playlist de Spotify', [
+                        'playlist_id' => $spotifyPlaylistId,
+                        'status' => $response->status(),
+                        'body' => $response->body()
+                    ]);
+                    return false;
+                }
+            }
+
+            Log::info('Tracks agregados a playlist de Spotify', [
+                'playlist_id' => $spotifyPlaylistId,
+                'tracks_count' => count($trackUris)
+            ]);
+            return true;
+
+        } catch (\Throwable $e) {
+            Log::error('Excepción al agregar tracks a playlist', [
+                'message' => $e->getMessage(),
+                'playlist_id' => $spotifyPlaylistId
+            ]);
+            return false;
+        }
     }
 }

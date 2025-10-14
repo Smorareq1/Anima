@@ -36,11 +36,13 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
             onSuccess: (page) => {
                 const createdPlaylist = page.props.flash?.playlist;
                 if (createdPlaylist) {
-                    const fakeLink = `${window.location.origin}/playlist/${createdPlaylist.id}`;
-                    setPlaylistLink(fakeLink);
+                    const link = createdPlaylist.spotify_url
+                        ? createdPlaylist.spotify_url
+                        : `${window.location.origin}/playlist/${createdPlaylist.id}`;
+                    console.log(link)
+                    setPlaylistLink(link);
                     setPlaylistId(createdPlaylist.id);
                     setSaved(true);
-                    console.log(saved)
                 } else {
                     alert('La playlist se guardó, pero no se recibieron los datos de vuelta.');
                 }
