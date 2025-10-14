@@ -15,13 +15,12 @@ export default function PlaylistShow({ playlist }) {
             </DashboardLayout>
         );
     }
-    console.log(playlist);
     return (
         <DashboardLayout>
             <div className="playlist-view">
                 <div
                     className="back-arrow"
-                    onClick={() => router.visit(route('records'))}
+                    onClick={() => router.visit(route('Record'))}
                     title="Volver al historial"
                 >
                     <ArrowLeft size={22} strokeWidth={2.5} />

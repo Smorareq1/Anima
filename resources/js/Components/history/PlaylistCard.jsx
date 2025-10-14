@@ -1,5 +1,7 @@
 import React from "react";
 import "../../../css/history.css";
+import {router} from "@inertiajs/react";
+
 
 const emotionIcons = {
     HAPPY: "😊",
@@ -13,11 +15,14 @@ const emotionIcons = {
     FEAR: "😨",
 };
 
-export default function PlaylistCard({ name, songs, date, emotion, image }) {
+export default function PlaylistCard({ id, name, songs, date, emotion, image }) {
     return (
         <div
             className="playlist-card bg-cover"
             style={{ backgroundImage: `url(${image})` }}
+            onClick={() =>
+                router.visit(route('emotion.playlists.show', { id: id }))
+            }
         >
             <div className="playlist-overlay">
                 <div className="playlist-info">
