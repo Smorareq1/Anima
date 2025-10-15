@@ -15,13 +15,12 @@ export default function PlaylistShow({ playlist }) {
             </DashboardLayout>
         );
     }
-
     return (
         <DashboardLayout>
             <div className="playlist-view">
                 <div
                     className="back-arrow"
-                    onClick={() => router.visit(route('records'))}
+                    onClick={() => router.visit(route('Record'))}
                     title="Volver al historial"
                 >
                     <ArrowLeft size={22} strokeWidth={2.5} />
@@ -30,7 +29,11 @@ export default function PlaylistShow({ playlist }) {
                 <div className="playlist-header">
                     <h1 className="playlist-title">{playlist.name}</h1>
                     <p className="playlist-info">
-                        Emoción: <strong>{playlist.main_emotion}</strong>
+                        Emocion principal: <strong>{playlist.main_emotion}</strong> <br></br>
+                        Otras emociones: {playlist.emotions_used
+                        .filter(e => e.type !== playlist.main_emotion)
+                        .map(e => `${e.type}`)
+                        .join(", ")}
                     </p>
                 </div>
 
