@@ -31,7 +31,6 @@ export default function LoginForm() {
     });
     return (
         <form className="register-form" onSubmit={formik.handleSubmit}>
-            <h2 className="form-title">Inicia sesión</h2>
 
             <div className="form-group">
                 <label htmlFor="usuario">Correo Electrónico</label>
