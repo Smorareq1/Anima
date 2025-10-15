@@ -85,8 +85,6 @@ export default function RegisterForm() {
 
     return (
         <form className="register-form" onSubmit={formik.handleSubmit}>
-            <h2 className="form-title">Crea tu cuenta</h2>
-
             <div className="form-row">
                 <div className="form-group">
                     <label htmlFor="nombre">Nombre</label>
