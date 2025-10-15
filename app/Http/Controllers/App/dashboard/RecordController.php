@@ -29,7 +29,7 @@ class RecordController extends Controller
                 'spotify_url'   => $playlist->spotify_url,
                 'date'          => $playlist->created_at->format('Y-m-d'),
                 'songs'         => $playlist->tracks_count,
-                'image'         => $playlist->thumbnail_path ?? '/images/mock/default.jpg',
+                'image'         => $playlist->playlist_image ?? '/images/mock/default.jpg',
             ];
         });
 
