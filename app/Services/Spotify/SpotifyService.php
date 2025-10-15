@@ -1089,4 +1089,25 @@ class SpotifyService
             return false;
         }
     }
+
+    public function getPlaylistDetails(User $user, string $spotifyPlaylistId): ?array
+    {
+        $conn = $this->connectionFor($user);
+        $token = $this->ensureUserToken($conn);
+
+        if (!$token) {
+            Log::warning('No se pudo obtener token para getPlaylistDetails', ['user_id' => $user->id]);
+            return null;
+        }
+
+        try {
+            return $this->apiGet("playlists/{$spotifyPlaylistId}", $token);
+        } catch (\Exception $e) {
+            Log::error('Error obteniendo detalles de la playlist de Spotify', [
+                'playlist_id' => $spotifyPlaylistId,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
 }

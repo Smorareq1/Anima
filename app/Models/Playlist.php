@@ -18,6 +18,7 @@ class Playlist extends Model
         'emotions_used',
         'spotify_playlist_id',
         'spotify_url',
+        'playlist_image'
     ];
 
     protected $casts = [

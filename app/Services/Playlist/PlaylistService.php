@@ -73,46 +73,52 @@ class PlaylistService
         try {
             $user = $playlist->user;
 
-            // Crear descripción con las emociones
             $emotionsText = is_array($playlist->emotions_used)
                 ? implode(', ', array_column($playlist->emotions_used, 'type'))
                 : '';
-
             $description = "🎭 Emociones: {$emotionsText} | Creada con detección de emociones";
 
-            // Crear playlist en Spotify
             $spotifyPlaylist = $this->spotifyService->createPlaylist(
                 $user,
                 $playlist->name,
                 $description
             );
 
-            if ($spotifyPlaylist) {
-                // Agregar tracks a la playlist
+            if ($spotifyPlaylist && !empty($spotifyPlaylist['id'])) {
+                $spotifyPlaylistId = $spotifyPlaylist['id'];
+
                 $success = $this->spotifyService->addTracksToPlaylist(
                     $user,
-                    $spotifyPlaylist['id'],
+                    $spotifyPlaylistId,
                     $trackUris
                 );
 
                 if ($success) {
-                    $spotifyUrl = $spotifyPlaylist['external_urls']['spotify'] ?? null;
+                    // 1. Volvemos a pedir los datos de la playlist para obtener la imagen
+                    $updatedPlaylistDetails = $this->spotifyService->getPlaylistDetails($user, $spotifyPlaylistId);
 
-                    // Actualizar la playlist local con los datos de Spotify
+                    // 2. Extraemos la URL de la imagen (usualmente la primera es la más grande)
+                    $imageUrl = $updatedPlaylistDetails['images'][0]['url'] ?? null;
+
+                    // 3. Obtenemos la URL de Spotify
+                    $spotifyUrl = $updatedPlaylistDetails['external_urls']['spotify'] ?? $spotifyPlaylist['external_urls']['spotify'] ?? null;
+
+                    // 4. Actualizamos la playlist local con TODOS los datos de Spotify
                     $playlist->update([
-                        'spotify_playlist_id' => $spotifyPlaylist['id'],
-                        'spotify_url' => $spotifyUrl, // ✅ Usa la variable
+                        'spotify_playlist_id' => $spotifyPlaylistId,
+                        'spotify_url'         => $spotifyUrl,
+                        'playlist_image'      => $imageUrl,
                     ]);
 
                     Log::info('Playlist sincronizada con Spotify exitosamente', [
-                        'playlist_id' => $playlist->id,
-                        'spotify_playlist_id' => $spotifyPlaylist['id'],
-                        'spotify_url' => $spotifyUrl, // ✅ Verifica en el log
+                        'playlist_id'         => $playlist->id,
+                        'spotify_playlist_id' => $spotifyPlaylistId,
+                        'spotify_url'         => $spotifyUrl,
+                        'playlist_image_url'  => $imageUrl,
                     ]);
                 }
             }
         } catch (Throwable $e) {
-            // No fallar toda la transacción si Spotify falla
             Log::error('Error sincronizando con Spotify (no crítico)', [
                 'playlist_id' => $playlist->id,
                 'message' => $e->getMessage(),
