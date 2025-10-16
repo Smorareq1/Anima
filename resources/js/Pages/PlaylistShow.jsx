@@ -6,6 +6,16 @@ import DashboardLayout from "../Layout/DashboardLayout.jsx";
 import "../../css/playlistView.css";
 import SpotifyLogo from "../../images/spotify-logo.svg";
 
+const emotionTranslations = {
+    HAPPY: "FELIZ",
+    SAD: "TRISTE",
+    ANGRY: "ENOJADO",
+    CALM: "CALMADO",
+    SURPRISED: "SORPRENDIDO",
+    CONFUSED: "CONFUNDIDO",
+    DISGUSTED: "DISGUSTADO",
+    FEAR: "MIEDO"
+};
 
 export default function PlaylistShow({ playlist }) {
 
@@ -40,11 +50,16 @@ export default function PlaylistShow({ playlist }) {
                 <div className="playlist-header">
                     <h1 className="playlist-title">{playlist.name}</h1>
                     <p className="playlist-info">
-                        Emocion principal: <strong>{playlist.main_emotion}</strong> <br></br>
-                        Otras emociones: {playlist.emotions_used
-                        .filter(e => e.type !== playlist.main_emotion)
-                        .map(e => `${e.type}`)
-                        .join(", ")}
+                        Emoción principal:{" "}
+                        <strong>
+                            {emotionTranslations[playlist.main_emotion] || playlist.main_emotion}
+                        </strong>
+                        <br />
+                        Otras emociones:{" "}
+                        {playlist.emotions_used
+                            .filter(e => e.type !== playlist.main_emotion)
+                            .map(e => emotionTranslations[e.type] || e.type)
+                            .join(", ")}
                     </p>
                 </div>
                 <div>

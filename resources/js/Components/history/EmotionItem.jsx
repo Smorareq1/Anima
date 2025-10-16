@@ -1,6 +1,15 @@
 import React from "react";
 import "../../../css/history.css";
-
+const emotionTranslations = {
+    HAPPY: "FELIZ",
+    SAD: "TRISTE",
+    ANGRY: "ENOJADO",
+    CALM: "CALMADO",
+    SURPRISED: "SORPRENDIDO",
+    CONFUSED: "CONFUNDIDO",
+    DISGUSTED: "DISGUSTADO",
+    FEAR: "MIEDO"
+};
 const emotionIcons = {
     HAPPY: "😊",
     SAD: "😢",
@@ -22,7 +31,7 @@ export default function EmotionSummaryItem({ emotion, playlists, songs }) {
                 <br />
                 +{songs} canciones
                 <br />
-                {emotion}
+                {emotionTranslations[emotion] || emotion}
             </div>
         </div>
     );

@@ -2,6 +2,16 @@ import React from "react";
 import "../../../css/history.css";
 import {router} from "@inertiajs/react";
 
+const emotionTranslations = {
+    HAPPY: "FELIZ",
+    SAD: "TRISTE",
+    ANGRY: "ENOJADO",
+    CALM: "CALMADO",
+    SURPRISED: "SORPRENDIDO",
+    CONFUSED: "CONFUNDIDO",
+    DISGUSTED: "DISGUSTADO",
+    FEAR: "MIEDO"
+};
 
 const emotionIcons = {
     HAPPY: "😊",
@@ -30,7 +40,7 @@ export default function PlaylistCard({ id, name, songs, date, emotion, image }) 
                     <p>{songs} canciones</p>
                     <p className="playlist-date">Recomendada el {date}</p>
                     <span className="playlist-emotion">
-                        {emotionIcons[emotion] || "🎵"} {emotion}
+                        {emotionIcons[emotion] || "🎵"} {emotionTranslations[emotion] || emotion}
                     </span>
                 </div>
             </div>
