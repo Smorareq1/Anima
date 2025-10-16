@@ -30,11 +30,12 @@ export default function Login() {
 
     const rightContent = (
         <div className="register-container">
-            <LoginForm />
+            <h2 className="form-title">Inicia sesión</h2>
+            <SpotifyButton />
             <div className="divider">
                 <span className="dot"></span>
             </div>
-            <SpotifyButton />
+            <LoginForm />
         </div>
     );
 

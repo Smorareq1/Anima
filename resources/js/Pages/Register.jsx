@@ -30,11 +30,12 @@ export default function Register() {
 
     const rightContent = (
         <div className="register-container">
-            <RegisterForm />
+            <h2 className="form-title">Crea tu cuenta</h2>
+            <SpotifyButton />
             <div className="divider">
                 <span className="dot"></span>
             </div>
-            <SpotifyButton />
+            <RegisterForm />
         </div>
     );
 
