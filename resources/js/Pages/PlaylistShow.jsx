@@ -4,8 +4,19 @@ import { ArrowLeft } from "lucide-react";
 import PlaylistCarousel from "./PlaylistCarousel.jsx";
 import DashboardLayout from "../Layout/DashboardLayout.jsx";
 import "../../css/playlistView.css";
+import SpotifyLogo from "../../images/spotify-logo.svg";
+
 
 export default function PlaylistShow({ playlist }) {
+
+    const goToSpotify = () => {
+        if (!playlist?.spotify_url) {
+            alert("No hay enlace de Spotify disponible");
+            return;
+        }
+        window.open(playlist.spotify_url, '_blank', 'noopener,noreferrer');
+    }
+
     if (!playlist) {
         return (
             <DashboardLayout>
@@ -35,6 +46,12 @@ export default function PlaylistShow({ playlist }) {
                         .map(e => `${e.type}`)
                         .join(", ")}
                     </p>
+                </div>
+                <div>
+                    <button className="spotify2" onClick={goToSpotify}>
+                        <img className="img-modal" src={SpotifyLogo} alt="SpotifyLogo"/>
+                        Abrir en Spotify
+                    </button>
                 </div>
 
                 <PlaylistCarousel tracks={playlist.tracks} />

@@ -68,6 +68,11 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
         router.visit(route('emotion.playlists.show', { id: playlistId }));
     };
 
+    const goToSpotify = () => {
+        console.log(playlistLink);
+        if (!playlistLink) return;
+        window.open(playlistLink, '_blank');
+    }
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -173,8 +178,8 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
                                 Ir a la playlist
                             </button>
                         )}
-                        <button className="spotify">
-                            <img className="img-modal" src={SpotifyLogo} alt="SpotifyLogo" />
+                        <button className="spotify" onClick={goToSpotify}>
+                            <img className="img-modal" src={SpotifyLogo} alt="SpotifyLogo"/>
                             Abrir en Spotify
                         </button>
                     </div>

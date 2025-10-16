@@ -10,6 +10,8 @@ use App\Http\Controllers\App\Emotion\EmotionController;
 use App\Http\Controllers\App\dashboard\DashboardController;
 use App\Http\Controllers\App\dashboard\RecordController;
 use App\Http\Controllers\App\dashboard\PlaylistController;
+use App\Http\Controllers\App\dashboard\ExploreController;
+use App\Http\Controllers\App\dashboard\FavoritesController;
 
 Route::get('/', [HomeController::class, 'index'])->name('Home');
 
@@ -37,6 +39,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/first-upload', [EmotionController::class, 'firstTime'])->name('first.upload');
     Route::get('/recommend', [EmotionController::class, 'recommend'])->name('recommend');
     Route::get('/records', [RecordController::class, 'index'])->name('Record');
+    Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
+    Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
 
     Route::prefix('emotion')->name('emotion.')->group(function () {
         Route::post('/upload', [EmotionController::class, 'upload'])->name('upload');

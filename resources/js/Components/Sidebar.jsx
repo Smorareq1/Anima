@@ -26,7 +26,7 @@ export default function Sidebar() {
                 </Link>
 
                 <Link
-                    href={route("Home")} // cambiar
+                    href={route("explore")} // cambiar
                     className={`sidebar-item ${route().current("explore") ? "active" : ""}`}
                 >
                     <ExploreIcon className="icon3" />
@@ -41,13 +41,6 @@ export default function Sidebar() {
                     Recomendar
                 </Link>
 
-                <Link
-                    href={route("Home")} // cambiar
-                    className={`sidebar-item ${route().current("playlists") ? "active" : ""}`}
-                >
-                    <PlaylistsIcon className="icon3" />
-                    Playlists
-                </Link>
 
                 <Link
                     href={route("Record")}
@@ -58,7 +51,7 @@ export default function Sidebar() {
                 </Link>
 
                 <Link
-                    href={route("Home")} // cambiar
+                    href={route("favorites")} // cambiar
                     className={`sidebar-item ${route().current("favorites") ? "active" : ""}`}
                 >
                     <FavoritesIcon className="icon3" />

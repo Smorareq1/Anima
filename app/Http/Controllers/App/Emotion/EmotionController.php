@@ -151,5 +151,4 @@ class EmotionController extends Controller
             'playlist' => $playlist
         ]);
     }
-
 }
