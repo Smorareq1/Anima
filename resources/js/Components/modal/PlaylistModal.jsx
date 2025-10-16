@@ -6,6 +6,18 @@ import Plus from "../../../images/ic_baseline-plus.svg";
 import Minus from "../../../images/minus.svg";
 import SpotifyLogo from "../../../images/spotify-logo.svg";
 
+const emotionTranslations = {
+    HAPPY: "FELIZ",
+    SAD: "TRISTE",
+    ANGRY: "ENOJADO",
+    CALM: "CALMADO",
+    SURPRISED: "SORPRENDIDO",
+    CONFUSED: "CONFUNDIDO",
+    DISGUSTED: "DISGUSTADO",
+    FEAR: "MIEDO"
+};
+
+
 export default function PlaylistModal({ isOpen, onClose, playlistData }) {
     const [showArtists, setShowArtists] = useState(false);
     const [showTracks, setShowTracks] = useState(false);
@@ -68,6 +80,11 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
         router.visit(route('emotion.playlists.show', { id: playlistId }));
     };
 
+    const goToSpotify = () => {
+        console.log(playlistLink);
+        if (!playlistLink) return;
+        window.open(playlistLink, '_blank');
+    }
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -103,14 +120,10 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
                     </div>
 
                     <div className="modal-emotions">
-                        {playlistData?.emotions_used?.map((emotion, index) => (
-                                <div key={index} className="emotion">
-                                    <h3>{emotion.type}</h3>
-                                </div>
-                            )) || playlistData?.emotions?.map((emotion, index) => (
-                                <div key={index} className="emotion">
-                                    <h3>{emotion.type}</h3>
-                                </div>
+                        {(playlistData?.emotions_used || playlistData?.emotions)?.map((emotion, index) => (
+                            <div key={index} className="emotion">
+                                <h3>{emotionTranslations[emotion.type] || emotion.type}</h3>
+                            </div>
                         ))}
                     </div>
 
@@ -173,10 +186,12 @@ export default function PlaylistModal({ isOpen, onClose, playlistData }) {
                                 Ir a la playlist
                             </button>
                         )}
-                        <button className="spotify">
-                            <img className="img-modal" src={SpotifyLogo} alt="SpotifyLogo" />
+                        {saved && (
+                        <button className="spotify" onClick={goToSpotify}>
+                            <img className="img-modal" src={SpotifyLogo} alt="SpotifyLogo"/>
                             Abrir en Spotify
                         </button>
+                        )}
                     </div>
                 </div>
             </div>

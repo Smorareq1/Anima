@@ -15,6 +15,7 @@
     background-color: var(--color-white);
     min-height: 100vh;
     box-sizing: border-box;
+    position: relative;
 }
 
 .playlist-header {
@@ -344,4 +345,28 @@
         top: 0;
         left: 0;
     }
+}
+
+.spotify2{
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border-radius: 15px;
+    border: 0;
+    width: 150px;
+    height: 35px;
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    transition: 0.3s ease;
+}
+.spotify2 img{
+    width: 20px;
+    height: 20px;
+}
+.spotify2:hover {
+    transform: scale(1.05);
 }
