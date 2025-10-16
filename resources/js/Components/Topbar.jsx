@@ -3,7 +3,12 @@ import { usePage, Link } from "@inertiajs/react";
 import "../../css/topbar.css";
 import avatar from "../../images/avatar.png";
 import ProfileModal from "./modal/ProfileModal.jsx";
-import CompleteProfileModal from "./modal/CompleteProfileModal.jsx"; //Solo para probarlo
+
+// Helper function to check if a string is a full URL
+const isAbsoluteUrl = (url) => {
+    if (typeof url !== 'string') return false;
+    return /^(?:[a-z+]+:)?\/\//i.test(url);
+};
 
 export default function Topbar({ onToggleSidebar }) {
     const { auth, hasSpotify } = usePage().props;
@@ -23,13 +28,27 @@ export default function Topbar({ onToggleSidebar }) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // --- ✅ LÓGICA CORREGIDA PARA EL AVATAR ---
+    // Determina la fuente correcta de la imagen
+    const getAvatarSrc = () => {
+        if (user?.avatar) {
+            // Si es una URL completa (de Spotify), úsala directamente
+            if (isAbsoluteUrl(user.avatar)) {
+                return user.avatar;
+            }
+            // Si es un archivo local, añade /storage/
+            return `/storage/${user.avatar}`;
+        }
+        // Si no hay avatar, usa el de por defecto
+        return avatar;
+    };
+
     return (
         <div className="dashboard-topbar">
             <button className="sidebar-toggle" onClick={onToggleSidebar}>
                 ☰
             </button>
 
-            {/* Avatar */}
             {user && (
                 <div className="topbar-user" ref={menuRef}>
                     <p className="topbar-user-info">
@@ -39,8 +58,9 @@ export default function Topbar({ onToggleSidebar }) {
                         className="avatar-button"
                         onClick={() => setOpen(!open)}
                     >
+                        {/* Se llama a la nueva función para obtener la URL */}
                         <img
-                            src={user.avatar && user.avatar !== "" ? user.avatar : avatar}
+                            src={getAvatarSrc()}
                             alt="profile"
                             className="avatar-img"
                         />
@@ -50,9 +70,7 @@ export default function Topbar({ onToggleSidebar }) {
                         <div className="dropdown-menu">
                             <button
                                 className="dropdown-item"
-                                onClick={() => {
-                                    setModalOpen(true);
-                                }}
+                                onClick={() => setModalOpen(true)}
                             >
                                 Editar perfil
                             </button>
@@ -62,9 +80,8 @@ export default function Topbar({ onToggleSidebar }) {
                                 user={user}
                                 hasSpotify={hasSpotify}
                             />
-
                             <Link
-                                href={route("auth.logout")} // todo: crear ruta del logout y colocarla aqui
+                                href={route("auth.logout")}
                                 method="post"
                                 as="button"
                                 className="dropdown-item-logout"

@@ -10,6 +10,7 @@ use App\Http\Controllers\App\Emotion\EmotionController;
 use App\Http\Controllers\App\dashboard\DashboardController;
 use App\Http\Controllers\App\dashboard\RecordController;
 use App\Http\Controllers\App\dashboard\PlaylistController;
+use App\Http\Controllers\App\Profile\ProfileController;
 
 Route::get('/', [HomeController::class, 'index'])->name('Home');
 
@@ -32,6 +33,9 @@ Route::prefix('auth')->name('auth.')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile', [ProfileController::class, 'update']); // Para FormData con _method=PUT
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('Dashboard');
 
     Route::get('/first-upload', [EmotionController::class, 'firstTime'])->name('first.upload');
