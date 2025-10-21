@@ -35,8 +35,6 @@ Route::prefix('auth')->name('auth.')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::post('/profile', [ProfileController::class, 'update']); // Para FormData con _method=PUT
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('Dashboard');
 
@@ -76,3 +74,8 @@ Route::get('/test-basic', function () {
     ]);
 });
 
+// --- API Routes for Frontend (using Session Auth) ---
+Route::prefix('api')->middleware('auth')->group(function () {
+
+    Route::post('/profile', [ProfileController::class, 'update'])->name('api.profile.update');
+});

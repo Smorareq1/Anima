@@ -1,8 +1,9 @@
 import React, { useRef, useState } from "react";
 import SpotifyRegButton from "../SpotifyRegButton.jsx";
 import "../../../css/profile.css";
-import { router } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import avatar from "../../../images/avatar.png";
+import apiClient from "../../apiClient.js";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
@@ -55,23 +56,36 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify }) {
             photo: null,
         },
         validationSchema,
-        onSubmit: (values) => {
+        onSubmit: async (values) => {
             setProcessing(true);
+            setErrors({}); // Limpiar errores previos
+
             const formData = new FormData();
             Object.keys(values).forEach(key => {
                 if (values[key]) { // Solo añade campos que tengan un valor
                     formData.append(key, values[key]);
                 }
             });
-            formData.append('_method', 'PUT');
+            // Para las rutas de API que aceptan FormData (para subir archivos), se usa POST.
+            // El "method spoofing" (_method: 'PUT') no es necesario aquí.
 
-            router.post(route("profile.update"), formData, {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: () => onClose(),
-                onError: (serverErrors) => setErrors(serverErrors),
-                onFinish: () => setProcessing(false),
-            });
+            try {
+                // Usamos apiClient en lugar del router de Inertia
+                await apiClient.post('/profile', formData); // <-- URL corregida
+                onClose();
+                // Recargamos la página para ver los cambios, ya que no usamos la magia de Inertia.
+                // Opcionalmente, podrías actualizar el estado del usuario localmente.
+                router.reload({ only: ['user'] });
+            } catch (error) {
+                if (error.response && error.response.status === 422) {
+                    // Errores de validación del backend
+                    setErrors(error.response.data.errors);
+                } else {
+                    console.error("An unexpected error occurred:", error);
+                }
+            } finally {
+                setProcessing(false);
+            }
         },
     });
 
@@ -105,6 +119,7 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify }) {
                         </button>
                         <input type="file" ref={fileInputRef} style={{ display: "none" }} onChange={handlePhotoChange} accept="image/*" />
                         {errors.photo && <span className="error">{errors.photo}</span>}
+                        {formik.errors.photo && <span className="error">{formik.errors.photo}</span>}
                     </div>
 
                     <label>
