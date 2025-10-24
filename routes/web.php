@@ -10,6 +10,7 @@ use App\Http\Controllers\App\Emotion\EmotionController;
 use App\Http\Controllers\App\dashboard\DashboardController;
 use App\Http\Controllers\App\dashboard\RecordController;
 use App\Http\Controllers\App\dashboard\PlaylistController;
+use App\Http\Controllers\App\Profile\ProfileController;
 use App\Http\Controllers\App\dashboard\ExploreController;
 use App\Http\Controllers\App\dashboard\FavoritesController;
 
@@ -34,6 +35,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('Dashboard');
 
     Route::get('/first-upload', [EmotionController::class, 'firstTime'])->name('first.upload');
@@ -72,3 +74,8 @@ Route::get('/test-basic', function () {
     ]);
 });
 
+// --- API Routes for Frontend (using Session Auth) ---
+Route::prefix('api')->middleware('auth')->group(function () {
+
+    Route::post('/profile', [ProfileController::class, 'update'])->name('api.profile.update');
+});
