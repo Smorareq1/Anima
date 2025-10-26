@@ -27,7 +27,7 @@ const emotionIcons = {
     FEAR: "😨",
 };
 
-export default function PlaylistCard({ id, name, songs, date, emotion, image }) {
+export default function PlaylistCard({ id, name, songs, date, emotion, image, showFavoriteIcon = true }) {
     const [isFavorite, setIsFavorite] = useState(false);
 
     const toggleFavorite = (e) => {
@@ -43,13 +43,15 @@ export default function PlaylistCard({ id, name, songs, date, emotion, image }) 
                 router.visit(route('emotion.playlists.show', { id: id }))
             }
         >
-            <button
-                onClick={toggleFavorite}
-                className={`playlist-fav-btn ${isFavorite ? "active" : ""}`}
-                title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
-            >
-                <Heart size={20} />
-            </button>
+            {showFavoriteIcon && (
+                <button
+                    onClick={toggleFavorite}
+                    className={`playlist-fav-btn ${isFavorite ? "active" : ""}`}
+                    title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+                >
+                    <Heart size={20} />
+                </button>
+            )}
             <div className="playlist-overlay">
                 <div className="playlist-info">
                     <h3>{name}</h3>
