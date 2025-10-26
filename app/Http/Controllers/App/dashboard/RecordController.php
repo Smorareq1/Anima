@@ -14,13 +14,13 @@ class RecordController extends Controller
     {
         $userId = Auth::id();
 
-        // 🔹 Obtener playlists con conteo de tracks
+        //Obtener playlists con conteo de tracks
         $playlists = Playlist::withCount('tracks')
             ->where('user_id', $userId)
             ->orderByDesc('created_at')
             ->paginate(6);
 
-        // 🔹 Transformar al formato esperado por el frontend
+        // Transformar al formato esperado por el frontend
         $playlists->getCollection()->transform(function ($playlist) {
             return [
                 'id'            => $playlist->id,
@@ -33,7 +33,7 @@ class RecordController extends Controller
             ];
         });
 
-        // 🔹 Resumen real (usa la tabla pivote playlist_track)
+        // Resumen real (usa la tabla pivote playlist_track)
         $summary = DB::table('playlists')
             ->join('playlist_track', 'playlists.id', '=', 'playlist_track.playlist_id')
             ->where('playlists.user_id', $userId)

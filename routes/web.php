@@ -13,6 +13,7 @@ use App\Http\Controllers\App\dashboard\PlaylistController;
 use App\Http\Controllers\App\Profile\ProfileController;
 use App\Http\Controllers\App\dashboard\ExploreController;
 use App\Http\Controllers\App\dashboard\FavoritesController;
+use App\Http\Controllers\App\dashboard\AdminController;
 
 Route::get('/', [HomeController::class, 'index'])->name('Home');
 
@@ -43,6 +44,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/records', [RecordController::class, 'index'])->name('Record');
     Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
+    Route::get('/administrator', [AdminController::class, 'index'])->name('administrator');
+
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     Route::prefix('emotion')->name('emotion.')->group(function () {
         Route::post('/upload', [EmotionController::class, 'upload'])->name('upload');
@@ -76,6 +80,5 @@ Route::get('/test-basic', function () {
 
 // --- API Routes for Frontend (using Session Auth) ---
 Route::prefix('api')->middleware('auth')->group(function () {
-
     Route::post('/profile', [ProfileController::class, 'update'])->name('api.profile.update');
 });
