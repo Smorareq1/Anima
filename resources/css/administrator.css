@@ -206,3 +206,58 @@
     min-width: 70px;
     text-align: right;
 }
+
+@media (max-width: 1024px) {
+    .admin-charts-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .admin-summary-grid {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .admin-song-list {
+        max-height: 160px;
+    }
+}
+
+@media (max-width: 600px) {
+    .admin-container {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .admin-title {
+        font-size: 1.3rem;
+        border-left: none;
+        padding-left: 0;
+        padding-bottom: 0.3rem;
+    }
+
+    .admin-card {
+        padding: 1rem;
+    }
+
+    .admin-summary-grid {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .admin-charts-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .admin-song-item {
+        flex-wrap: wrap;
+        text-align: center;
+    }
+
+    .admin-song-count {
+        width: 100%;
+        text-align: right;
+        font-size: 0.8rem;
+    }
+}
