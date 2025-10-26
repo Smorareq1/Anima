@@ -1,6 +1,8 @@
 import React from "react";
 import "../../../css/history.css";
 import {router} from "@inertiajs/react";
+import {Heart, HeartOff} from "lucide-react";
+import {useState} from "react";
 
 const emotionTranslations = {
     HAPPY: "FELIZ",
@@ -25,7 +27,14 @@ const emotionIcons = {
     FEAR: "😨",
 };
 
-export default function PlaylistCard({ id, name, songs, date, emotion, image }) {
+export default function PlaylistCard({ id, name, songs, date, emotion, image, showFavoriteIcon = true }) {
+    const [isFavorite, setIsFavorite] = useState(false);
+
+    const toggleFavorite = (e) => {
+        e.stopPropagation();
+        setIsFavorite(!isFavorite);
+        // agregar lógica para guardarlo en el backend
+    }
     return (
         <div
             className="playlist-card bg-cover"
@@ -34,6 +43,15 @@ export default function PlaylistCard({ id, name, songs, date, emotion, image }) 
                 router.visit(route('emotion.playlists.show', { id: id }))
             }
         >
+            {showFavoriteIcon && (
+                <button
+                    onClick={toggleFavorite}
+                    className={`playlist-fav-btn ${isFavorite ? "active" : ""}`}
+                    title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+                >
+                    <Heart size={20} />
+                </button>
+            )}
             <div className="playlist-overlay">
                 <div className="playlist-info">
                     <h3>{name}</h3>

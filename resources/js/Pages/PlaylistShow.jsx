@@ -41,8 +41,14 @@ export default function PlaylistShow({ playlist }) {
             <div className="playlist-view">
                 <div
                     className="back-arrow"
-                    onClick={() => router.visit(route('Record'))}
-                    title="Volver al historial"
+                    onClick={() => {
+                        if (window.history.length > 1) {
+                            window.history.back();
+                        } else {
+                            router.visit(route('Record'));
+                        }
+                    }}
+                    title="Volver"
                 >
                     <ArrowLeft size={22} strokeWidth={2.5} />
                 </div>
