@@ -55,7 +55,7 @@ export default function PlaylistCarousel({ tracks }) {
                                 <h3 className="track-name">{track.name}</h3>
                                 <p className="track-artist">{track.artist}</p>
                                 <a
-                                    href={track.spotify_url}
+                                    href={track.spotify_url ?? track.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="track-link"
