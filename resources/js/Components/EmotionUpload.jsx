@@ -114,7 +114,6 @@ export default function EmotionUpload() {
         formData.append("photo", file);
 
         try {
-            console.log("📤 Ruta generada:", route("emotion.upload"));
             await router.post(route("emotion.upload"), formData, {
                 forceFormData: true,
                 onSuccess: (page) => {
