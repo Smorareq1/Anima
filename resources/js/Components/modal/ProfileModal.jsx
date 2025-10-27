@@ -1,52 +1,50 @@
-import React, {useRef, useState} from "react";
+import React, { useRef, useState } from "react";
 import SpotifyRegButton from "../SpotifyRegButton.jsx";
 import "../../../css/profile.css";
-import { useForm } from "@inertiajs/react";
+import { router, usePage } from "@inertiajs/react";
 import avatar from "../../../images/avatar.png";
+import apiClient from "../../apiClient.js";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
+// Helper function to check if a string is a full URL
+const isAbsoluteUrl = (url) => {
+    if (typeof url !== 'string') return false;
+    return /^(?:[a-z+]+:)?\/\//i.test(url);
+}
+
+// Esquema de validación para el frontend
 const validationSchema = Yup.object({
     first_name: Yup.string()
-        .required("El nombre es requerido")
-        .min(2, "El nombre debe tener al menos 2 caracteres")
-        .max(50, "El nombre no puede exceder 50 caracteres"),
-        
+        .required("El nombre es requerido"),
     last_name: Yup.string()
-        .required("El apellido es requerido")
-        .min(2, "El apellido debe tener al menos 2 caracteres")
-        .max(50, "El apellido no puede exceder 50 caracteres"),
-
+        .required("El apellido es requerido"),
     username: Yup.string()
-        .required("El usuario es requerido ")
-        .min(3, "El usuario debe tener al menos 3 caracteres")
-        .max(20, "El usuario no puede exceder 20 caracteres")
-        .matches(/^[a-zA-Z0-9_]+$/, "Solo se permiten letras, números y guiones bajos"),
-
+        .required("El usuario es requerido")
+        .matches(/^[a-zA-Z0-9_\s]+$/, "Solo se permiten letras, números, _ y espacios"),
     email: Yup.string()
         .required("El correo es necesario")
         .email("Ingresa un correo válido"),
-
     password: Yup.string()
-        .min(8, "La contraseña debe contener al menos 8 caracteres")
-        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Debe contener al menos una mayúscula, una minúscula y un número")
+        .min(8, "Debe tener al menos 8 caracteres")
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Debe incluir mayúscula, minúscula y número")
         .nullable()
-        .transform((value) => value || null),
-
-    photo: Yup.mixed()
-        .test("fileSize", "La imagen es muy pesada (máx. 2MB)", (value) => {
-            if (!value) return true;
-            return value.size <= 2 * 1024 * 1024;
-        })
-        .test("fileType", "Solo se permiten imágenes (JPEG, PNG, JPG)", (value) => {
-            if (!value) return true;
-            return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
-        })
+        .transform(value => value || null), // Permite que el campo esté vacío
+    photo: Yup.mixed().nullable(),
 });
 
-export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
+export default function ProfileModal({ isOpen, onClose, user, hasSpotify }) {
     const fileInputRef = useRef(null);
     const [preview, setPreview] = useState(null);
+    const [processing, setProcessing] = useState(false);
+    const [errors, setErrors] = useState({});
+
+    const getInitialAvatar = () => {
+        if (user?.avatar) {
+            return isAbsoluteUrl(user.avatar) ? user.avatar : `/storage/${user.avatar}`;
+        }
+        return avatar;
+    };
 
     const formik = useFormik({
         initialValues: {
@@ -58,52 +56,51 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
             photo: null,
         },
         validationSchema,
-        onSubmit: (values) =>{
-            post(route("Home"), {
-                data: values,
-                onSuccess: () => onClose(),
+        onSubmit: async (values) => {
+            setProcessing(true);
+            setErrors({}); // Limpiar errores previos
+
+            const formData = new FormData();
+            Object.keys(values).forEach(key => {
+                if (values[key]) { // Solo añade campos que tengan un valor
+                    formData.append(key, values[key]);
+                }
             });
+            // Para las rutas de API que aceptan FormData (para subir archivos), se usa POST.
+            // El "method spoofing" (_method: 'PUT') no es necesario aquí.
+
+            try {
+                // Usamos apiClient en lugar del router de Inertia
+                await apiClient.post('/profile', formData); // <-- URL corregida
+                onClose();
+                // Recargamos la página para ver los cambios, ya que no usamos la magia de Inertia.
+                // Opcionalmente, podrías actualizar el estado del usuario localmente.
+                router.reload({ only: ['user'] });
+            } catch (error) {
+                if (error.response && error.response.status === 422) {
+                    // Errores de validación del backend
+                    setErrors(error.response.data.errors);
+                } else {
+                    console.error("An unexpected error occurred:", error);
+                }
+            } finally {
+                setProcessing(false);
+            }
         },
     });
 
-    const { post, processing } = useForm();
-
-    const handlePhotoClick = () => {
-        fileInputRef.current.click();
-    };
-
     const handlePhotoChange = (e) => {
-        const file = e.target.files[0];
-        
+        const file = e.target.files ? e.target.files[0] : null;
         if (file) {
-        // Validar el archivo antes de establecerlo
-        const fileSizeValid = file.size <= 2 * 1024 * 1024;
-        const fileTypeValid = ["image/jpeg", "image/png", "image/jpg"].includes(file.type);
-        
-        if (!fileSizeValid) {
-            formik.setFieldError("photo", "La imagen es muy pesada (máx. 2MB)");
-            return;
+            formik.setFieldValue("photo", file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (typeof reader.result === 'string') {
+                    setPreview(reader.result);
+                }
+            };
+            reader.readAsDataURL(file);
         }
-        
-        if (!fileTypeValid) {
-            formik.setFieldError("photo", "Solo se permiten imágenes (JPEG, PNG, JPG)");
-            return;
-        }
-
-        formik.setFieldValue("photo", file);
-        formik.setFieldError("photo", null);
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setPreview(reader.result);
-        };
-        reader.readAsDataURL(file);
-        }
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        formik.handleSubmit();
     };
 
     if (!isOpen) return null;
@@ -111,44 +108,20 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
-                <button className="modal-close" onClick={onClose}>
-                    ×
-                </button>
-
-                <form className="profile-form" onSubmit={handleSubmit}>
-                    {/* Avatar */}
+                <button className="modal-close" onClick={onClose}>×</button>
+                <form className="profile-form" onSubmit={formik.handleSubmit}>
                     <div className="profile-avatar">
                         <div className="avatar-circle">
-                            <img
-                                src={
-                                    preview ||
-                                    user?.avatar ||
-                                    avatar
-                                }
-                                alt="avatar"
-                                className="avatar-img"
-                            />
+                            <img src={preview || getInitialAvatar()} alt="avatar" className="avatar-img" />
                         </div>
-                        <button
-                            type="button"
-                            className="btn-outline"
-                            onClick={handlePhotoClick}
-                        >
+                        <button type="button" className="btn-outline" onClick={() => fileInputRef.current.click()}>
                             Cambiar foto
                         </button>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            style={{ display: "none" }}
-                            onChange={handlePhotoChange}
-                            accept="image/jpeg, image/png, image/jpg"
-                        />
-                        {formik.errors.photo && (
-                            <span className="error">{formik.errors.photo}</span>
-                        )}
+                        <input type="file" ref={fileInputRef} style={{ display: "none" }} onChange={handlePhotoChange} accept="image/*" />
+                        {errors.photo && <span className="error">{errors.photo}</span>}
+                        {formik.errors.photo && <span className="error">{formik.errors.photo}</span>}
                     </div>
 
-                    {/* Campos */}
                     <label>
                         Nombre
                         <input
@@ -163,6 +136,7 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
                             <span className="error">{formik.errors.first_name}</span>
                         )}
                     </label>
+
                     <label>
                         Apellido
                         <input
@@ -213,7 +187,7 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
                         <input
                             type="password"
                             name="password"
-                            placeholder="********"
+                            placeholder="Nueva contraseña (opcional)"
                             value={formik.values.password}
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
@@ -224,12 +198,11 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify}) {
                         )}
                     </label>
 
-                    {/* Botones */}
                     <div className="botones">
                         <button type="submit" className="btn-outline" disabled={processing || !formik.isValid}>
-                        Guardar cambios
+                            {processing ? 'Guardando...' : 'Guardar cambios'}
                         </button>
-                        <SpotifyRegButton disabled = {hasSpotify}/>
+                        <SpotifyRegButton disabled={hasSpotify} />
                     </div>
                 </form>
             </div>

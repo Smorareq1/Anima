@@ -11,10 +11,15 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Obtener playlistData de la sesión si existe
+        $user = Auth::user();
+
+        $mustCompleteProfile = empty($user->first_name) || empty($user->last_name);
+
         $playlistData = $request->session()->get('playlistData');
+
         return Inertia::render('Dashboard/HomeDashboard', [
             'playlistData' => $playlistData,
+            'mustCompleteProfile' => $mustCompleteProfile, //
         ]);
     }
 }

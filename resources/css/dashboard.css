@@ -144,7 +144,9 @@
     background-color: var(--color-white);
     display:flex;
     flex-direction:column;
-    overflow:hidden;
+    overflow-x:hidden;
+    overflow-y: hidden;
+    max-width: 100%;
 }
 
 .sidebar {
