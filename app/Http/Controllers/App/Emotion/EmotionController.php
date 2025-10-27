@@ -88,10 +88,11 @@ class EmotionController extends Controller
                 'tracks'           => $recs['tracks'] ?? [],
             ];
 
+
             // Guardar en sesión flash y redirigir
             $request->session()->put('playlistData', $payload);
 
-            return redirect()->route('Dashboard');
+            return Inertia::location(route('emotion.playlists.temp'));
 
         } catch (Throwable $e) {
             Log::error('Error completo en upload:', [
@@ -126,10 +127,18 @@ class EmotionController extends Controller
         try {
             $playlistName = $request->input('playlist_name');
             $createdPlaylist = $playlistService->createPlaylistFromRecommendation($playlistName, $recs);
+
             session()->forget('playlistData');
             $createdPlaylist->load('tracks');
-            Log::info('Playlist creada con éxito:', ['playlist_id' => $createdPlaylist->id, 'user_id' => Auth::id()]);
-            return back()->with('playlist', $createdPlaylist);
+
+            Log::info('Playlist creada con éxito:', [
+                'playlist_id' => $createdPlaylist->id,
+                'user_id' => Auth::id()
+            ]);
+
+            return redirect()
+                ->route('emotion.playlists.show', $createdPlaylist->id)
+                ->with('success', 'Playlist guardada correctamente.');
 
         } catch (Throwable $e) {
             Log::error('Error guardando la playlist:', [
@@ -139,6 +148,7 @@ class EmotionController extends Controller
             return back()->withErrors(['message' => 'Ocurrió un error inesperado al guardar tu playlist.']);
         }
     }
+
 
     public function show($id)
     {

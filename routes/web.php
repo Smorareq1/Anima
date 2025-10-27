@@ -14,6 +14,9 @@ use App\Http\Controllers\App\Profile\ProfileController;
 use App\Http\Controllers\App\dashboard\ExploreController;
 use App\Http\Controllers\App\dashboard\FavoritesController;
 use App\Http\Controllers\App\dashboard\AdminController;
+use Inertia\Inertia;
+use Illuminate\Http\Request;
+
 
 Route::get('/', [HomeController::class, 'index'])->name('Home');
 
@@ -51,6 +54,12 @@ Route::middleware('auth')->group(function () {
     Route::prefix('emotion')->name('emotion.')->group(function () {
         Route::post('/upload', [EmotionController::class, 'upload'])->name('upload');
         Route::post('/playlists', [EmotionController::class, 'store'])->name('playlists.store');
+        Route::get('/playlist/temp', function (Request $request) {
+            return Inertia::render('PlaylistShow', [
+                'playlistData' => $request->session()->get('playlistData'),
+                'emotion' => optional($request->session()->get('playlistData'))['emotion'] ?? null,
+            ]);
+        })->name('playlists.temp');
         Route::get('/playlist/{id}', [EmotionController::class, 'show'])->name('playlists.show');
     });
 
