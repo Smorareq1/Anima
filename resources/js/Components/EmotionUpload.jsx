@@ -114,6 +114,7 @@ export default function EmotionUpload() {
         formData.append("photo", file);
 
         try {
+            console.log("📤 Ruta generada:", route("emotion.upload"));
             await router.post(route("emotion.upload"), formData, {
                 forceFormData: true,
                 onSuccess: (page) => {
@@ -248,7 +249,7 @@ export default function EmotionUpload() {
             {/* Mensaje de error al intentar enviar sin imagen */}
             {showSubmitError && !file && (
                 <div className="submit-error-message">
-                    ⚠ Debes subir una imagen antes de generar recomendaciones
+                    Debes subir una imagen antes de generar recomendaciones
                 </div>
             )}
 

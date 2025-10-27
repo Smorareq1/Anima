@@ -40,11 +40,6 @@ export default function HomeDashboard() {
                 <h1>Bienvenido, {user.first_name || user.username}</h1>
             </div>
 
-            <PlaylistModal
-                isOpen={isPlaylistModalOpen}
-                onClose={closePlaylistModal}
-                playlistData={localPlaylistData}
-            />
         </DashboardLayout>
     );
 }

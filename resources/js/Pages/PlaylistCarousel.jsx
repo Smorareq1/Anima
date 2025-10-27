@@ -47,7 +47,7 @@ export default function PlaylistCarousel({ tracks }) {
                     <div key={track.id} className="carousel-slide">
                         <div className="track-card">
                             <img
-                                src={track.image_url}
+                                src={track.image_url ?? track.image}
                                 alt={track.name}
                                 className="track-cover"
                             />
