@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/records', [RecordController::class, 'index'])->name('Record');
     Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
+    Route::post('/favorites', [FavoritesController::class, 'toggleFavorite'])->name('favorites.toggle');
     Route::get('/administrator', [AdminController::class, 'index'])->name('administrator');
 
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');

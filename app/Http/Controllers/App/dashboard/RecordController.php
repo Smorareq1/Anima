@@ -12,7 +12,11 @@ class RecordController extends Controller
 {
     public function index()
     {
-        $userId = Auth::id();
+        $user = Auth::user();
+        $userId = $user->id;
+
+        // Obtener los IDs de las playlists favoritas del usuario
+        $favoritePlaylistIds = $user->favoritePlaylists()->pluck('playlists.id')->toArray();
 
         //Obtener playlists con conteo de tracks
         $playlists = Playlist::withCount('tracks')
@@ -21,7 +25,7 @@ class RecordController extends Controller
             ->paginate(6);
 
         // Transformar al formato esperado por el frontend
-        $playlists->getCollection()->transform(function ($playlist) {
+        $playlists->getCollection()->transform(function ($playlist) use ($favoritePlaylistIds) {
             return [
                 'id'            => $playlist->id,
                 'name'          => $playlist->name,
@@ -30,6 +34,7 @@ class RecordController extends Controller
                 'date'          => $playlist->created_at->format('Y-m-d'),
                 'songs'         => $playlist->tracks_count,
                 'image'         => $playlist->playlist_image ?? '/images/mock/default.jpg',
+                'isInitiallyFavorite' => in_array($playlist->id, $favoritePlaylistIds),
             ];
         });
 

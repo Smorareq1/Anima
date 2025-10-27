@@ -1,8 +1,9 @@
 import React from "react";
 import "../../../css/history.css";
 import {router} from "@inertiajs/react";
-import {Heart, HeartOff} from "lucide-react";
+import {Heart} from "lucide-react";
 import {useState} from "react";
+import axios from "axios";
 
 const emotionTranslations = {
     HAPPY: "FELIZ",
@@ -27,14 +28,25 @@ const emotionIcons = {
     FEAR: "😨",
 };
 
-export default function PlaylistCard({ id, name, songs, date, emotion, image, showFavoriteIcon = true }) {
-    const [isFavorite, setIsFavorite] = useState(false);
+export default function PlaylistCard({ id, name, songs, date, emotion, image, isInitiallyFavorite, showFavoriteIcon = true }) {
+    const [isFavorite, setIsFavorite] = useState(isInitiallyFavorite);
 
     const toggleFavorite = (e) => {
         e.stopPropagation();
-        setIsFavorite(!isFavorite);
-        // agregar lógica para guardarlo en el backend
+
+        axios.post(route('favorites.toggle'), { playlist_id: id })
+            .then(response => {
+                if (response.data.status === 'added') {
+                    setIsFavorite(true);
+                } else if (response.data.status === 'removed') {
+                    setIsFavorite(false);
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling favorite:', error);
+            });
     }
+
     return (
         <div
             className="playlist-card bg-cover"
