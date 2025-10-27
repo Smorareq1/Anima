@@ -8,7 +8,7 @@ on:
 env:
   REGISTRY: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}
   IMAGE_NAME: laravel-app
-  RESOURCE_GROUP: rg-laravel-app
+  RESOURCE_GROUP: anima
   CONTAINER_APP_NAME: laravel-app
   CONTAINER_APP_ENV: env-laravel-app
 
