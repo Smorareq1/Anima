@@ -129,7 +129,6 @@ export default function Favorites({ favoritosData }) {
                             <p className="no-favorites-text">No tienes canciones favoritas todavía.</p>
                         )}
                     </ul>
-
                 </section>
             </div>
         </DashboardLayout>
