@@ -78,7 +78,7 @@ export default function HomeDashboard({ recientesData }) {
 
     // --- Vista principal del Home Dashboard ---
     return (
-        <DashboardLayout>
+        <DashboardLayout title={"Inicio - Anima"}>
             <div className="home-container">
                 <div className="home-header">
                     <h2 className="home-title">

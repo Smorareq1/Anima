@@ -4,11 +4,12 @@ import DashboardLayout from "../../Layout/DashboardLayout.jsx";
 import "../../../css/administrator.css";
 import RecommendedSongs from "../../Components/RecommendedSongs.jsx";
 import ChartCard from "../../Components/ChartCard.jsx";
+import {Head} from "@inertiajs/react";
 
 export default function Administrator({ dashboardData }) {
     const d = dashboardData;
     return (
-        <DashboardLayout>
+        <DashboardLayout title={"Panel de Administrador | Anima"}>
             <h2 className={"admin-title"}>Panel de Administrador</h2>
             <div className="admin-container">
 

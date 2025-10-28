@@ -9,7 +9,7 @@ export default function Record({ playlists = [], summaryData = [], pagination = 
         : 1;
 
     return (
-        <DashboardLayout>
+        <DashboardLayout title={"Historial - Anima"}>
             <div className="history-body">
                 <div className="history-playlists-column">
                     <div className="history-playlists">

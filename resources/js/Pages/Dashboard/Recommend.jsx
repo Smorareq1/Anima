@@ -4,7 +4,7 @@ import "../../../css/dashboard.css"
 
 export default function Recommend() {
     return (
-        <DashboardLayout>
+        <DashboardLayout title={"Recomendar | Anima"}>
             <div className={"recommend-header"}>
                 <h1>Subí tu foto</h1>
                 <p>Dejanos traducir tus emociones en una playlist perfecta. Tu estado de ánimo elige la música,

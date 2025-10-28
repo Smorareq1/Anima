@@ -55,7 +55,7 @@ export default function Favorites({ favoritosData }) {
 
 
     return (
-        <DashboardLayout>
+        <DashboardLayout title={"Favoritos - Anima"}>
             <div className="favorites-container">
                 <div className="favorites-header">
                     <h2 className="favorites-title">
