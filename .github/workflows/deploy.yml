@@ -9,8 +9,7 @@ env:
   REGISTRY: ${{ secrets.AZURE_REGISTRY_LOGIN_SERVER }}
   IMAGE_NAME: laravel-app
   RESOURCE_GROUP: anima
-  CONTAINER_APP_NAME: laravel-app
-  CONTAINER_APP_ENV: env-laravel-app
+  CONTAINER_APP_NAME: anima-app
 
 jobs:
   build-and-deploy:
@@ -39,28 +38,9 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Desplegar a Container Apps
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          resourceGroup: ${{ env.RESOURCE_GROUP }}
-          containerAppName: ${{ env.CONTAINER_APP_NAME }}
-          containerAppEnvironment: ${{ env.CONTAINER_APP_ENV }}
-          imageToDeploy: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          targetPort: 80
-          ingress: external
-          environmentVariables: |
-            APP_ENV=production
-            APP_DEBUG=false
-            APP_KEY=${{ secrets.APP_KEY }}
-            DB_CONNECTION=pgsql
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=5432
-            DB_DATABASE=${{ secrets.DB_DATABASE }}
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            REDIS_HOST=${{ secrets.REDIS_HOST }}
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-            REDIS_PORT=6380
-            CACHE_DRIVER=redis
-            SESSION_DRIVER=redis
-            QUEUE_CONNECTION=redis
+      - name: Actualizar Container App
+        run: |
+          az containerapp update \
+            --name ${{ env.CONTAINER_APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}

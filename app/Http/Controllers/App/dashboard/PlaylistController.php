@@ -13,9 +13,9 @@ class PlaylistController extends Controller
      */
     public function show($id)
     {
-        // Opcional, por ahora se pasa el id directamente a la vista
         return Inertia::render('PlaylistShow', [
             'id' => $id
         ]);
+
     }
 }
