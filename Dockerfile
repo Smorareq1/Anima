@@ -27,12 +27,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Configurar directorio de trabajo
 WORKDIR /var/www/html
 
-# Copiar archivos de composer
-COPY composer.json composer.lock ./
+# Copiar archivos de composer (explícitamente)
+COPY composer.json ./
+COPY composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
-# Copiar package.json y package-lock.json
-COPY package*.json ./
+# Copiar archivos de Node (explícitamente)
+COPY package.json ./
+COPY package-lock.json ./
 RUN npm ci
 
 # Copiar el resto de la aplicación
