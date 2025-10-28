@@ -52,6 +52,8 @@ jobs:
             APP_ENV=production
             APP_DEBUG=false
             APP_KEY=${{ secrets.APP_KEY }}
+            APP_URL=https://anima-app.proudsky-7a09dbf7.eastus.azurecontainerapps.io
+            ASSET_URL=https://anima-app.proudsky-7a09dbf7.eastus.azurecontainerapps.io
             DB_CONNECTION=pgsql
             DB_HOST=${{ secrets.DB_HOST }}
             DB_PORT=5432
