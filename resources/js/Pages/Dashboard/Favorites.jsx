@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import DashboardLayout from "../../Layout/DashboardLayout.jsx";
 import { Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import "../../../css/favorites.css";
-import PlaylistCard from "../../components/history/PlaylistCard.jsx";
+import PlaylistCard from "../../Components/history/PlaylistCard.jsx";
 
 export default function Favorites({ favoritosData }) {
     const { playlistsFavoritas, cancionesFavoritas } = favoritosData;
