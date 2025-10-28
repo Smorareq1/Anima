@@ -91,8 +91,6 @@ export default function Favorites({ favoritosData }) {
                             )}
                         </div>
 
-
-
                         {canScrollRight && (
                             <button
                                 className="favorites-scroll-btn right"

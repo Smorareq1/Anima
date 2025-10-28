@@ -33,8 +33,6 @@ export default function Record({ playlists = [], summaryData = [], pagination = 
                         )}
                     </div>
 
-
-
                     <div className="pagination">
                         {Array.from({ length: totalPages }, (_, i) => (
                             <Link
