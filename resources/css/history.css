@@ -328,3 +328,32 @@
         grid-template-columns: 1fr;
     }
 }
+
+.no-history-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 47%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.no-history-text {
+    text-align: center;
+    color: #5a5a5a;
+    font-style: italic;
+    font-size: 1rem;
+}
+
+.no-history-redirect {
+    color: #1d6363;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.no-history-redirect:hover {
+    color: #144b4b;
+}

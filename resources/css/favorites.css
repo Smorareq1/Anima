@@ -283,3 +283,33 @@
         font-size: 1.2rem;
     }
 }
+
+.no-favorites-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 120px;
+}
+.no-favorites-text {
+    width: 100%;
+    text-align: center;
+    color: #6b6b6b;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.favorites-playlist-row > .no-favorites-wrapper {
+    flex: none;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+    transform: none;
+}
+.favorites-playlist-row > .no-favorites-wrapper:hover {
+    transform: none;
+    box-shadow: none;
+}
+
