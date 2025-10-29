@@ -4,7 +4,9 @@ import { ArrowLeft } from "lucide-react";
 import PlaylistCarousel from "./PlaylistCarousel.jsx";
 import DashboardLayout from "../Layout/DashboardLayout.jsx";
 import "../../css/playlistView.css";
-import SpotifyLogo from "../../images/spotify-logo.svg";
+import SpotifyLogo from "../../../public/images/spotify-logo.svg";
+import Notification from "../Components/modal/Notification.jsx";
+import ConfirmationModal from "../Components/modal/ConfirmationModal.jsx";
 
 const emotionTranslations = {
     HAPPY: "FELIZ",
@@ -18,17 +20,25 @@ const emotionTranslations = {
 };
 
 export default function PlaylistShow({ playlist }) {
+    const [showNotification, setShowNotification] = useState(false);
     const { playlistData, emotion } = usePage().props; // props cuando viene del temp
     const isTemp = !!playlistData; // si existe playlistData, es temp
     const currentPlaylist = playlist || playlistData;
+    const [showExitModal, setShowExitModal] = useState(false); // Nuevo estado para el modal
+    const [notificationMessage, setNotificationMessage] = useState("");
 
     const [playlistName, setPlaylistName] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [saved, setSaved] = useState(false);
 
+    const handleCloseNotification = () =>{
+        setShowNotification(false);
+    }
+
     const goToSpotify = () => {
         if (!currentPlaylist?.spotify_url) {
-            alert("No hay enlace de Spotify disponible");
+            setNotificationMessage("No hay enlace de Spotify disponible. Conectá tu cuenta en la configuración.");
+            setShowNotification(true);
             return;
         }
         window.open(currentPlaylist.spotify_url, "_blank", "noopener,noreferrer");
@@ -36,7 +46,8 @@ export default function PlaylistShow({ playlist }) {
 
     const handleSave = () => {
         if (!playlistName.trim()) {
-            alert("Por favor ingresa un nombre para la playlist");
+            setNotificationMessage("Ingresá un nombre para tu nueva playlist");
+            setShowNotification(true);
             return;
         }
 
@@ -67,6 +78,50 @@ export default function PlaylistShow({ playlist }) {
         );
     };
 
+    const handleBack = () => {
+        // Si es una playlist temporal sin nombre
+        if (isTemp && !saved && playlistName.trim() === "") {
+            setShowExitModal(true);
+            return;
+        }
+
+        // Si hay cambios no guardados (nombre puesto pero no guardado)
+        if (isTemp && !saved && playlistName.trim() !== "") {
+            setShowExitModal(true); // Mostrar modal de confirmación
+            return;
+        }
+
+        // Si está guardado o no es temporal, salir directamente
+        navigateBack();
+    };
+
+    const navigateBack = () => {
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            router.visit(route("Record"));
+        }
+    };
+
+    const handleConfirmExit = () => {
+        setShowExitModal(false);
+        navigateBack();
+    };
+
+    const handleCancelExit = () => {
+        setShowExitModal(false);
+    };
+
+    if (!currentPlaylist) {
+        return (
+            <DashboardLayout>
+                <div className="playlist-view">
+                    <p>Playlist no encontrada</p>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
     if (!currentPlaylist) {
         return (
             <DashboardLayout>
@@ -82,23 +137,7 @@ export default function PlaylistShow({ playlist }) {
             <div className="playlist-view">
                 <div
                     className="back-arrow"
-                    onClick={() => {
-                        if(saved || !isTemp){
-                            if (window.history.length > 1) {
-                                window.history.back();
-                            } else {
-                                router.visit(route("Record"));
-                            }
-                        }else {
-                            const confirmExit = window.confirm("Los cambios no guardados se perderán. ¿Deseas salir?");
-                            if (!confirmExit) return;
-                            if (window.history.length > 1) {
-                                window.history.back();
-                            } else {
-                                router.visit(route("Record"));
-                            }
-                        }
-                    }}
+                    onClick={handleBack}
                     title="Volver"
                 >
                     <ArrowLeft size={22} strokeWidth={2.5} />
@@ -163,6 +202,26 @@ export default function PlaylistShow({ playlist }) {
                 )}
 
                 <PlaylistCarousel tracks={currentPlaylist.tracks} />
+
+                {showNotification && (
+                    <Notification
+                        message={notificationMessage}
+                        type="warning"
+                        onClose={handleCloseNotification}
+                        duration={6000}
+                    />
+                )}
+
+                <ConfirmationModal
+                    isOpen={showExitModal}
+                    onConfirm={handleConfirmExit}
+                    onCancel={handleCancelExit}
+                    title="¿Salir sin guardar?"
+                    message="Tienes cambios sin guardar. Si sales ahora, perderás la playlist generada."
+                    confirmText="Salir sin guardar"
+                    cancelText="Seguir editando"
+                    type="warning"
+                 />
             </div>
         </DashboardLayout>
     );

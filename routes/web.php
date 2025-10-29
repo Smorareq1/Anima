@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\App\home\HomeController;
+use App\Http\Controllers\App\info\InfoController;
 use App\Http\Controllers\App\register\RegisterController;
 use App\Http\Controllers\App\login\LoginController;
 use App\Http\Controllers\App\Spotify\SpotifyController;
@@ -19,6 +20,7 @@ use Illuminate\Http\Request;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('Home');
+Route::get('/info', [InfoController::class, 'index'])->name('Info');
 
 Route::prefix('spotify')->name('spotify.')->group(function () {
     Route::get('/redirect', [SpotifyController::class, 'redirect'])->name('redirect');
