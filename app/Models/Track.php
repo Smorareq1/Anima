@@ -19,6 +19,7 @@ class Track extends Model
         'preview_url',
         'spotify_url',
         'spotify_uri',
+        'duration_ms',
         'popularity',
         'explicit',
         'release_date',

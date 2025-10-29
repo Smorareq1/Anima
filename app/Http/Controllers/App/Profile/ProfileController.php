@@ -14,7 +14,6 @@ class ProfileController extends Controller
 {
     public function update(Request $request)
     {
-        // La ruta está protegida por el middleware 'auth', por lo que podemos obtener al usuario de la solicitud.
         $user = $request->user();
 
         $request->validate([
@@ -33,7 +32,6 @@ class ProfileController extends Controller
         }
 
         if ($request->hasFile('photo')) {
-            // Eliminar el avatar antiguo si existe
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
@@ -43,10 +41,15 @@ class ProfileController extends Controller
 
         $user->update($updateData);
 
-        // La ruta de la API siempre espera una respuesta JSON.
-        return response()->json([
-            'message' => '¡Perfil actualizado con éxito!',
-            'user' => $user->fresh() // Devuelve el usuario actualizado
-        ], 200);
+        // Si la petición espera JSON (es una llamada de API), devolvemos JSON.
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => '¡Perfil actualizado con éxito!',
+                'user' => $user->fresh()
+            ], 200);
+        }
+
+        // Si no, es una petición web normal (Inertia), y redirigimos.
+        return redirect()->back()->with('success', '¡Perfil actualizado con éxito!');
     }
 }

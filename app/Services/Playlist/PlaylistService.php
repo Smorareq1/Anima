@@ -46,6 +46,7 @@ class PlaylistService
                         'preview_url' => $trackData['preview_url'],
                         'spotify_url' => $trackData['url'],
                         'spotify_uri' => $trackData['uri'],
+                        'duration_ms' => $trackData['duration_ms'], // <-- ¡LA PIEZA QUE FALTABA!
                         'popularity' => $trackData['popularity'],
                         'explicit' => $trackData['explicit'],
                         'release_date' => $trackData['release_date'],
