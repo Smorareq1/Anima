@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -47,6 +48,11 @@ class User extends Authenticatable implements JWTSubject // <-- Implementa la in
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function favoritePlaylists(): BelongsToMany
+    {
+        return $this->belongsToMany(Playlist::class, 'user_playlist_favorites');
     }
 
     // --- MÉTODOS DE SPOTIFY (QUE SE HABÍAN BORRADO) ---

@@ -1,6 +1,9 @@
 import React from "react";
 import "../../../css/history.css";
 import {router} from "@inertiajs/react";
+import {Heart} from "lucide-react";
+import {useState} from "react";
+import axios from "axios";
 
 const emotionTranslations = {
     HAPPY: "FELIZ",
@@ -25,7 +28,25 @@ const emotionIcons = {
     FEAR: "😨",
 };
 
-export default function PlaylistCard({ id, name, songs, date, emotion, image }) {
+export default function PlaylistCard({ id, name, songs, date, emotion, image, isInitiallyFavorite, showFavoriteIcon = true }) {
+    const [isFavorite, setIsFavorite] = useState(isInitiallyFavorite);
+
+    const toggleFavorite = (e) => {
+        e.stopPropagation();
+
+        axios.post(route('favorites.toggle'), { playlist_id: id })
+            .then(response => {
+                if (response.data.status === 'added') {
+                    setIsFavorite(true);
+                } else if (response.data.status === 'removed') {
+                    setIsFavorite(false);
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling favorite:', error);
+            });
+    }
+
     return (
         <div
             className="playlist-card bg-cover"
@@ -34,6 +55,15 @@ export default function PlaylistCard({ id, name, songs, date, emotion, image }) 
                 router.visit(route('emotion.playlists.show', { id: id }))
             }
         >
+            {showFavoriteIcon && (
+                <button
+                    onClick={toggleFavorite}
+                    className={`playlist-fav-btn ${isFavorite ? "active" : ""}`}
+                    title={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+                >
+                    <Heart size={20} />
+                </button>
+            )}
             <div className="playlist-overlay">
                 <div className="playlist-info">
                     <h3>{name}</h3>

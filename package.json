@@ -10,6 +10,7 @@
         "@faker-js/faker": "^10.0.0",
         "@playwright/test": "^1.55.1",
         "@tailwindcss/vite": "^4.0.0",
+        "@testsprite/testsprite-mcp": "^0.0.14",
         "@vitejs/plugin-react": "^5.0.2",
         "axios": "^1.12.2",
         "concurrently": "^9.0.1",
@@ -26,6 +27,7 @@
         "react-dom": "^19.1.1",
         "react-icons": "^5.5.0",
         "react-slick": "^0.31.0",
+        "recharts": "^3.3.0",
         "slick-carousel": "^1.8.1",
         "yup": "^1.7.1",
         "ziggy-js": "^2.5.3"

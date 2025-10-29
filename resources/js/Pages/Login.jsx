@@ -4,11 +4,12 @@ import TestimonialCard from "../Components/TestimonialCard.jsx";
 import Logo from "../../images/logo.png";
 import SpotifyButton from "../Components/SpotifyRegButton.jsx";
 import LoginForm from "../Components/LoginForm.jsx";
-import { Link } from "@inertiajs/react"
+import {Head, Link} from "@inertiajs/react"
 
 export default function Login() {
     const leftContent = (
         <div className = "leftContent">
+            <Head title={"Iniciar sesión | Anima"} />
             <div className="logo-container">
                 <Link href={route("Home")}>
                     <img

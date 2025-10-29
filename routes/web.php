@@ -14,6 +14,10 @@ use App\Http\Controllers\App\dashboard\PlaylistController;
 use App\Http\Controllers\App\Profile\ProfileController;
 use App\Http\Controllers\App\dashboard\ExploreController;
 use App\Http\Controllers\App\dashboard\FavoritesController;
+use App\Http\Controllers\App\dashboard\AdminController;
+use Inertia\Inertia;
+use Illuminate\Http\Request;
+
 
 Route::get('/', [HomeController::class, 'index'])->name('Home');
 Route::get('/info', [InfoController::class, 'index'])->name('Info');
@@ -45,10 +49,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/records', [RecordController::class, 'index'])->name('Record');
     Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
+    Route::post('/favorites', [FavoritesController::class, 'toggleFavorite'])->name('favorites.toggle');
+    Route::get('/administrator', [AdminController::class, 'index'])->name('administrator');
+
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     Route::prefix('emotion')->name('emotion.')->group(function () {
         Route::post('/upload', [EmotionController::class, 'upload'])->name('upload');
         Route::post('/playlists', [EmotionController::class, 'store'])->name('playlists.store');
+        Route::get('/playlist/temp', function (Request $request) {
+            return Inertia::render('PlaylistShow', [
+                'playlistData' => $request->session()->get('playlistData'),
+                'emotion' => optional($request->session()->get('playlistData'))['emotion'] ?? null,
+            ]);
+        })->name('playlists.temp');
         Route::get('/playlist/{id}', [EmotionController::class, 'show'])->name('playlists.show');
     });
 
@@ -78,6 +92,5 @@ Route::get('/test-basic', function () {
 
 // --- API Routes for Frontend (using Session Auth) ---
 Route::prefix('api')->middleware('auth')->group(function () {
-
     Route::post('/profile', [ProfileController::class, 'update'])->name('api.profile.update');
 });

@@ -47,7 +47,7 @@ export default function PlaylistCarousel({ tracks }) {
                     <div key={track.id} className="carousel-slide">
                         <div className="track-card">
                             <img
-                                src={track.image_url}
+                                src={track.image_url ?? track.image}
                                 alt={track.name}
                                 className="track-cover"
                             />
@@ -55,7 +55,7 @@ export default function PlaylistCarousel({ tracks }) {
                                 <h3 className="track-name">{track.name}</h3>
                                 <p className="track-artist">{track.artist}</p>
                                 <a
-                                    href={track.spotify_url}
+                                    href={track.spotify_url ?? track.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="track-link"

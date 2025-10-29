@@ -1,0 +1,315 @@
+
+.favorites-container {
+    padding: 0.5rem 0;
+    font-family: "Outfit", sans-serif;
+    color: var(--color-dark);
+    width: 100%;
+    max-width: 100%;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.favorites-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.favorites-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin: 0;
+}
+
+.favorites-section {
+    position: relative;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    overflow: visible;
+    padding: 0 10px;
+    flex-shrink: 0;
+}
+
+.favorites-section h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--color-primary);
+}
+
+.favorites-section:last-child {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.favorites-carousel-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: calc(5 * 200px + 4 * 20px + 100px);
+    margin: 0 auto;
+    overflow: visible;
+    padding: 0 50px;
+}
+
+.favorites-playlist-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    overflow-x: scroll;
+    overflow-y: visible;
+    scroll-behavior: smooth;
+    padding: 1rem 0;
+    box-sizing: border-box;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+}
+
+.favorites-playlist-row::-webkit-scrollbar {
+    display: none;
+}
+
+.favorites-playlist-row > * {
+    flex: 0 0 200px;
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.favorites-playlist-row > *:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.favorites-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    color: #000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.favorites-carousel-wrapper:hover .favorites-scroll-btn {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.favorites-scroll-btn:hover {
+    background: #fff;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.favorites-scroll-btn.left {
+    left: -5px;
+}
+
+.favorites-scroll-btn.right {
+    right: -5px;
+}
+
+.favorites-song-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+}
+
+.favorites-song-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.favorites-song-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.favorites-song-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.favorites-song-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.favorites-song-list {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+.favorites-song-item {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 2fr 80px 50px;
+    align-items: center;
+    gap: 1rem;
+    background: var(--color-light);
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    transition: background 0.2s ease;
+}
+
+.favorites-song-left {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.favorites-song-cover {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.favorites-song-title {
+    font-weight: 600;
+    color: var(--color-dark);
+    margin: 0;
+}
+
+.favorites-song-artist {
+    font-size: 0.85rem;
+    color: #666;
+    margin: 0.25rem 0 0 0;
+}
+
+.favorites-song-album {
+    font-size: 0.9rem;
+    color: var(--color-dark);
+    text-align: center;
+}
+
+.favorites-song-duration {
+    font-size: 0.9rem;
+    color: var(--color-dark);
+    text-align: right;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+    .favorites-carousel-wrapper {
+        max-width: calc(4 * 200px + 3 * 20px + 100px);
+    }
+}
+
+@media (max-width: 1024px) {
+    .favorites-container {
+        padding: 1.5rem;
+    }
+
+    .favorites-carousel-wrapper {
+        max-width: calc(3 * 200px + 2 * 20px + 100px);
+    }
+}
+
+@media (max-width: 768px) {
+    .favorites-container {
+        padding: 1rem;
+        height: calc(100vh - 60px);
+    }
+
+    .favorites-carousel-wrapper {
+        max-width: calc(2 * 180px + 1 * 16px + 70px);
+        padding: 0 35px;
+    }
+
+    .favorites-playlist-row {
+        gap: 16px;
+    }
+
+    .favorites-playlist-row > * {
+        flex: 0 0 180px;
+        width: 180px;
+        min-width: 180px;
+        max-width: 180px;
+    }
+
+    .favorites-song-item {
+        grid-template-columns: 2fr 1fr auto;
+    }
+
+    .favorites-song-album {
+        display: none;
+    }
+
+    .favorites-scroll-btn {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 480px) {
+    .favorites-carousel-wrapper {
+        max-width: calc(1 * 180px + 70px);
+        padding: 0 35px;
+    }
+
+    .favorites-title {
+        font-size: 1.5rem;
+    }
+
+    .favorites-section h3 {
+        font-size: 1.2rem;
+    }
+}
+
+.no-favorites-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 120px;
+}
+.no-favorites-text {
+    width: 100%;
+    text-align: center;
+    color: #6b6b6b;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.favorites-playlist-row > .no-favorites-wrapper {
+    flex: none;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+    transform: none;
+}
+.favorites-playlist-row > .no-favorites-wrapper:hover {
+    transform: none;
+    box-shadow: none;
+}
+

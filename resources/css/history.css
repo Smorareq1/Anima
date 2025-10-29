@@ -24,6 +24,36 @@
     position: relative;
 }
 
+.playlist-fav-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    border-radius: 50%;
+    background-color:transparent;
+    padding: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    z-index: 10;
+}
+
+.playlist-fav-btn svg {
+    color: var(--color-white);
+    transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.playlist-fav-btn:hover svg{
+    fill: var(--color-white);
+}
+
+.playlist-fav-btn.active svg {
+    fill: var(--color-white);
+    transform: scale(1.1);
+}
+
+.playlist-fav-btn:focus {
+    outline: none;
+}
 
 .playlist-card:hover {
     transform: translateY(-3px);
@@ -297,4 +327,33 @@
     .history-playlists {
         grid-template-columns: 1fr;
     }
+}
+
+.no-history-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 47%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.no-history-text {
+    text-align: center;
+    color: #5a5a5a;
+    font-style: italic;
+    font-size: 1rem;
+}
+
+.no-history-redirect {
+    color: #1d6363;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.no-history-redirect:hover {
+    color: #144b4b;
 }

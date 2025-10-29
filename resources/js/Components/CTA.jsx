@@ -1,7 +1,7 @@
 import React from "react";
 import img1 from "../../images/decoration/cta.png";
 import {route} from "ziggy-js";
-import {Link} from "@inertiajs/react"; // o .svg según exportes
+import {Link} from "@inertiajs/react";
 
 export default function CTASection() {
     return (

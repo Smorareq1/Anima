@@ -18,9 +18,9 @@ services:
             WWWUSER: "${WWWUSER:-1000}"
             WWWGROUP: "${WWWGROUP:-1000}"
         volumes:
-            - .:/var/www/html:delegated          # Código (host) -> contenedor (rápido)
-            - vendor:/var/www/html/vendor        # vendor queda en contenedor
-            - node_modules:/var/www/html/node_modules  # node_modules en contenedor
+            - .:/var/www/html:delegated
+            - vendor:/var/www/html/vendor
+            - node_modules:/var/www/html/node_modules
         tmpfs:
             - /tmp
         depends_on:
