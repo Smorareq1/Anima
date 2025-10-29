@@ -237,7 +237,7 @@
     font-family: 'Outfit', sans-serif;
     max-width: 1200px;
     margin: 0 auto;
-    background-image: url("../images/decoration/elipses2.png");
+    background-image: url("../../public/images/decoration/elipses2.png");
     background-repeat: no-repeat;
     background-position: bottom center;
     background-size: 60%;
@@ -509,7 +509,7 @@
     margin: 60px auto;
     max-width: 1200px;
     box-sizing: border-box;
-    background-image: url("../images/decoration/elipses3.png");
+    background-image: url("../../public/images/decoration/elipses3.png");
     background-repeat: no-repeat;
     background-position: top right;
     background-size: 35%;

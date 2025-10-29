@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import PlaylistCarousel from "./PlaylistCarousel.jsx";
 import DashboardLayout from "../Layout/DashboardLayout.jsx";
 import "../../css/playlistView.css";
-import SpotifyLogo from "../../images/spotify-logo.svg";
+import SpotifyLogo from "../../../public/images/spotify-logo.svg";
 import Notification from "../Components/modal/Notification.jsx";
 import ConfirmationModal from "../Components/modal/ConfirmationModal.jsx";
 

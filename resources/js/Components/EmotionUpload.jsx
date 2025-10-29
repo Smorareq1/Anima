@@ -2,8 +2,8 @@ import React, { useState, useRef } from "react";
 import { router } from "@inertiajs/react";
 import "../../css/emotion.css";
 import { route } from "ziggy-js";
-import CameraIcon from "../../images/decoration/camera.svg?react";
-import UploadIcon from "../../images/decoration/upload.svg?react";
+import CameraIcon from "../../../public/images/decoration/camera.svg?react";
+import UploadIcon from "../../../public/images/decoration/upload.svg?react";
 import LoadingScreen from "./LoadingScreen";
 
 export default function EmotionUpload() {
@@ -271,8 +271,8 @@ export default function EmotionUpload() {
             </button>
 
             {/* Pantalla de carga */}
-            <LoadingScreen 
-                isLoading={isSubmitting} 
+            <LoadingScreen
+                isLoading={isSubmitting}
                 phrases={loadingPhrases}
             />
         </div>

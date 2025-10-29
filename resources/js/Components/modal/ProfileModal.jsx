@@ -1,11 +1,12 @@
 import React, { useRef, useState } from "react";
 import SpotifyRegButton from "../SpotifyRegButton.jsx";
 import "../../../css/profile.css";
-import { router, usePage } from "@inertiajs/react";
-import avatar from "../../../images/avatar.png";
+import { router } from "@inertiajs/react";
+import avatar from "../../../../public/images/avatar.png";
 import apiClient from "../../apiClient.js";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import Notification from "./Notification.jsx";
 
 // Helper function to check if a string is a full URL
 const isAbsoluteUrl = (url) => {
@@ -38,6 +39,7 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify }) {
     const [preview, setPreview] = useState(null);
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState({});
+    const [notification, setNotification] = useState(null);
 
     const getInitialAvatar = () => {
         if (user?.avatar) {
@@ -66,22 +68,23 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify }) {
                     formData.append(key, values[key]);
                 }
             });
-            // Para las rutas de API que aceptan FormData (para subir archivos), se usa POST.
-            // El "method spoofing" (_method: 'PUT') no es necesario aquí.
 
             try {
-                // Usamos apiClient en lugar del router de Inertia
-                await apiClient.post('/profile', formData); // <-- URL corregida
-                onClose();
-                // Recargamos la página para ver los cambios, ya que no usamos la magia de Inertia.
-                // Opcionalmente, podrías actualizar el estado del usuario localmente.
-                router.reload({ only: ['user'] });
+                const response = await apiClient.post('/profile', formData);
+                setNotification({ type: 'success', message: response.data.message });
+
+                // Esperar un poco antes de cerrar para que el usuario vea la notificación
+                setTimeout(() => {
+                    onClose();
+                    router.reload({ only: ['user'] });
+                }, 2000); // 2 segundos
+
             } catch (error) {
                 if (error.response && error.response.status === 422) {
-                    // Errores de validación del backend
                     setErrors(error.response.data.errors);
                 } else {
                     console.error("An unexpected error occurred:", error);
+                    setNotification({ type: 'error', message: 'Ocurrió un error inesperado.' });
                 }
             } finally {
                 setProcessing(false);
@@ -107,6 +110,13 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify }) {
 
     return (
         <div className="modal-overlay" onClick={onClose}>
+            {notification && (
+                <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={() => setNotification(null)}
+                />
+            )}
             <div className="modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close" onClick={onClose}>×</button>
                 <form className="profile-form" onSubmit={formik.handleSubmit}>

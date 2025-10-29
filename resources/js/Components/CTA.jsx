@@ -1,5 +1,5 @@
 import React from "react";
-import img1 from "../../images/decoration/cta.png";
+import img1 from "../../../public/images/decoration/cta.png";
 import {route} from "ziggy-js";
 import {Link} from "@inertiajs/react";
 

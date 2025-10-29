@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import DashboardLayout from "../../Layout/DashboardLayout.jsx";
-import { Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import "../../../css/favorites.css";
 import PlaylistCard from "../../Components/history/PlaylistCard.jsx";
 
@@ -120,7 +120,12 @@ export default function Favorites({ favoritosData }) {
                                     </div>
                                     <p className="favorites-song-artist">{c.artista}</p>
                                     <p className="favorites-song-album">{c.album}</p>
-                                    <p className="favorites-song-duration">{c.duracion}</p>
+                                    <div className="favorites-song-right">
+                                        <p className="favorites-song-duration">{c.duracion}</p>
+                                        <a href={c.spotify_url} target="_blank" rel="noopener noreferrer" className="spotify-play-btn">
+                                            <Play size={20} />
+                                        </a>
+                                    </div>
                                 </li>
                             ))
                         ) : (
