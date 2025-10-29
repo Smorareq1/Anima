@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class PlaylistController extends Controller
 {
     /**
-     * Mostrar una playlist específica.
+     * Mostrar una  playlist específica.
      */
     public function show($id)
     {
