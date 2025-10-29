@@ -1,13 +1,13 @@
 import { Link } from "@inertiajs/react";
 import "../../css/dashboard.css";
-import Logo from "../../images/logocenter.png";
-import HomeIcon from "../../images/sidebar/home.svg?react";
-import ExploreIcon from "../../images/sidebar/explore.svg?react";
-import RecommendIcon from "../../images/sidebar/recom.svg?react";
-import PlaylistsIcon from "../../images/sidebar/playlist.svg?react";
-import RecordIcon from "../../images/sidebar/record.svg?react";
-import FavoritesIcon from "../../images/sidebar/favorites.svg?react";
-import AdminIcon from "../../images/sidebar/admin.svg?react";
+import Logo from "../../../public/images/logocenter.png";
+import HomeIcon from "../../../public/images/sidebar/home.svg?react";
+import ExploreIcon from "../../../public/images/sidebar/explore.svg?react";
+import RecommendIcon from "../../../public/images/sidebar/recom.svg?react";
+import PlaylistsIcon from "../../../public/images/sidebar/playlist.svg?react";
+import RecordIcon from "../../../public/images/sidebar/record.svg?react";
+import FavoritesIcon from "../../../public/images/sidebar/favorites.svg?react";
+import AdminIcon from "../../../public/images/sidebar/admin.svg?react";
 import React from "react";
 import {route} from "ziggy-js";
 

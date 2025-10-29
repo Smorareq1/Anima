@@ -1,5 +1,5 @@
 import React from "react";
-import SpotifyLogo from "../../images/spotify-logo.svg";
+import SpotifyLogo from "../../../public/images/spotify-logo.svg";
 
 export default function SpotifyButton({disabled}) {
     const handleSpotifyLogin = () => {

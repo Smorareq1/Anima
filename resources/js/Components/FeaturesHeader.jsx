@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import '../../css/info.css';
-import SpotifyLogo from "../../images/spotify-logo.svg";
+import SpotifyLogo from "../../../public/images/spotify-logo.svg";
 
 const FeaturesHeader = () => {
     return (

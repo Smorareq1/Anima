@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import hero1 from "../../images/decoration/hero1.png";
-import hero2 from "../../images/decoration/hero2.png";
-import hero3 from "../../images/decoration/hero3.png";
-import hero4 from "../../images/decoration/hero4.png";
-import spotify from "../../images/decoration/spotify.png";
+import hero1 from "../../../public/images/decoration/hero1.png";
+import hero2 from "../../../public/images/decoration/hero2.png";
+import hero3 from "../../../public/images/decoration/hero3.png";
+import hero4 from "../../../public/images/decoration/hero4.png";
+import spotify from "../../../public/images/decoration/spotify.png";
 
 const Hero = () => {
     return (

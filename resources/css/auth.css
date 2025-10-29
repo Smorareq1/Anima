@@ -54,7 +54,7 @@ html, body {
     align-items: center;
     padding: 2rem;
     text-align: center;
-    background-image: url("../images/decoration/elipses.png");
+    background-image: url("../../public/images/decoration/elipses.png");
     background-repeat: no-repeat;
     background-position: bottom left;
     background-size: 80%;

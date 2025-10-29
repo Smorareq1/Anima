@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import spotify from "../../images/decoration/spotify.png";
-import acceso from "../../images/decoration/acceso.png";
-import politicas from "../../images/decoration/politicas.png";
-import encriptacion from "../../images/decoration/encriptacion.png";
-import control from "../../images/decoration/control.png";
+import spotify from "../../../public/images/decoration/spotify.png";
+import acceso from "../../../public/images/decoration/acceso.png";
+import politicas from "../../../public/images/decoration/politicas.png";
+import encriptacion from "../../../public/images/decoration/encriptacion.png";
+import control from "../../../public/images/decoration/control.png";
 import {route} from "ziggy-js";
 import {Link} from "@inertiajs/react";
 import TutorialModal from "../Components/modal/TutorialModal";
@@ -71,7 +71,7 @@ const SpotifySecurity = () => {
                 </div>
             </div>
 
-            <TutorialModal 
+            <TutorialModal
                 isOpen={isTutorialModalOpen}
                 onClose={closeTutorialModal}
             />

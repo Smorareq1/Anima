@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import SpotifyRegButton from "../SpotifyRegButton.jsx";
 import "../../../css/profile.css";
 import { router } from "@inertiajs/react";
-import avatar from "../../../images/avatar.png";
+import avatar from "../../../../public/images/avatar.png";
 import apiClient from "../../apiClient.js";
 import { useFormik } from "formik";
 import * as Yup from "yup";
