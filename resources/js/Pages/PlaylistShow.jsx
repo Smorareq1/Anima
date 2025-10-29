@@ -1,10 +1,11 @@
-import React from "react";
+import React, {useState} from "react";
 import { router } from "@inertiajs/react";
 import { ArrowLeft } from "lucide-react";
 import PlaylistCarousel from "./PlaylistCarousel.jsx";
 import DashboardLayout from "../Layout/DashboardLayout.jsx";
 import "../../css/playlistView.css";
 import SpotifyLogo from "../../images/spotify-logo.svg";
+import Notification from "../Components/modal/Notification.jsx";
 
 const emotionTranslations = {
     HAPPY: "FELIZ",
@@ -18,13 +19,18 @@ const emotionTranslations = {
 };
 
 export default function PlaylistShow({ playlist }) {
+    const [showNotification, setShowNotification] = useState(false);
 
     const goToSpotify = () => {
         if (!playlist?.spotify_url) {
-            alert("No hay enlace de Spotify disponible");
+            setShowNotification(true);
             return;
         }
         window.open(playlist.spotify_url, '_blank', 'noopener,noreferrer');
+    }
+
+    const handleCloseNotification = () =>{
+        setShowNotification(false);
     }
 
     if (!playlist) {
@@ -70,6 +76,15 @@ export default function PlaylistShow({ playlist }) {
                 </div>
 
                 <PlaylistCarousel tracks={playlist.tracks} />
+
+                {showNotification && (
+                    <Notification
+                        message={`No hay enlace de Spotify disponible para "${playlist.name}". Conecta tu cuenta en la configuración.`}
+                        type="warning"
+                        onClose={handleCloseNotification}
+                        duration={6000}
+                    />
+                )}
             </div>
         </DashboardLayout>
     );

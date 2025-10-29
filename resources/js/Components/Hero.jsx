@@ -24,7 +24,7 @@ const Hero = () => {
                         <Link href={route("auth.register.show")} className="btnPrimary">
                             Empieza ahora
                         </Link>
-                        <Link href={route("Home")} className="btnOutline">
+                        <Link href={route("Info")} className="btnOutline">
                             Conocer más
                         </Link>
                     </div>
@@ -50,7 +50,7 @@ const Hero = () => {
                         Usá inteligencia artificial para identificar tu emoción exacta
                         (alegría, tristeza, calma, etc.) de forma rápida y precisa.
                     </p>
-                    <Link href={route("Home")} className="btnOutline">
+                    <Link href={route("Info")} className="btnOutline">
                         Conocer más
                     </Link>
                 </div>
@@ -66,7 +66,7 @@ const Hero = () => {
                     </p>
 
                     <div className="hero-buttons">
-                        <Link href={route("Home")} className="btnOutline">
+                        <Link href={route("Info")} className="btnOutline">
                             Conocer más
                         </Link>
                     </div>
@@ -85,7 +85,7 @@ const Hero = () => {
                         Accedé a un registro privado de tus análisis posteriores y las playlists
                         generadas para reflexionar o revivir esos momentos.
                     </p>
-                    <Link href={route("Home")} className="btnOutline">
+                    <Link href={route("Info")} className="btnOutline">
                         Conocer más
                     </Link>
                 </div>
