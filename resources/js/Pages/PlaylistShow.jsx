@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { router, usePage } from "@inertiajs/react";
 import { ArrowLeft } from "lucide-react";
 import PlaylistCarousel from "./PlaylistCarousel.jsx";
@@ -30,6 +30,13 @@ export default function PlaylistShow({ playlist }) {
     const [playlistName, setPlaylistName] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+
+    useEffect(() => {
+        // Solo si la URL actual es una playlist temporal
+        if (window.location.pathname.includes("/emotion/playlist/temp")) {
+            sessionStorage.setItem("previousPage", document.referrer || "/recommend");
+        }
+    }, []);
 
     const handleCloseNotification = () =>{
         setShowNotification(false);
@@ -96,12 +103,32 @@ export default function PlaylistShow({ playlist }) {
     };
 
     const navigateBack = () => {
+        const currentUrl = window.location.pathname;
+        const previousPage = sessionStorage.getItem("previousPage");
+
+        // Si estamos en una temporal o venimos de una
+        if (currentUrl.includes("/emotion/playlist/temp") || previousPage?.includes("/emotion/playlist/temp")) {
+            sessionStorage.removeItem("previousPage");
+            router.visit(route("recommend"));
+            return;
+
+        }
+
+        // Si la anterior fue recommend, ir a recommend
+        if (previousPage?.includes("/recommend")) {
+            router.visit(route("recommend"));
+            return;
+        }
+
+        // Caso normal
         if (window.history.length > 1) {
             window.history.back();
         } else {
             router.visit(route("Record"));
         }
     };
+
+
 
     const handleConfirmExit = () => {
         setShowExitModal(false);

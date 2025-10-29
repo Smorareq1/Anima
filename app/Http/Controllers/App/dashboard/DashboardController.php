@@ -23,7 +23,7 @@ class DashboardController extends Controller
                     'name' => 'Mood Booster',
                     'songs' => 100,
                     'date' => '2025-01-15',
-                    'image' => '/images/songs/blinding_lights.jpg',
+                    'image' => 'https://i.ibb.co/HpKcjcJB/blinding-lights.png',
                 ],
                 [
                     'id' => 2,
