@@ -106,7 +106,6 @@ export default function PlaylistShow({ playlist }) {
 
                 <div className="playlist-header">
                     {isTemp ? (
-                        console.log(currentPlaylist.tracks),
                         <>
                             <h1 className="playlist-title">Nueva Playlist</h1>
                             <p className="playlist-info">

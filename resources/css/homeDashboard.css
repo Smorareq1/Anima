@@ -1,5 +1,4 @@
-
-.favorites-container {
+.home-container {
     padding: 0.5rem 0;
     font-family: "Outfit", sans-serif;
     color: var(--color-dark);
@@ -13,38 +12,40 @@
     flex-direction: column;
 }
 
-.favorites-header {
-    flex-shrink: 0;
-    display: flex;
+.home-header {
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 2rem;
 }
 
-.favorites-title {
+.home-title {
     font-size: 2rem;
     font-weight: 700;
     color: var(--color-dark);
     margin: 0;
 }
 
-.favorites-section {
+.home-subtitle{
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin: 0.5rem 0 1rem 0;
+}
+
+.home-section {
     position: relative;
-    margin-bottom: 1.5rem;
     width: 100%;
     overflow: visible;
     padding: 0 10px;
     flex-shrink: 0;
 }
 
-.favorites-section h3 {
+.home-section .home-subtitle h3 {
     font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
     color: var(--color-primary);
 }
 
-.favorites-section:last-child {
+.home-section:last-child {
     flex: 1;
     min-height: 0;
     display: flex;
@@ -52,7 +53,7 @@
     overflow: hidden;
 }
 
-.favorites-carousel-wrapper {
+.home-carousel-wrapper {
     position: relative;
     width: 100%;
     max-width: calc(5 * 200px + 4 * 20px + 100px);
@@ -61,7 +62,7 @@
     padding: 0 50px;
 }
 
-.favorites-playlist-row {
+.home-playlist-row {
     display: flex;
     flex-wrap: nowrap;
     gap: 20px;
@@ -72,14 +73,13 @@
     box-sizing: border-box;
     scrollbar-width: none;
     -ms-overflow-style: none;
-
 }
 
-.favorites-playlist-row::-webkit-scrollbar {
+.home-playlist-row::-webkit-scrollbar {
     display: none;
 }
 
-.favorites-playlist-row > * {
+.home-playlist-row > * {
     flex: 0 0 200px;
     width: 200px;
     min-width: 200px;
@@ -87,12 +87,12 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.favorites-playlist-row > *:hover {
+.home-playlist-row > *:hover {
     transform: translateY(-8px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-.favorites-scroll-btn {
+.home-scroll-btn {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -113,26 +113,26 @@
     pointer-events: none;
 }
 
-.favorites-carousel-wrapper:hover .favorites-scroll-btn {
+.home-carousel-wrapper:hover .home-scroll-btn {
     opacity: 1;
     pointer-events: all;
 }
 
-.favorites-scroll-btn:hover {
+.home-scroll-btn:hover {
     background: #fff;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
     transform: translateY(-50%) scale(1.05);
 }
 
-.favorites-scroll-btn.left {
+.home-scroll-btn.left {
     left: -5px;
 }
 
-.favorites-scroll-btn.right {
+.home-scroll-btn.right {
     right: -5px;
 }
 
-.favorites-song-list {
+.home-song-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -145,30 +145,30 @@
     padding-right: 8px;
 }
 
-.favorites-song-list::-webkit-scrollbar {
+.home-song-list::-webkit-scrollbar {
     width: 8px;
 }
 
-.favorites-song-list::-webkit-scrollbar-track {
+.home-song-list::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 10px;
 }
 
-.favorites-song-list::-webkit-scrollbar-thumb {
+.home-song-list::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 10px;
 }
 
-.favorites-song-list::-webkit-scrollbar-thumb:hover {
+.home-song-list::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
 
-.favorites-song-list {
+.home-song-list {
     scrollbar-width: thin;
     scrollbar-color: #888 #f1f1f1;
 }
 
-.favorites-song-item {
+.home-song-item {
     display: grid;
     grid-template-columns: 2fr 1.5fr 2fr 80px 50px;
     align-items: center;
@@ -179,38 +179,38 @@
     transition: background 0.2s ease;
 }
 
-.favorites-song-left {
+.home-song-left {
     display: flex;
     align-items: center;
     gap: 0.8rem;
 }
 
-.favorites-song-cover {
+.home-song-cover {
     width: 45px;
     height: 45px;
     border-radius: 50%;
     object-fit: cover;
 }
 
-.favorites-song-title {
+.home-song-title {
     font-weight: 600;
     color: var(--color-dark);
     margin: 0;
 }
 
-.favorites-song-artist {
+.home-song-artist {
     font-size: 0.85rem;
     color: #666;
     margin: 0.25rem 0 0 0;
 }
 
-.favorites-song-album {
+.home-song-album {
     font-size: 0.9rem;
     color: var(--color-dark);
     text-align: center;
 }
 
-.favorites-song-duration {
+.home-song-duration {
     font-size: 0.9rem;
     color: var(--color-dark);
     text-align: right;
@@ -218,80 +218,81 @@
 
 /* RESPONSIVE */
 @media (max-width: 1200px) {
-    .favorites-carousel-wrapper {
+    .home-carousel-wrapper {
         max-width: calc(4 * 200px + 3 * 20px + 100px);
     }
 }
 
 @media (max-width: 1024px) {
-    .favorites-container {
+    .home-container {
         padding: 1.5rem;
     }
 
-    .favorites-carousel-wrapper {
+    .home-carousel-wrapper {
         max-width: calc(3 * 200px + 2 * 20px + 100px);
     }
 }
 
 @media (max-width: 768px) {
-    .favorites-container {
+    .home-container {
         padding: 1rem;
         height: calc(100vh - 60px);
     }
 
-    .favorites-carousel-wrapper {
+    .home-carousel-wrapper {
         max-width: calc(2 * 180px + 1 * 16px + 70px);
         padding: 0 35px;
     }
 
-    .favorites-playlist-row {
+    .home-playlist-row {
         gap: 16px;
     }
 
-    .favorites-playlist-row > * {
+    .home-playlist-row > * {
         flex: 0 0 180px;
         width: 180px;
         min-width: 180px;
         max-width: 180px;
     }
 
-    .favorites-song-item {
+    .home-song-item {
         grid-template-columns: 2fr 1fr auto;
     }
 
-    .favorites-song-album {
+    .home-song-album {
         display: none;
     }
 
-    .favorites-scroll-btn {
+    .home-scroll-btn {
         width: 36px;
         height: 36px;
     }
 }
 
 @media (max-width: 480px) {
-    .favorites-carousel-wrapper {
+    .home-carousel-wrapper {
         max-width: calc(1 * 180px + 70px);
         padding: 0 35px;
     }
 
-    .favorites-title {
+    .home-title {
         font-size: 1.5rem;
     }
 
-    .favorites-section h3 {
+    .home-section h3 {
         font-size: 1.2rem;
     }
 }
 
-.no-favorites-wrapper {
+.no-home-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
     min-height: 120px;
 }
-.no-favorites-text {
+
+.no-home-text {
     width: 100%;
     text-align: center;
     color: #6b6b6b;
@@ -300,7 +301,7 @@
     font-size: 1rem;
 }
 
-.favorites-playlist-row > .no-favorites-wrapper {
+.home-playlist-row > .no-home-wrapper {
     flex: none;
     width: 100%;
     min-width: 100%;
@@ -308,8 +309,8 @@
     box-shadow: none;
     transform: none;
 }
-.favorites-playlist-row > .no-favorites-wrapper:hover {
+
+.home-playlist-row > .no-home-wrapper:hover {
     transform: none;
     box-shadow: none;
 }
-
