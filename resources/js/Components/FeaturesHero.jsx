@@ -2,11 +2,11 @@ import React from "react";
 import { Link } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import '../../css/info.css';
-import SpotifyLogo from "../../images/spotify-logo.svg";
-import Check from "../../images/check.svg";
-import Face from "../../images/face.svg";
-import Security from "../../images/security.svg"
-import Playlist from "../../images/playlist.svg"
+import SpotifyLogo from "../../../public/images/spotify-logo.svg";
+import Check from "../../../public/images/check.svg";
+import Face from "../../../public/images/face.svg";
+import Security from "../../../public/images/security.svg"
+import Playlist from "../../../public/images/playlist.svg"
 
 const FeaturesHero = () => {
     return (

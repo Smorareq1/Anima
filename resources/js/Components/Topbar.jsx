@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { usePage, Link } from "@inertiajs/react";
 import "../../css/topbar.css";
-import avatar from "../../images/avatar.png";
+import avatar from "../../../public/images/avatar.png";
 import ProfileModal from "./modal/ProfileModal.jsx";
 
 // Helper function to check if a string is a full URL

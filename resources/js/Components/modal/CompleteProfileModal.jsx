@@ -1,7 +1,7 @@
 import React from "react";
 import "../../../css/profile.css"; // Reutilizamos el CSS
 import { useForm } from "@inertiajs/react";
-import avatar from "../../../images/avatar.png";
+import avatar from "../../../../public/images/avatar.png";
 
 // Helper para obtener la URL correcta del avatar
 const isAbsoluteUrl = (url) => {

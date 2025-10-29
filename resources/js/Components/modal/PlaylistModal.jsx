@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { router } from "@inertiajs/react"; // ✅ Import Inertia router
 import "../../../css/playlistModal.css";
-import Logo from "../../../images/img_playlist.svg";
-import Plus from "../../../images/ic_baseline-plus.svg";
-import Minus from "../../../images/minus.svg";
-import SpotifyLogo from "../../../images/spotify-logo.svg";
+import Logo from "../../../../public/images/img_playlist.svg";
+import Plus from "../../../../public/images/ic_baseline-plus.svg";
+import Minus from "../../../../public/images/minus.svg";
+import SpotifyLogo from "../../../../public/images/spotify-logo.svg";
 
 const emotionTranslations = {
     HAPPY: "FELIZ",

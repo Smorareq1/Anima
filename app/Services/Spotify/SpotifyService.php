@@ -874,6 +874,7 @@ class SpotifyService
                 'album'        => $t['album']['name'] ?? 'Unknown Album',
                 'url'          => $t['external_urls']['spotify'] ?? null,
                 'image'        => $image,
+                'duration_ms'  => $t['duration_ms'] ?? 0, // <-- AÑADIDO
                 'preview_url'  => $t['preview_url'] ?? null,
                 'popularity'   => $t['popularity'] ?? 0,
                 'explicit'     => $t['explicit'] ?? false,
