@@ -5,6 +5,7 @@ use App\Http\Controllers\App\info\InfoController;
 use App\Http\Controllers\App\register\RegisterController;
 use App\Http\Controllers\App\login\LoginController;
 use App\Http\Controllers\App\Spotify\SpotifyController;
+use App\Services\amazon\RekognitionService;
 use App\Services\Spotify\SpotifyService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\App\Emotion\EmotionController;
@@ -73,7 +74,7 @@ Route::get('/spotify-test-public', function (SpotifyService $spotify) {
     try {
         $results = $spotify->testSpotifyAPI(null);
         return response()->json($results);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         return response()->json([
             'error' => $e->getMessage(),
             'file' => $e->getFile(),
@@ -93,4 +94,28 @@ Route::get('/test-basic', function () {
 // --- API Routes for Frontend (using Session Auth) ---
 Route::prefix('api')->middleware('auth')->group(function () {
     Route::post('/profile', [ProfileController::class, 'update'])->name('api.profile.update');
+});
+
+// TEST AWS
+Route::get('/test-aws', function () {
+    try {
+        $service = app(RekognitionService::class);
+
+        return response()->json([
+            'status' => 'ok',
+            'aws_available' => method_exists($service, 'isAvailable') ? $service->isAvailable() : 'method not exists',
+            'config' => [
+                'key' => config('aws.credentials.key') ? 'SET (' . substr(config('aws.credentials.key'), 0, 10) . '...)' : 'NOT SET',
+                'secret' => config('aws.credentials.secret') ? 'SET' : 'NOT SET',
+                'region' => config('aws.region'),
+            ]
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+        ], 500);
+    }
 });
