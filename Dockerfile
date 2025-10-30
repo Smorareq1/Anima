@@ -1,6 +1,6 @@
 FROM php:8.4-fpm-alpine
 
-# Instalar dependencias del sistema
+# Instalar dependencias del sistema (AGREGAR openssl-dev)
 RUN apk add --no-cache \
     postgresql-dev \
     zip \
@@ -13,13 +13,16 @@ RUN apk add --no-cache \
     npm \
     autoconf \
     g++ \
-    make
+    make \
+    openssl-dev
 
 # Instalar extensiones PHP
 RUN docker-php-ext-install pdo pdo_pgsql pcntl
 
-# Instalar Redis (phpredis)
-RUN pecl install redis && docker-php-ext-enable redis
+# Instalar Redis con soporte SSL
+RUN pecl install redis \
+    && docker-php-ext-enable redis \
+    && echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -27,12 +30,12 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Configurar directorio de trabajo
 WORKDIR /var/www/html
 
-# Copiar archivos de composer (explícitamente)
+# Copiar archivos de composer
 COPY composer.json ./
 COPY composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
-# Copiar archivos de Node (explícitamente)
+# Copiar archivos de Node
 COPY package.json ./
 COPY package-lock.json ./
 RUN npm ci

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\App\dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Models\Playlist;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class FavoritesController extends Controller
 {
@@ -15,22 +15,50 @@ class FavoritesController extends Controller
     {
         $user = Auth::user();
 
-        $favoritePlaylists = $user->favoritePlaylists()->get()->map(function ($playlist) {
+        $favoritePlaylists = $user->favoritePlaylists()->with('tracks')->get();
+
+        $formattedPlaylists = $favoritePlaylists->map(function ($playlist) {
+            $imageUrl = $playlist->playlist_image;
+
+            if ($imageUrl) {
+                if (!Str::startsWith($imageUrl, 'http')) {
+                    $imageUrl = Storage::url($imageUrl);
+                }
+            } else {
+                $imageUrl = asset('images/mock/default.jpg');
+            }
+
             return [
                 'id' => $playlist->id,
                 'name' => $playlist->name,
-                'songs' => $playlist->tracks()->count(),
+                'songs' => $playlist->tracks->count(),
                 'date' => $playlist->created_at->toDateString(),
-                'image' => $playlist->playlist_image,
-                'isInitiallyFavorite' => true, // Siempre es favorito en esta vista
+                'image' => $imageUrl,
+                'isInitiallyFavorite' => true,
             ];
         });
+
+        $uniqueTracks = $favoritePlaylists
+            ->flatMap(fn($playlist) => $playlist->tracks)
+            ->unique('id');
+
+        $formattedTracks = $uniqueTracks->map(function ($track) {
+            return [
+                'id' => $track->id,
+                'titulo' => $track->name,
+                'artista' => $track->artist,
+                'album' => $track->album,
+                'duracion' => gmdate('i:s', $track->duration_ms / 1000),
+                'imagen' => $track->image_url,
+                'spotify_url' => $track->spotify_url,
+            ];
+        })->values();
 
         return Inertia::render('Dashboard/Favorites', [
             'user' => $user,
             'favoritosData' => [
-                'playlistsFavoritas' => $favoritePlaylists,
-                'cancionesFavoritas' => [], // Aún con datos mock
+                'playlistsFavoritas' => $formattedPlaylists,
+                'cancionesFavoritas' => $formattedTracks,
             ],
         ]);
     }
@@ -44,10 +72,8 @@ class FavoritesController extends Controller
         $user = Auth::user();
         $playlistId = $request->input('playlist_id');
 
-        // Usamos el método toggle de la relación para sincronizar el favorito
         $user->favoritePlaylists()->toggle($playlistId);
 
-        // Verificamos si la playlist ahora es favorita para devolver el estado correcto
         $isFavorite = $user->favoritePlaylists()->where('playlist_id', $playlistId)->exists();
 
         return response()->json(['status' => $isFavorite ? 'added' : 'removed']);

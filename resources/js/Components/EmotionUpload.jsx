@@ -2,8 +2,9 @@ import React, { useState, useRef } from "react";
 import { router } from "@inertiajs/react";
 import "../../css/emotion.css";
 import { route } from "ziggy-js";
-import CameraIcon from "../../images/decoration/camera.svg?react";
-import UploadIcon from "../../images/decoration/upload.svg?react";
+import CameraIcon from "../../../public/images/decoration/camera.svg?react";
+import UploadIcon from "../../../public/images/decoration/upload.svg?react";
+import LoadingScreen from "./LoadingScreen";
 
 export default function EmotionUpload() {
     const [mode, setMode] = useState("upload");
@@ -13,6 +14,16 @@ export default function EmotionUpload() {
     const [showSubmitError, setShowSubmitError] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+
+    // Frases para la pantalla de carga
+    const loadingPhrases = [
+        "Analizando tu emoción...",
+        "Procesando tu expresión facial...",
+        "Buscando la música perfecta para tu estado de ánimo...",
+        "Creando playlist personalizada...",
+        "Conectando con Spotify...",
+        "Tu recomendación musical está en camino..."
+    ];
 
     // Validación manual
     const validateFile = (file) => {
@@ -114,7 +125,6 @@ export default function EmotionUpload() {
         formData.append("photo", file);
 
         try {
-            console.log("📤 Ruta generada:", route("emotion.upload"));
             await router.post(route("emotion.upload"), formData, {
                 forceFormData: true,
                 onSuccess: (page) => {
@@ -138,8 +148,6 @@ export default function EmotionUpload() {
         } catch (error) {
             setErrors({ photo: "Error de conexión" });
             setShowSubmitError(true);
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
@@ -261,6 +269,12 @@ export default function EmotionUpload() {
             >
                 {isSubmitting ? "Enviando..." : "Generar recomendación"}
             </button>
+
+            {/* Pantalla de carga */}
+            <LoadingScreen
+                isLoading={isSubmitting}
+                phrases={loadingPhrases}
+            />
         </div>
     );
 }

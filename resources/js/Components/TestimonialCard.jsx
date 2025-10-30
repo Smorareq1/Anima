@@ -1,9 +1,9 @@
 import { useState } from "react";
 import "../../css/testimonial.css";
 
-import MartinPhoto from "../../images/testimonials/martin.jpg";
-import LuciaPhoto from "../../images/testimonials/lucia.jpg";
-import CarlosPhoto from "../../images/testimonials/carlos.jpg";
+import MartinPhoto from "../../../public/images/testimonials/martin.jpg";
+import LuciaPhoto from "../../../public/images/testimonials/lucia.jpg";
+import CarlosPhoto from "../../../public/images/testimonials/carlos.jpg";
 import StarIcon from "@/Components/StarIcon.jsx";
 
 export default function TestimonialCard() {

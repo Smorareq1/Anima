@@ -29,6 +29,9 @@ return new class extends Migration
             $table->string('spotify_url', 512)->nullable();
             $table->string('spotify_uri');
 
+            // Columna añadida duracion
+            $table->integer('duration_ms')->nullable()->after('spotify_uri');
+
             // Metadatos adicionales.
             $table->integer('popularity')->nullable();
             $table->boolean('explicit')->default(false);

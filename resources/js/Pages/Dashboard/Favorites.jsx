@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import DashboardLayout from "../../Layout/DashboardLayout.jsx";
-import { Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import "../../../css/favorites.css";
 import PlaylistCard from "../../Components/history/PlaylistCard.jsx";
 
@@ -55,7 +55,7 @@ export default function Favorites({ favoritosData }) {
 
 
     return (
-        <DashboardLayout>
+        <DashboardLayout title={"Favoritos - Anima"}>
             <div className="favorites-container">
                 <div className="favorites-header">
                     <h2 className="favorites-title">
@@ -76,13 +76,19 @@ export default function Favorites({ favoritosData }) {
                         )}
 
                         <div className="favorites-playlist-row" ref={scrollRef}>
-                            {playlistsFavoritas.map((pl, idx) => (
-                                <PlaylistCard
-                                    key={idx}
-                                    {...pl}
-                                    showFavoriteIcon={false}
-                                />
-                            ))}
+                            {playlistsFavoritas.length > 0 ? (
+                                playlistsFavoritas.map((pl, idx) => (
+                                    <PlaylistCard
+                                        key={idx}
+                                        {...pl}
+                                        showFavoriteIcon={false}
+                                    />
+                                ))
+                            ) : (
+                                <div className="no-favorites-wrapper">
+                                    <p className="no-favorites-text">No tienes playlists favoritas todavía.</p>
+                                </div>
+                            )}
                         </div>
 
                         {canScrollRight && (
@@ -99,29 +105,32 @@ export default function Favorites({ favoritosData }) {
                 <section className="favorites-section">
                     <h3>Canciones</h3>
                     <ul className="favorites-song-list">
-                        {cancionesFavoritas.map((c) => (
-                            <li key={c.id} className="favorites-song-item">
-                                <div className="favorites-song-left">
-                                    <img
-                                        src={c.imagen}
-                                        alt={c.titulo}
-                                        className="favorites-song-cover"
-                                    />
-                                    <div>
-                                        <p className="favorites-song-title">
-                                            {c.titulo}
-                                        </p>
+                        {cancionesFavoritas.length > 0 ? (
+                            cancionesFavoritas.map((c) => (
+                                <li key={c.id} className="favorites-song-item">
+                                    <div className="favorites-song-left">
+                                        <img
+                                            src={c.imagen}
+                                            alt={c.titulo}
+                                            className="favorites-song-cover"
+                                        />
+                                        <div>
+                                            <p className="favorites-song-title">{c.titulo}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <p className="favorites-song-artist">
-                                    {c.artista}
-                                </p>
-                                <p className="favorites-song-album">{c.album}</p>
-                                <p className="favorites-song-duration">
-                                    {c.duracion}
-                                </p>
-                            </li>
-                        ))}
+                                    <p className="favorites-song-artist">{c.artista}</p>
+                                    <p className="favorites-song-album">{c.album}</p>
+                                    <div className="favorites-song-right">
+                                        <p className="favorites-song-duration">{c.duracion}</p>
+                                        <a href={c.spotify_url} target="_blank" rel="noopener noreferrer" className="spotify-play-btn">
+                                            <Play size={20} />
+                                        </a>
+                                    </div>
+                                </li>
+                            ))
+                        ) : (
+                            <p className="no-favorites-text">No tienes canciones favoritas todavía.</p>
+                        )}
                     </ul>
                 </section>
             </div>

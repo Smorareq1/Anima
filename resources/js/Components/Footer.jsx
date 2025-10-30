@@ -1,5 +1,5 @@
 import React from "react";
-import Logo from "../../images/logo.png";
+import Logo from "../../../public/images/logo.png";
 import { FaFacebook, FaInstagram, FaXTwitter } from "react-icons/fa6"; // librería react-icons
 
 export default function Footer() {

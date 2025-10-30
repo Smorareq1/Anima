@@ -1,15 +1,16 @@
 import AuthLayout from "../Components/AuthLayout.jsx";
 import "../../css/auth.css";
 import TestimonialCard from "../Components/TestimonialCard.jsx";
-import Logo from "../../images/logo.png";
+import Logo from "../../../public/images/logo.png";
 import SpotifyButton from "../Components/SpotifyRegButton.jsx";
 import RegisterForm from "../Components/RegisterForm.jsx";
-import {Link} from "@inertiajs/react";
+import {Head, Link} from "@inertiajs/react";
 
 export default function Register() {
     const leftContent = (
         <div className = "leftContent">
             <div className="logo-container">
+                <Head title={"Regístrate - Anima"} />
                 <Link href={route("Home")}>
                     <img
                         src={Logo}

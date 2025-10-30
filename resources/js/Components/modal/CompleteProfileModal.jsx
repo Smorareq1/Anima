@@ -1,7 +1,7 @@
 import React from "react";
 import "../../../css/profile.css"; // Reutilizamos el CSS
 import { useForm } from "@inertiajs/react";
-import avatar from "../../../images/avatar.png";
+import avatar from "../../../../public/images/avatar.png";
 
 // Helper para obtener la URL correcta del avatar
 const isAbsoluteUrl = (url) => {
@@ -30,7 +30,7 @@ export default function CompleteProfileModal({ isOpen, user }) {
         e.preventDefault();
         // Hacemos un POST que simula un PUT a la ruta que ya tienes.
         // Laravel lo entenderá gracias al _method que se añade automáticamente.
-        post(route("profile.update"), {
+        post(route("api.profile.update"), {
             preserveState: false, // Forzamos una recarga completa de la página en éxito
         });
     }

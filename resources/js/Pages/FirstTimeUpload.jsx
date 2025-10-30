@@ -1,7 +1,7 @@
 import React from "react";
 import EmotionUpload from "../Components/EmotionUpload";
 import {Link} from "@inertiajs/react";
-import Logo from "../../images/logo.png";
+import Logo from "../../../public/images/logo.png";
 import AuthLayout from "../Components/AuthLayout.jsx";
 import "../../css/auth.css";
 import {route} from "ziggy-js";
