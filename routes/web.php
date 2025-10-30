@@ -132,7 +132,7 @@ Route::post('/test-upload-direct', function (Request $request) {
         $path = $request->file('photo')->store('emotions', 'local');
         $fullPath = Storage::disk('local')->path($path);
 
-        $rekognition = app(\App\Services\amazon\RekognitionService::class);
+        $rekognition = app(RekognitionService::class);
         $emotions = $rekognition->detectEmotion($fullPath, 3);
 
         Storage::disk('local')->delete($path);
@@ -148,6 +148,24 @@ Route::post('/test-upload-direct', function (Request $request) {
             'file' => $e->getFile(),
             'line' => $e->getLine(),
             'trace' => explode("\n", $e->getTraceAsString())
+        ], 500);
+    }
+});
+
+Route::get('/test-minimal', function() {
+    try {
+        $rekognition = app(RekognitionService::class);
+        return response()->json([
+            'status' => 'OK',
+            'message' => 'Rekognition loaded successfully',
+            'available' => $rekognition->isAvailable()
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'ERROR',
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
         ], 500);
     }
 });
