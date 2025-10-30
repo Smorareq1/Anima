@@ -46,12 +46,11 @@ class EmotionController extends Controller
         ]);
 
         $limit  = (int) $request->input('limit', 12);
-        $create = (bool) $request->input('create_playlist', false);
+        (bool) $request->input('create_playlist', false);
 
-        // 1) Guardar imagen
-        $path = $request->file('photo')->store('emotions', 'public');
+        // 1) Guardar imagen en disco local (no public)
+        $path = $request->file('photo')->store('emotions', 'local');
         if (!$path) {
-            // Para Inertia, redirigimos con error
             if ($request->header('X-Inertia')) {
                 return redirect()->back()->withErrors(['photo' => 'Error al guardar imagen'])->withInput();
             }
@@ -59,12 +58,15 @@ class EmotionController extends Controller
         }
 
         try {
-            // 2) Detectar emociones
-            $fullPath = Storage::disk('public')->path($path);
+            // 2) Detectar emociones - usar disco local
+            $fullPath = Storage::disk('local')->path($path);
+
+            Log::info('Procesando imagen:', ['path' => $fullPath, 'exists' => file_exists($fullPath)]);
+
             $emotions = $rekognition->detectEmotion($fullPath, 3);
 
             if (empty($emotions)) {
-                Storage::disk('public')->delete($path);
+                Storage::disk('local')->delete($path);
 
                 if ($request->header('X-Inertia')) {
                     return redirect()->back()->withErrors(['photo' => 'No se detectaron emociones en la imagen'])->withInput();
@@ -88,7 +90,6 @@ class EmotionController extends Controller
                 'tracks'           => $recs['tracks'] ?? [],
             ];
 
-
             // Guardar en sesión flash y redirigir
             $request->session()->put('playlistData', $payload);
 
@@ -98,6 +99,8 @@ class EmotionController extends Controller
             Log::error('Error completo en upload:', [
                 'message'  => $e->getMessage(),
                 'trace'    => $e->getTraceAsString(),
+                'file'     => $e->getFile(),
+                'line'     => $e->getLine(),
                 'emotions' => $emotions ?? null,
             ]);
 
@@ -108,7 +111,7 @@ class EmotionController extends Controller
         } finally {
             // Limpiar imagen temporal
             if (isset($path)) {
-                Storage::disk('public')->delete($path);
+                Storage::disk('local')->delete($path);
             }
         }
     }
