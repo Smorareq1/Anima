@@ -119,3 +119,35 @@ Route::get('/test-aws', function () {
         ], 500);
     }
 });
+
+Route::post('/test-upload-direct', function (Request $request) {
+    ini_set('display_errors', '1');
+    error_reporting(E_ALL);
+
+    try {
+        $request->validate([
+            'photo' => 'required|image'
+        ]);
+
+        $path = $request->file('photo')->store('emotions', 'local');
+        $fullPath = Storage::disk('local')->path($path);
+
+        $rekognition = app(\App\Services\amazon\RekognitionService::class);
+        $emotions = $rekognition->detectEmotion($fullPath, 3);
+
+        Storage::disk('local')->delete($path);
+
+        return response()->json([
+            'success' => true,
+            'emotions' => $emotions
+        ]);
+
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => explode("\n", $e->getTraceAsString())
+        ], 500);
+    }
+});
