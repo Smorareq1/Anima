@@ -33,9 +33,18 @@ RUN echo "display_errors = On" >> /usr/local/etc/php/conf.d/docker-php-errors.in
     && echo "upload_max_filesize = 20M" >> /usr/local/etc/php/conf.d/docker-php-uploads.ini \
     && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/docker-php-memory.ini
 
-# Configurar PHP-FPM para escuchar en 127.0.0.1:9000
-RUN sed -i 's|listen = .*|listen = 127.0.0.1:9000|g' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i 's|;catch_workers_output.*|catch_workers_output = yes|g' /usr/local/etc/php-fpm.d/www.conf
+# ⭐ REEMPLAZAR www.conf completamente para forzar IPv4
+RUN echo "[www]" > /usr/local/etc/php-fpm.d/www.conf \
+    && echo "user = www-data" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "group = www-data" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "listen = 127.0.0.1:9000" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "listen.allowed_clients = 127.0.0.1" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "pm = dynamic" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "pm.max_children = 20" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "pm.start_servers = 2" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "pm.min_spare_servers = 1" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "pm.max_spare_servers = 3" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "catch_workers_output = yes" >> /usr/local/etc/php-fpm.d/www.conf
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
