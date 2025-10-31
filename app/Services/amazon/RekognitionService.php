@@ -42,13 +42,17 @@ class RekognitionService
         return $this->client !== null;
     }
 
-    public function detectEmotion($imagePath, $limit)
+    public function detectEmotion($imageSource, $limit)
     {
         if (!$this->isAvailable()) {
             throw new \RuntimeException('Rekognition service is not available');
         }
-
-        $bytes = file_get_contents($imagePath);
+        if (is_string($imageSource) && file_exists($imageSource)) {
+            $bytes = file_get_contents($imageSource);
+        } else {
+            // Ya es contenido binario
+            $bytes = $imageSource;
+        }
 
         $result = $this->client->detectFaces([
             'Image' => ['Bytes' => $bytes],
@@ -59,7 +63,7 @@ class RekognitionService
 
         usort($emotions, fn($a, $b) => $b['Confidence'] <=> $a['Confidence']);
 
-        //Limitar cantidad
+        // Limitar cantidad
         $topEmotions = array_slice($emotions, 0, $limit);
 
         // Devolver formato simplificado

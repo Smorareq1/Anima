@@ -125,11 +125,16 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
-            'scheme' => 'tls',
-            'ssl' => [
+            'scheme' => env('REDIS_SCHEME', 'tcp'),
+            'options' => [
+                'parameters' => [
+                    'scheme' => env('REDIS_SCHEME', 'tcp'),
+                ],
+            ],
+            'ssl' => env('APP_ENV') === 'production' ? [
                 'verify_peer' => false,
                 'verify_peer_name' => false,
-            ],
+            ] : null,
         ],
 
         'cache' => [
