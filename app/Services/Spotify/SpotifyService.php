@@ -25,15 +25,41 @@ class SpotifyService
 
     public function __construct()
     {
-        $this->api = new Client([
-            'base_uri' => rtrim((string) config('services.spotify.base_uri'), '/') . '/',
-            'timeout'  => 10,
-        ]);
+        Log::emergency('=== SpotifyService CONSTRUCTOR START ===');
 
-        $this->accounts = new Client([
-            'base_uri' => rtrim((string) config('services.spotify.accounts_uri'), '/') . '/',
-            'timeout'  => 10,
-        ]);
+        try {
+            $baseUri = config('services.spotify.base_uri');
+            $accountsUri = config('services.spotify.accounts_uri');
+
+            Log::emergency('Spotify Config', [
+                'base_uri' => $baseUri,
+                'accounts_uri' => $accountsUri,
+                'client_id_exists' => !empty(config('services.spotify.client_id')),
+                'client_secret_exists' => !empty(config('services.spotify.client_secret'))
+            ]);
+
+            $this->api = new Client([
+                'base_uri' => rtrim((string) $baseUri, '/') . '/',
+                'timeout'  => 10,
+            ]);
+
+            $this->accounts = new Client([
+                'base_uri' => rtrim((string) $accountsUri, '/') . '/',
+                'timeout'  => 10,
+            ]);
+
+            Log::emergency('SpotifyService Guzzle clients created successfully');
+
+        } catch (\Exception $e) {
+            Log::emergency('EXCEPTION in SpotifyService constructor', [
+                'class' => get_class($e),
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e; // Re-throw para que Laravel lo capture
+        }
+
+        Log::emergency('=== SpotifyService CONSTRUCTOR END ===');
     }
 
     public function handleCallback(): User
@@ -209,33 +235,6 @@ class SpotifyService
                 'status'  => $e->getCode(),
                 'message' => $e->getMessage(),
                 'query'   => $query
-            ]);
-
-            if ($e->getCode() === 401) {
-                throw new \RuntimeException('Token de Spotify expirado o inválido');
-            }
-
-            throw new \RuntimeException('Error al comunicarse con Spotify API: ' . $e->getMessage());
-        }
-    }
-    /** Wrapper POST hacia la API de Spotify con manejo de errores. */
-    private function apiPost(string $path, string $token, array $json = []): array
-    {
-        try {
-            $res = $this->api->post(ltrim($path, '/'), [
-                'headers' => [
-                    'Authorization' => "Bearer {$token}",
-                    'Content-Type'  => 'application/json',
-                ],
-                'json' => $json,
-            ]);
-            return json_decode((string) $res->getBody(), true) ?? [];
-
-        } catch (RequestException $e) {
-            Log::error("Spotify API POST error: {$path}", [
-                'status'  => $e->getCode(),
-                'message' => $e->getMessage(),
-                'body'    => $json
             ]);
 
             if ($e->getCode() === 401) {

@@ -11,18 +11,29 @@ class RekognitionService
 
     public function __construct()
     {
+        Log::emergency('=== RekognitionService CONSTRUCTOR START ===');
+
         // Verificar que las credenciales existan
         $key = config('aws.credentials.key') ?? env('AWS_ACCESS_KEY_ID');
         $secret = config('aws.credentials.secret') ?? env('AWS_SECRET_ACCESS_KEY');
         $region = config('aws.region') ?? env('AWS_DEFAULT_REGION', 'us-east-2');
 
+        Log::emergency('AWS Config', [
+            'key_exists' => !empty($key),
+            'secret_exists' => !empty($secret),
+            'region' => $region
+        ]);
+
         if (empty($key) || empty($secret)) {
             Log::warning('AWS credentials not configured, RekognitionService disabled');
             $this->client = null;
+            Log::emergency('=== RekognitionService CONSTRUCTOR END (no credentials) ===');
             return;
         }
 
         try {
+            Log::emergency('Attempting to create RekognitionClient...');
+
             $this->client = new RekognitionClient([
                 'region' => $region,
                 'version' => 'latest',
@@ -31,10 +42,20 @@ class RekognitionService
                     'secret' => $secret,
                 ],
             ]);
+
+            Log::emergency('RekognitionClient created successfully');
+
         } catch (\Exception $e) {
             Log::error('Failed to initialize Rekognition client: ' . $e->getMessage());
+            Log::emergency('Exception in RekognitionClient creation', [
+                'class' => get_class($e),
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             $this->client = null;
         }
+
+        Log::emergency('=== RekognitionService CONSTRUCTOR END ===');
     }
 
     public function isAvailable(): bool
