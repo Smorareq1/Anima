@@ -33,11 +33,14 @@ RUN echo "display_errors = On" >> /usr/local/etc/php/conf.d/docker-php-errors.in
     && echo "upload_max_filesize = 20M" >> /usr/local/etc/php/conf.d/docker-php-uploads.ini \
     && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/docker-php-memory.ini
 
-# ⭐ CRÍTICO: Configurar PHP-FPM para TCP en 127.0.0.1:9000
-RUN sed -i 's/listen = .*/listen = 127.0.0.1:9000/' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i 's/;catch_workers_output = .*/catch_workers_output = yes/' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i 's/;php_admin_flag\[log_errors\] = .*/php_admin_flag[log_errors] = on/' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i 's/;php_admin_value\[error_log\] = .*/php_admin_value[error_log] = \/var\/log\/php-fpm-error.log/' /usr/local/etc/php-fpm.d/www.conf
+# ⭐ CRÍTICO: Forzar PHP-FPM a escuchar en IPv4 127.0.0.1:9000
+RUN echo "[www]" > /usr/local/etc/php-fpm.d/zz-custom.conf \
+    && echo "listen = 127.0.0.1:9000" >> /usr/local/etc/php-fpm.d/zz-custom.conf \
+    && echo "listen.owner = www-data" >> /usr/local/etc/php-fpm.d/zz-custom.conf \
+    && echo "listen.group = www-data" >> /usr/local/etc/php-fpm.d/zz-custom.conf \
+    && echo "catch_workers_output = yes" >> /usr/local/etc/php-fpm.d/zz-custom.conf \
+    && echo "php_admin_flag[log_errors] = on" >> /usr/local/etc/php-fpm.d/zz-custom.conf \
+    && echo "php_admin_value[error_log] = /var/log/php-fpm-error.log" >> /usr/local/etc/php-fpm.d/zz-custom.conf
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
