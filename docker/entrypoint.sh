@@ -17,8 +17,12 @@ fi
 echo "Checking PHP-FPM configuration..."
 grep "listen = " /usr/local/etc/php-fpm.d/www.conf || echo "ERROR: Could not find listen directive"
 
-# Crear directorio de logs si no existe
-mkdir -p /var/www/html/storage/logs /var/log/php-fpm
+# Crear TODOS los directorios de logs necesarios
+mkdir -p /var/www/html/storage/logs \
+         /var/log/php-fpm \
+         /var/log/supervisor \
+         /var/log/nginx
+
 chmod -R 777 /var/www/html/storage
 touch /var/log/php-fpm-error.log
 chmod 666 /var/log/php-fpm-error.log
