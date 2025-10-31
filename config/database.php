@@ -110,7 +110,7 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+        'client' => env('REDIS_CLIENT', 'predis'),
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
@@ -118,59 +118,22 @@ return [
         ],
 
         'default' => [
-            'url' => env('REDIS_URL'),
+            'scheme' => env('REDIS_SCHEME', 'tcp'),
             'host' => env('REDIS_HOST', '127.0.0.1'),
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
-
-            // ⭐ Timeouts
-            'read_timeout' => 10,
-            'timeout' => 5,
-            'persistent' => false,
-
-            // ⭐ Opciones de conexión (scheme y SSL juntos)
-            'options' => [
-                'parameters' => [
-                    'scheme' => env('REDIS_SCHEME', 'tcp'),
-                ],
-                'ssl' => env('REDIS_SCHEME') === 'tls' ? [
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                ] : null,
-            ],
+            'read_write_timeout' => 0,
         ],
 
         'cache' => [
-            'url' => env('REDIS_URL'),
+            'scheme' => env('REDIS_SCHEME', 'tcp'),
             'host' => env('REDIS_HOST', '127.0.0.1'),
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
-
-            // ⭐ Timeouts
-            'read_timeout' => 10,
-            'timeout' => 5,
-            'persistent' => false,
-
-            // ⭐ Retry settings
-            'max_retries' => env('REDIS_MAX_RETRIES', 3),
-            'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
-            'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
-            'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
-
-            // ⭐ Opciones de conexión
-            'options' => [
-                'parameters' => [
-                    'scheme' => env('REDIS_SCHEME', 'tcp'),
-                ],
-                'ssl' => env('REDIS_SCHEME') === 'tls' ? [
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                ] : null,
-            ],
+            'read_write_timeout' => 0,
         ],
 
     ],
-
 ];
