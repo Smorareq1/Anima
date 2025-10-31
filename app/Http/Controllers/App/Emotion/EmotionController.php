@@ -47,6 +47,17 @@ class EmotionController extends Controller
                 'create_playlist' => 'nullable|boolean',
             ]);
 
+            // Al inicio del método, para ver qué llega
+            Log::info('Request data', $request->all());
+            dd([
+                'env' => app()->environment(),
+                'redis_scheme' => env('REDIS_SCHEME'),
+                'redis_host' => env('REDIS_HOST'),
+                'redis_port' => env('REDIS_PORT'),
+                'aws_key_exists' => !empty(env('AWS_ACCESS_KEY_ID')),
+                'rekognition_available' => $rekognition->isAvailable(),
+            ]);
+
             $limit = (int) $request->input('limit', 12);
             $create = (bool) $request->input('create_playlist', false);
             // Obtener el contenido del archivo directamente
