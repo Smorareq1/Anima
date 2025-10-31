@@ -114,8 +114,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-database-'),
-            'persistent' => env('REDIS_PERSISTENT', false),
+            'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel'), '_').'_database_'),
         ],
 
         'default' => [
@@ -125,16 +124,22 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
-            'scheme' => env('REDIS_SCHEME', 'tcp'),
+
+            // ⭐ Timeouts
+            'read_timeout' => 10,
+            'timeout' => 5,
+            'persistent' => false,
+
+            // ⭐ Opciones de conexión (scheme y SSL juntos)
             'options' => [
                 'parameters' => [
                     'scheme' => env('REDIS_SCHEME', 'tcp'),
                 ],
+                'ssl' => env('REDIS_SCHEME') === 'tls' ? [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                ] : null,
             ],
-            'ssl' => env('APP_ENV') === 'production' ? [
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-            ] : null,
         ],
 
         'cache' => [
@@ -144,10 +149,28 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
+
+            // ⭐ Timeouts
+            'read_timeout' => 10,
+            'timeout' => 5,
+            'persistent' => false,
+
+            // ⭐ Retry settings
             'max_retries' => env('REDIS_MAX_RETRIES', 3),
             'backoff_algorithm' => env('REDIS_BACKOFF_ALGORITHM', 'decorrelated_jitter'),
             'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
             'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
+
+            // ⭐ Opciones de conexión
+            'options' => [
+                'parameters' => [
+                    'scheme' => env('REDIS_SCHEME', 'tcp'),
+                ],
+                'ssl' => env('REDIS_SCHEME') === 'tls' ? [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                ] : null,
+            ],
         ],
 
     ],
