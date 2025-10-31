@@ -25,13 +25,13 @@ class SpotifyService
 
     public function __construct()
     {
-        Log::emergency('=== SpotifyService CONSTRUCTOR START ===');
+        Log::info('=== SpotifyService CONSTRUCTOR START ===');
 
         try {
             $baseUri = config('services.spotify.base_uri');
             $accountsUri = config('services.spotify.accounts_uri');
 
-            Log::emergency('Spotify Config', [
+            Log::info('Spotify Config', [
                 'base_uri' => $baseUri,
                 'accounts_uri' => $accountsUri,
                 'client_id_exists' => !empty(config('services.spotify.client_id')),
@@ -48,10 +48,10 @@ class SpotifyService
                 'timeout'  => 10,
             ]);
 
-            Log::emergency('SpotifyService Guzzle clients created successfully');
+            Log::info('SpotifyService Guzzle clients created successfully');
 
         } catch (\Exception $e) {
-            Log::emergency('EXCEPTION in SpotifyService constructor', [
+            Log::info('EXCEPTION in SpotifyService constructor', [
                 'class' => get_class($e),
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -59,7 +59,7 @@ class SpotifyService
             throw $e; // Re-throw para que Laravel lo capture
         }
 
-        Log::emergency('=== SpotifyService CONSTRUCTOR END ===');
+        Log::info('=== SpotifyService CONSTRUCTOR END ===');
     }
 
     public function handleCallback(): User
