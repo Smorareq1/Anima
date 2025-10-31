@@ -14,8 +14,7 @@ RUN apk add --no-cache \
     autoconf \
     g++ \
     make \
-    openssl-dev \
-    strace  # Para debugging
+    openssl-dev
 
 # Instalar extensiones PHP
 RUN docker-php-ext-install pdo pdo_pgsql pcntl
@@ -24,7 +23,7 @@ RUN docker-php-ext-install pdo pdo_pgsql pcntl
 RUN pecl install redis \
     && docker-php-ext-enable redis
 
-# IMPORTANTE: Configurar PHP para mostrar errores
+# Configurar PHP
 RUN echo "display_errors = On" >> /usr/local/etc/php/conf.d/docker-php-errors.ini \
     && echo "display_startup_errors = On" >> /usr/local/etc/php/conf.d/docker-php-errors.ini \
     && echo "error_reporting = E_ALL" >> /usr/local/etc/php/conf.d/docker-php-errors.ini \
@@ -33,6 +32,12 @@ RUN echo "display_errors = On" >> /usr/local/etc/php/conf.d/docker-php-errors.in
     && echo "post_max_size = 20M" >> /usr/local/etc/php/conf.d/docker-php-uploads.ini \
     && echo "upload_max_filesize = 20M" >> /usr/local/etc/php/conf.d/docker-php-uploads.ini \
     && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/docker-php-memory.ini
+
+# ⭐ CRÍTICO: Configurar PHP-FPM para TCP en 127.0.0.1:9000
+RUN sed -i 's/listen = .*/listen = 127.0.0.1:9000/' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's/;catch_workers_output = .*/catch_workers_output = yes/' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's/;php_admin_flag\[log_errors\] = .*/php_admin_flag[log_errors] = on/' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's/;php_admin_value\[error_log\] = .*/php_admin_value[error_log] = \/var\/log\/php-fpm-error.log/' /usr/local/etc/php-fpm.d/www.conf
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -56,11 +61,12 @@ RUN composer dump-autoload --optimize
 # Compilar assets
 RUN npm run build
 
-# CREAR DIRECTORIOS DE LOGS
-RUN mkdir -p /var/log/laravel /var/www/html/storage/logs \
+# Crear directorios de logs
+RUN mkdir -p /var/log/php-fpm /var/www/html/storage/logs \
     && touch /var/log/php_errors.log \
-    && chmod 777 /var/log/php_errors.log \
-    && chmod -R 777 /var/log/laravel
+    && touch /var/log/php-fpm-error.log \
+    && chmod 666 /var/log/php_errors.log \
+    && chmod 666 /var/log/php-fpm-error.log
 
 # Configurar permisos
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
@@ -70,12 +76,10 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Copiar configuraciones
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-EXPOSE 80
-
-# Script de entrada para debugging
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+EXPOSE 80
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
