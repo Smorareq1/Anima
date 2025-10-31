@@ -33,18 +33,13 @@ RUN echo "display_errors = On" >> /usr/local/etc/php/conf.d/docker-php-errors.in
     && echo "upload_max_filesize = 20M" >> /usr/local/etc/php/conf.d/docker-php-uploads.ini \
     && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/docker-php-memory.ini
 
-# ⭐ REEMPLAZAR www.conf completamente para forzar IPv4
-RUN echo "[www]" > /usr/local/etc/php-fpm.d/www.conf \
-    && echo "user = www-data" >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo "group = www-data" >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo "listen = 127.0.0.1:9000" >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo "listen.allowed_clients = 127.0.0.1" >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo "pm = dynamic" >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo "pm.max_children = 20" >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo "pm.start_servers = 2" >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo "pm.min_spare_servers = 1" >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo "pm.max_spare_servers = 3" >> /usr/local/etc/php-fpm.d/www.conf \
-    && echo "catch_workers_output = yes" >> /usr/local/etc/php-fpm.d/www.conf
+# ⭐ Configurar PHP-FPM para usar socket Unix
+RUN echo "[www]" > /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen = /var/run/php-fpm.sock" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen.owner = www-data" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen.group = www-data" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "listen.mode = 0660" >> /usr/local/etc/php-fpm.d/zz-docker.conf \
+    && echo "catch_workers_output = yes" >> /usr/local/etc/php-fpm.d/zz-docker.conf
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -73,6 +68,7 @@ RUN mkdir -p /var/log/php-fpm \
              /var/log/supervisor \
              /var/log/nginx \
              /var/www/html/storage/logs \
+             /var/run \
     && touch /var/log/php_errors.log \
     && touch /var/log/php-fpm-error.log \
     && chmod 666 /var/log/php_errors.log \
