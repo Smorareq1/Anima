@@ -5,6 +5,7 @@ import "../../../css/administrator.css";
 import RecommendedSongs from "../../Components/RecommendedSongs.jsx";
 import ChartCard from "../../Components/ChartCard.jsx";
 import {Head} from "@inertiajs/react";
+import curry from "../../../../public/images/curry.png"
 
 export default function Administrator({ dashboardData }) {
     const d = dashboardData;
@@ -19,7 +20,7 @@ export default function Administrator({ dashboardData }) {
                     <div className="admin-summary-grid">
                         <div className="admin-summary-item">
                             <img
-                                src={d.usuarioMasActivo.imagen}
+                                src={d.usuarioMasActivo.imagen ?? curry}
                                 alt="Usuario"
                                 className="admin-summary-image"
                             />

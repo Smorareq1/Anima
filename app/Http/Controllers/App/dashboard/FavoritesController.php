@@ -31,6 +31,7 @@ class FavoritesController extends Controller
             return [
                 'id' => $playlist->id,
                 'name' => $playlist->name,
+                'emotion' => $playlist->main_emotion,
                 'songs' => $playlist->tracks->count(),
                 'date' => $playlist->created_at->toDateString(),
                 'image' => $imageUrl,
@@ -53,6 +54,7 @@ class FavoritesController extends Controller
                 'spotify_url' => $track->spotify_url,
             ];
         })->values();
+
 
         return Inertia::render('Dashboard/Favorites', [
             'user' => $user,
