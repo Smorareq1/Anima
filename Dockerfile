@@ -72,8 +72,9 @@ RUN mkdir -p /var/log/php-fpm \
     && touch /var/log/php_errors.log \
     && touch /var/log/php-fpm-error.log \
     && chmod 666 /var/log/php_errors.log \
-    && chmod 666 /var/log/php-fpm-error.log \
+    && chmod 666 /var/log/php-fpm-error.log
 
+# ⭐ Crear directorios temporales de nginx con permisos
 RUN mkdir -p /var/lib/nginx/tmp/client_body \
              /var/lib/nginx/tmp/proxy \
              /var/lib/nginx/tmp/fastcgi \
