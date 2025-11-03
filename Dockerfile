@@ -72,7 +72,15 @@ RUN mkdir -p /var/log/php-fpm \
     && touch /var/log/php_errors.log \
     && touch /var/log/php-fpm-error.log \
     && chmod 666 /var/log/php_errors.log \
-    && chmod 666 /var/log/php-fpm-error.log
+    && chmod 666 /var/log/php-fpm-error.log \
+
+RUN mkdir -p /var/lib/nginx/tmp/client_body \
+             /var/lib/nginx/tmp/proxy \
+             /var/lib/nginx/tmp/fastcgi \
+             /var/lib/nginx/tmp/uwsgi \
+             /var/lib/nginx/tmp/scgi \
+    && chown -R www-data:www-data /var/lib/nginx \
+    && chmod -R 755 /var/lib/nginx/tmp
 
 # Configurar permisos
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
