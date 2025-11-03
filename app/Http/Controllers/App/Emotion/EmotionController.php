@@ -40,74 +40,38 @@ class EmotionController extends Controller
 
     public function upload(Request $request, SpotifyService $spotify, RekognitionService $rekognition)
     {
+        $request->validate([
+            'photo' => 'required|image|mimes:jpg,jpeg,png|max:10240',
+        ]);
+
         try {
-            $request->validate([
-                'photo' => 'required|image|mimes:jpg,jpeg,png|max:10240',
-                'limit' => 'nullable|integer|min:1|max:50',
-                'create_playlist' => 'nullable|boolean',
-            ]);
+            $limit = 12;
 
-            // Al inicio del método, para ver qué llega
-            Log::info('Request data', $request->all());
-            dd([
-                'env' => app()->environment(),
-                'redis_scheme' => env('REDIS_SCHEME'),
-                'redis_host' => env('REDIS_HOST'),
-                'redis_port' => env('REDIS_PORT'),
-                'aws_key_exists' => !empty(env('AWS_ACCESS_KEY_ID')),
-                'rekognition_available' => $rekognition->isAvailable(),
-            ]);
-
-            $limit = (int) $request->input('limit', 12);
-            $create = (bool) $request->input('create_playlist', false);
-            // Obtener el contenido del archivo directamente
+            // Leer el archivo directamente sin guardarlo
             $imageContent = file_get_contents($request->file('photo')->getRealPath());
             $emotions = $rekognition->detectEmotion($imageContent, 3);
 
             if (empty($emotions)) {
-                if ($request->header('X-Inertia')) {
-                    return redirect()->back()
-                        ->withErrors(['photo' => 'No se detectaron emociones en la imagen'])
-                        ->withInput();
-                }
-                return response()->json(['error' => 'No se detectaron emociones en la imagen'], 400);
+                return back()->withErrors(['photo' => 'No se detectaron emociones en la imagen']);
             }
 
-            // Recomendaciones de Spotify
             $recs = $spotify->recommendByEmotionsEnhanced(Auth::user(), $emotions, $limit);
 
-            // Payload
-            $payload = [
-                'message'          => 'Análisis y recomendaciones generadas',
-                'emotions'         => $emotions,
-                'emotions_used'    => $recs['emotions_used'] ?? null,
-                'method_used'      => $recs['method'] ?? 'hybrid',
-                'emotion'          => $recs['emotion'] ?? null,
-                'confidence'       => $recs['confidence'] ?? null,
-                'tracks'           => $recs['tracks'] ?? [],
-            ];
-
-            $request->session()->put('playlistData', $payload);
-            return Inertia::location(route('emotion.playlists.temp'));
-
-        } catch (ValidationException $e) {
-            Log::emergency('VALIDATION EXCEPTION:', [
-                'errors' => $e->errors(),
-                'message' => $e->getMessage()
+            $request->session()->put('playlistData', [
+                'message' => 'Análisis y recomendaciones generadas',
+                'emotions' => $emotions,
+                'emotions_used' => $recs['emotions_used'] ?? null,
+                'method_used' => $recs['method'] ?? 'hybrid',
+                'emotion' => $recs['emotion'] ?? null,
+                'confidence' => $recs['confidence'] ?? null,
+                'tracks' => $recs['tracks'] ?? [],
             ]);
-            throw $e;
+
+            return redirect()->route('emotion.playlists.temp');
 
         } catch (\Throwable $e) {
-            Log::emergency('=== EXCEPTION CAUGHT ===', [
-                'class' => get_class($e),
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ]);
-
-            return redirect()->back()->withErrors([
-                'photo' => 'Error al procesar la solicitud: ' . $e->getMessage()
-            ]);
+            Log::error('Upload error: ' . $e->getMessage());
+            return back()->withErrors(['photo' => 'Error al procesar: ' . $e->getMessage()]);
         }
     }
 

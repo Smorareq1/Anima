@@ -1,18 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { router } from "@inertiajs/react";
 import "../../css/emotion.css";
-import { route } from "ziggy-js";
 import CameraIcon from "../../../public/images/decoration/camera.svg?react";
 import UploadIcon from "../../../public/images/decoration/upload.svg?react";
 import LoadingScreen from "./LoadingScreen";
 
-export default function EmotionUpload() {
+export default function EmotionUpload({ errors: serverErrors = {} }) {
     const [mode, setMode] = useState("upload");
     const [file, setFile] = useState(null);
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState(serverErrors);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showSubmitError, setShowSubmitError] = useState(false);
-    const [debugInfo, setDebugInfo] = useState([]); // ✅ Nuevo estado para debug
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
 
@@ -25,17 +22,9 @@ export default function EmotionUpload() {
         "Tu recomendación musical está en camino..."
     ];
 
-    // ✅ Función helper para agregar logs de debug
-    const addDebug = (message, data = null) => {
-        const timestamp = new Date().toISOString();
-        const debugEntry = {
-            time: timestamp,
-            message,
-            data
-        };
-        console.log(`[${timestamp}] ${message}`, data || '');
-        setDebugInfo(prev => [...prev, debugEntry]);
-    };
+    useEffect(() => {
+        setErrors(serverErrors);
+    }, [serverErrors]);
 
     useEffect(() => {
         return () => {
@@ -46,12 +35,6 @@ export default function EmotionUpload() {
     }, []);
 
     const validateFile = (file) => {
-        addDebug('Validating file', {
-            name: file?.name,
-            size: file?.size,
-            type: file?.type
-        });
-
         const newErrors = {};
 
         if (!file) {
@@ -68,20 +51,16 @@ export default function EmotionUpload() {
             newErrors.photo = "Formato no válido (solo PNG, JPEG, JPG)";
         }
 
-        addDebug('Validation result', { errors: newErrors });
         return newErrors;
     };
 
     const startCamera = async () => {
         try {
-            addDebug('Starting camera...');
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-                addDebug('Camera started successfully');
             }
         } catch (err) {
-            addDebug('Camera error', { error: err.message });
             console.error("No se pudo acceder a la cámara:", err);
             setErrors({ photo: "No se pudo acceder a la cámara" });
         }
@@ -91,15 +70,11 @@ export default function EmotionUpload() {
         if (videoRef.current && videoRef.current.srcObject) {
             videoRef.current.srcObject.getTracks().forEach(track => track.stop());
             videoRef.current.srcObject = null;
-            addDebug('Camera stopped');
         }
     };
 
     const takePhoto = () => {
-        addDebug('Taking photo...');
-
         if (!videoRef.current || !canvasRef.current) {
-            addDebug('Camera not available');
             setErrors({ photo: "La cámara no está disponible" });
             return;
         }
@@ -110,13 +85,8 @@ export default function EmotionUpload() {
         canvasRef.current.toBlob(
             (blob) => {
                 const photoFile = new File([blob], "photo.jpg", { type: "image/jpeg" });
-                addDebug('Photo captured', {
-                    size: photoFile.size,
-                    type: photoFile.type
-                });
                 setFile(photoFile);
                 setErrors(validateFile(photoFile));
-                setShowSubmitError(false);
             },
             "image/jpeg",
             0.8
@@ -124,159 +94,59 @@ export default function EmotionUpload() {
     };
 
     const handleFileChange = (e) => {
-        addDebug('File selected from input');
         const selectedFile = e.target.files[0];
         setFile(selectedFile);
         setErrors(validateFile(selectedFile));
-        setShowSubmitError(false);
     };
 
     const removeFile = () => {
-        addDebug('File removed');
         setFile(null);
         setErrors({});
-        setShowSubmitError(false);
         const fileInput = document.getElementById("fileInput");
         if (fileInput) fileInput.value = "";
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        addDebug('=== SUBMIT STARTED ===');
 
         if (!file) {
-            addDebug('No file selected');
-            setShowSubmitError(true);
             setErrors({ photo: "Debes subir una imagen antes de continuar" });
             return;
         }
 
         const validationErrors = validateFile(file);
         if (Object.keys(validationErrors).length > 0) {
-            addDebug('Validation failed', validationErrors);
             setErrors(validationErrors);
-            setShowSubmitError(true);
             return;
         }
 
         setIsSubmitting(true);
-        setErrors({});
-        setShowSubmitError(false);
 
-        const formData = new FormData();
-        formData.append("photo", file);
-
-        addDebug('FormData created', {
-            hasPhoto: formData.has('photo'),
-            fileSize: file.size,
-            fileName: file.name,
-            fileType: file.type
-        });
-
-        // ✅ Obtener la URL del route
-        const uploadUrl = route("emotion.upload");
-        addDebug('Posting to URL', { url: uploadUrl });
-
-        // ✅ Usar fetch directo para más control y debugging
-        try {
-            addDebug('Sending request...');
-
-            const response = await fetch(uploadUrl, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-                    'X-Inertia': 'true',
-                    'X-Inertia-Version': window.InertiaAppVersion || '',
-                }
-            });
-
-            addDebug('Response received', {
-                status: response.status,
-                statusText: response.statusText,
-                headers: Object.fromEntries(response.headers.entries())
-            });
-
-            const responseText = await response.text();
-            addDebug('Response body (raw)', {
-                length: responseText.length,
-                preview: responseText.substring(0, 500)
-            });
-
-            if (!response.ok) {
-                addDebug('Response NOT OK', {
-                    status: response.status,
-                    body: responseText
-                });
-
-                try {
-                    const errorData = JSON.parse(responseText);
-                    addDebug('Error data parsed', errorData);
-
-                    if (errorData.errors?.photo) {
-                        setErrors({ photo: errorData.errors.photo });
-                    } else if (errorData.message) {
-                        setErrors({ photo: errorData.message });
-                    } else {
-                        setErrors({ photo: `Error ${response.status}: ${response.statusText}` });
-                    }
-                } catch (parseError) {
-                    addDebug('Could not parse error response', {
-                        parseError: parseError.message,
-                        rawText: responseText.substring(0, 200)
-                    });
-                    setErrors({ photo: `Error ${response.status}: No se pudo procesar la respuesta del servidor` });
-                }
-
-                setShowSubmitError(true);
+        // ✅ Usar Inertia router con FormData
+        router.post(route('emotion.upload'), {
+            photo: file
+        }, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                setFile(null);
+                stopCamera();
                 setIsSubmitting(false);
-                return;
+            },
+            onError: (errors) => {
+                console.error('Upload errors:', errors);
+                setErrors(errors);
+                setIsSubmitting(false);
+            },
+            onFinish: () => {
+                setIsSubmitting(false);
             }
-
-            addDebug('Request successful!');
-
-            // Parsear respuesta exitosa
-            try {
-                const data = JSON.parse(responseText);
-                addDebug('Success data parsed', data);
-
-                // Si es una respuesta Inertia
-                if (data.component || data.props) {
-                    addDebug('Inertia response detected, redirecting...');
-                    window.location.href = data.url || route('emotion.playlists.temp');
-                } else {
-                    addDebug('Regular JSON response');
-                }
-            } catch (parseError) {
-                addDebug('Could not parse success response', {
-                    parseError: parseError.message
-                });
-            }
-
-            setFile(null);
-            stopCamera();
-            setIsSubmitting(false);
-
-        } catch (error) {
-            addDebug('=== EXCEPTION CAUGHT ===', {
-                name: error.name,
-                message: error.message,
-                stack: error.stack
-            });
-
-            setIsSubmitting(false);
-            setErrors({ photo: `Error de conexión: ${error.message}` });
-            setShowSubmitError(true);
-        }
+        });
     };
 
     const handleTabChange = (newMode) => {
-        addDebug('Tab changed', { from: mode, to: newMode });
         setMode(newMode);
         setErrors({});
-        setShowSubmitError(false);
 
         if (newMode === "upload") {
             stopCamera();
@@ -287,50 +157,6 @@ export default function EmotionUpload() {
 
     return (
         <div className="emotion-upload-container">
-            {/* ✅ Panel de debug (solo en desarrollo o con query param ?debug=1) */}
-            {(import.meta.env.DEV || new URLSearchParams(window.location.search).get('debug') === '1') && (
-                <div style={{
-                    position: 'fixed',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                    backgroundColor: '#1a1a1a',
-                    color: '#00ff00',
-                    fontFamily: 'monospace',
-                    fontSize: '11px',
-                    padding: '10px',
-                    zIndex: 9999,
-                    borderTop: '2px solid #00ff00'
-                }}>
-                    <strong>DEBUG LOG:</strong>
-                    <button
-                        onClick={() => setDebugInfo([])}
-                        style={{
-                            float: 'right',
-                            background: '#ff0000',
-                            color: 'white',
-                            border: 'none',
-                            padding: '2px 8px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Clear
-                    </button>
-                    {debugInfo.map((entry, i) => (
-                        <div key={i} style={{ borderBottom: '1px solid #333', padding: '2px 0' }}>
-                            <strong>[{entry.time.split('T')[1].split('.')[0]}]</strong> {entry.message}
-                            {entry.data && (
-                                <pre style={{ margin: 0, fontSize: '10px', color: '#aaa' }}>
-                                    {JSON.stringify(entry.data, null, 2)}
-                                </pre>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            )}
-
             <div className="upload-tabs">
                 <button
                     type="button"
@@ -420,7 +246,7 @@ export default function EmotionUpload() {
                 </div>
             )}
 
-            {showSubmitError && errors.photo && (
+            {errors.photo && (
                 <div className="submit-error-message">
                     {errors.photo}
                 </div>
