@@ -1,11 +1,9 @@
 import React from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import DashboardLayout from "../../Layout/DashboardLayout.jsx";
 import "../../../css/administrator.css";
 import RecommendedSongs from "../../Components/RecommendedSongs.jsx";
 import ChartCard from "../../Components/ChartCard.jsx";
-import {Head} from "@inertiajs/react";
-import curry from "../../../../public/images/curry.png"
+//import curry from "../../../../public/images/curry.png"
 
 export default function Administrator({ dashboardData }) {
     const d = dashboardData;
@@ -20,7 +18,7 @@ export default function Administrator({ dashboardData }) {
                     <div className="admin-summary-grid">
                         <div className="admin-summary-item">
                             <img
-                                src={d.usuarioMasActivo.imagen ?? curry}
+                                src={d.usuarioMasActivo.imagen}
                                 alt="Usuario"
                                 className="admin-summary-image"
                             />
