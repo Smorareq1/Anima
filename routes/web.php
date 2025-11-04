@@ -16,6 +16,7 @@ use App\Http\Controllers\App\Profile\ProfileController;
 use App\Http\Controllers\App\dashboard\ExploreController;
 use App\Http\Controllers\App\dashboard\FavoritesController;
 use App\Http\Controllers\App\dashboard\AdminController;
+use App\Http\Controllers\App\dashboard\StatsController;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
@@ -51,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
     Route::post('/favorites', [FavoritesController::class, 'toggleFavorite'])->name('favorites.toggle');
+    Route::get('/stats', [StatsController::class, 'index'])->name('stats');
     Route::get('/administrator', [AdminController::class, 'index'])->name('administrator');
 
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');

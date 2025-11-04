@@ -1,0 +1,310 @@
+.explorar-container {
+    padding: 0.5rem 0;
+    font-family: "Outfit", sans-serif;
+    color: var(--color-dark);
+    width: 100%;
+    max-width: 100%;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.explorar-header {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.explorar-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin: 0;
+    text-align:center;
+}
+
+.explorar-subtitle {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--color-primary);
+    margin-top: 0.5rem;
+}
+
+.explorar-section {
+    position: relative;
+    width: 100%;
+    overflow: visible;
+    padding: 0 10px;
+    flex-shrink: 0;
+}
+
+.explorar-section h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--color-primary);
+}
+
+.explorar-carousel-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: calc(5 * 200px + 4 * 20px + 100px);
+    margin: 0 auto;
+    overflow: visible;
+    padding: 0 50px;
+}
+
+.explorar-albums-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    overflow-x: scroll;
+    overflow-y: visible;
+    scroll-behavior: smooth;
+    padding: 1rem 0;
+    box-sizing: border-box;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.explorar-albums-row::-webkit-scrollbar {
+    display: none;
+}
+
+.explorar-albums-row > * {
+    flex: 0 0 200px;
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.explorar-albums-row > *:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.explorar-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    color: #000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.explorar-carousel-wrapper:hover .explorar-scroll-btn {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.explorar-scroll-btn:hover {
+    background: #fff;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.explorar-scroll-btn.left {
+    left: -5px;
+}
+
+.explorar-scroll-btn.right {
+    right: -5px;
+}
+
+/* Sin álbumes */
+.no-explorar-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 120px;
+}
+
+.no-explorar-text {
+    width: 100%;
+    text-align: center;
+    color: #6b6b6b;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.explorar-albums-row > .no-explorar-wrapper {
+    flex: none;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+    transform: none;
+}
+.explorar-albums-row > .no-explorar-wrapper:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+    .explorar-carousel-wrapper {
+        max-width: calc(4 * 200px + 3 * 20px + 100px);
+    }
+}
+
+@media (max-width: 1024px) {
+    .explorar-container {
+        padding: 1.5rem;
+    }
+
+    .explorar-carousel-wrapper {
+        max-width: calc(3 * 200px + 2 * 20px + 100px);
+    }
+}
+
+@media (max-width: 768px) {
+    .explorar-container {
+        padding: 1rem;
+        height: calc(100vh - 60px);
+    }
+
+    .explorar-carousel-wrapper {
+        max-width: calc(2 * 180px + 1 * 16px + 70px);
+        padding: 0 35px;
+    }
+
+    .explorar-albums-row {
+        gap: 16px;
+    }
+
+    .explorar-albums-row > * {
+        flex: 0 0 180px;
+        width: 180px;
+        min-width: 180px;
+        max-width: 180px;
+    }
+
+    .explorar-scroll-btn {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 480px) {
+    .explorar-carousel-wrapper {
+        max-width: calc(1 * 180px + 70px);
+        padding: 0 35px;
+    }
+
+    .explorar-title {
+        font-size: 1.5rem;
+    }
+
+    .explorar-section h3 {
+        font-size: 1.2rem;
+    }
+}
+
+/* === Carrusel solo para Explorar === */
+.explorar-carousel .carousel-wrapper {
+    max-width: 1100px; /* 🔹 más ancho para ver más elementos */
+    margin: 0 auto;
+    padding: 1rem 0 3.2rem 0;
+}
+
+.explorar-carousel .carousel-slide {
+    display: flex !important;
+    justify-content: center;
+    align-items: stretch; /* 🔹 estira para que no se corte abajo */
+    padding: 0.5rem;
+}
+
+.explorar-carousel .track-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    text-align: center;
+    width: 175px; /* 🔹 más compacto */
+    height: 250px; /* 🔹 menos alto para que no se corte */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.explorar-carousel .track-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+.explorar-carousel .track-cover {
+    width: 100%;
+    height: 75%;
+    object-fit: cover;
+}
+
+.explorar-carousel .track-content {
+    padding: 0.6rem;
+}
+
+.explorar-carousel .track-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-dark);
+    margin-bottom: 0.2rem;
+}
+
+.explorar-carousel .track-artist {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0;
+}
+
+/* slick dots mejor alineados */
+.explorar-carousel .slick-dots {
+    bottom: -25px;
+}
+
+/* Responsive: 4 por fila en desktop, 3 en tablets, 2 en móvil */
+@media (min-width: 1280px) {
+    .explorar-carousel .slick-slide {
+        width: 220px !important; /* fuerza 5 visibles si caben */
+    }
+}
+
+@media (max-width: 1024px) {
+    .explorar-carousel .track-card {
+        width: 180px;
+        height: 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    .explorar-carousel .track-card {
+        width: 160px;
+        height: 220px;
+    }
+}
+
+@media (max-width: 480px) {
+    .explorar-carousel .track-card {
+        width: 140px;
+        height: 200px;
+    }
+}

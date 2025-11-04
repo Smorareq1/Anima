@@ -47,7 +47,7 @@ class AdminDashboardService
 
         return [
             'nombre' => $nombre,
-            'imagen' => $user->avatar ?: '/images/default-avatar.png',
+            'imagen' => $user->avatar ?: '/images/curry.png',
             'playlistsCreadas' => $user->playlists_count,
         ];
     }
@@ -98,14 +98,15 @@ class AdminDashboardService
         }
 
         $emotionIcons = [
-            'Feliz' => '😄',
-            'Triste' => '😢',
-            'Enojado' => '😠',
-            'Calmado' => '😌',
-            'Relajado' => '😴',
-            'Energético' => '⚡',
-            'Melancólico' => '😔',
-            'Eufórico' => '🤩',
+            'HAPPY' => '😊',
+            'SAD' => '😢',
+            'ANGRY' => '😡',
+            'CONFUSED' => '😕',
+            'DISGUSTED' => '🤢',
+            'SURPRISED' => '😲',
+            'CALM' => '😌',
+            'UNKNOWN' => '😐',
+            'FEAR' => '😨',
         ];
 
         return [

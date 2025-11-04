@@ -122,9 +122,12 @@ export default function Favorites({ favoritosData }) {
                                     <p className="favorites-song-album">{c.album}</p>
                                     <div className="favorites-song-right">
                                         <p className="favorites-song-duration">{c.duracion}</p>
-                                        <a href={c.spotify_url} target="_blank" rel="noopener noreferrer" className="spotify-play-btn">
-                                            <Play size={20} />
-                                        </a>
+                                        <button
+                                            onClick={() => window.open(c.spotify_url, "_blank", "noopener,noreferrer")}
+                                            className="spotify-play-btn"
+                                        >
+                                            Ir a Spotify
+                                        </button>
                                     </div>
                                 </li>
                             ))
