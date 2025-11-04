@@ -111,7 +111,6 @@ export default function PlaylistShow({ playlist }) {
             sessionStorage.removeItem("previousPage");
             router.visit(route("recommend"));
             return;
-
         }
 
         // Si la anterior fue recommend, ir a recommend

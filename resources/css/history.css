@@ -69,12 +69,6 @@
     padding: 15px;
 }
 
-.playlist-info h3 {
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 5px;
-    color: var(--color-white);
-}
 
 .playlist-info p {
     font-size: 0.85rem;
@@ -191,7 +185,7 @@
 .pagination {
     display: flex;
     gap: 8px;
-    margin-top: 20px;
+    margin-top: 10px;
     justify-content: center;
 }
 
@@ -259,6 +253,9 @@
     margin-left: 15px;
 }
 
+.history-title{
+    margin-bottom: 0.5rem;
+}
 
 /* Mobile (< 768px): stack */
 @media (max-width: 767px) {
@@ -356,4 +353,11 @@
 
 .no-history-redirect:hover {
     color: #144b4b;
+}
+
+.playlist-info h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: var(--color-white);
 }

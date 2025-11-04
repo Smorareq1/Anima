@@ -313,3 +313,25 @@
     box-shadow: none;
 }
 
+.spotify-play-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    color: var(--color-primary);
+    text-decoration: underline;
+    font-weight: bold;
+}
+.favorites-song-right{
+    display: flex;
+    flex-direction: column; /* uno arriba del otro */
+    align-items: flex-end;  /* los mantiene alineados a la derecha */
+    gap: 4px; /* pequeño espacio entre duración y botón */
+}
+.favorites-song-duration{
+    margin: 0;
+}

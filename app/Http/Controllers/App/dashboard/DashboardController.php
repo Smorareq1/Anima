@@ -1,88 +1,87 @@
 <?php
 
-namespace App\Http\Controllers\App\dashboard;
+namespace App\Http\Controllers\App\Dashboard;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Illuminate\Support\Str;
+use App\Models\Playlist;
+use App\Models\Track;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::user();
-
         $mustCompleteProfile = empty($user->first_name) || empty($user->last_name);
 
-        // Dentro de tu método Favoritos o dashboard del controller
-        $data = [
-            'ultimasPlaylists' => [
-                [
-                    'id' => 1,
-                    'name' => 'Mood Booster',
-                    'songs' => 100,
-                    'date' => '2025-01-15',
-                    'image' => 'https://i.ibb.co/HpKcjcJB/blinding-lights.png',
-                ],
-                [
-                    'id' => 2,
-                    'name' => 'Focus Flow',
-                    'songs' => 50,
-                    'date' => '2025-01-15',
-                    'image' => '/images/songs/levitating.jpg',
-                ],
-                [
-                    'id' => 3,
-                    'name' => 'Lo-Fi Beats',
-                    'songs' => 20,
-                    'date' => '2025-01-15',
-                    'image' => '/images/songs/as_it_was.jpg',
-                ],
-            ],
+        $ultimasPlaylists = Playlist::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->withCount('tracks')
+            ->get()
+            ->map(function ($playlist) {
+                $imageUrl = $playlist->playlist_image;
 
-            'ultimasCanciones' => [
-                [
-                    'id' => 1,
-                    'titulo' => 'Atención',
-                    'artista' => 'Iván Cornejo',
-                    'album' => 'Mirada',
-                    'duracion' => '3:12',
-                    'imagen' => '/images/mock/atencion.jpg',
-                ],
-                [
-                    'id' => 2,
-                    'titulo' => 'Chinita Linda',
-                    'artista' => 'Álvaro Díaz',
-                    'album' => 'Felicilandia',
-                    'duracion' => '2:30',
-                    'imagen' => '/images/mock/chinita_linda.jpg',
-                ],
-                [
-                    'id' => 3,
-                    'titulo' => 'Devil in a New Dress',
-                    'artista' => 'Kanye West',
-                    'album' => 'My Beautiful Dark Twisted Fantasy',
-                    'duracion' => '5:20',
-                    'imagen' => '/images/mock/devil.jpg',
-                ],
-                [
-                    'id' => 4,
-                    'titulo' => 'Golden Hour',
-                    'artista' => 'JVKE',
-                    'album' => 'Golden Hour',
-                    'duracion' => '3:29',
-                    'imagen' => '/images/mock/golden_hour.jpg',
-                ],
-            ],
-        ];
+                if ($imageUrl) {
+                    // si la ruta no es http (es local)
+                    if (!Str::startsWith($imageUrl, 'http')) {
+                        $imageUrl = Storage::url($imageUrl);
+                    }
+                } else {
+                    $imageUrl = asset('images/mock/default.jpg');
+                }
 
-        $playlistData = $request->session()->get('playlistData');
-        //datos mock
+                return [
+                    'id' => $playlist->id,
+                    'name' => $playlist->name,
+                    'emotion' => strtoupper($playlist->main_emotion ?? 'UNKNOWN'),
+                    'songs' => $playlist->tracks_count,
+                    'date' => $playlist->created_at->toDateString(),
+                    'image' => $imageUrl,
+                ];
+            });
+
+        $ultimaPlaylist = Playlist::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->with('tracks')
+            ->first();
+
+        $ultimosTracks = [];
+
+        if ($ultimaPlaylist) {
+            $ultimosTracks = $ultimaPlaylist->tracks
+                ->map(function ($track) {
+                    $imageUrl = $track->image_url;
+
+                    if ($imageUrl) {
+                        if (!Str::startsWith($imageUrl, 'http')) {
+                            $imageUrl = Storage::url($imageUrl);
+                        }
+                    } else {
+                        $imageUrl = asset('images/mock/default.jpg');
+                    }
+
+                    return [
+                        'id' => $track->id,
+                        'titulo' => $track->name,
+                        'artista' => $track->artist,
+                        'album' => $track->album,
+                        'duracion' => gmdate('i:s', $track->duration_ms / 1000),
+                        'imagen' => $imageUrl,
+                        'spotify_url' => $track->spotify_url,
+                    ];
+                });
+        }
 
         return Inertia::render('Dashboard/HomeDashboard', [
-            'recientesData' => $data,
-            'mustCompleteProfile' => $mustCompleteProfile, //
+            'recientesData' => [
+                'ultimasPlaylists' => $ultimasPlaylists,
+                'ultimasCanciones' => $ultimosTracks,
+            ],
+            'mustCompleteProfile' => $mustCompleteProfile,
         ]);
     }
 }

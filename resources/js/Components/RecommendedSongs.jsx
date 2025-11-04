@@ -27,7 +27,7 @@ export default function RecommendedSongs({ songs }) {
 
                         {/* Veces recomendada */}
                         <div className="admin-song-count">
-                            {song.veces} veces
+                            {song.veces} pts
                         </div>
                     </li>
                 ))}

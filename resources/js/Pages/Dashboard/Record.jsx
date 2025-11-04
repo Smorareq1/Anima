@@ -10,6 +10,7 @@ export default function Record({ playlists = [], summaryData = [], pagination = 
 
     return (
         <DashboardLayout title={"Historial - Anima"}>
+            <h2 className="history-title">Tu historial de playlists</h2>
             <div className="history-body">
                 <div className="history-playlists-column">
                     <div className="history-playlists">

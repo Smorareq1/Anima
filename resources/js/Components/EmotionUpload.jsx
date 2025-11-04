@@ -1,21 +1,18 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { router } from "@inertiajs/react";
 import "../../css/emotion.css";
-import { route } from "ziggy-js";
 import CameraIcon from "../../../public/images/decoration/camera.svg?react";
 import UploadIcon from "../../../public/images/decoration/upload.svg?react";
 import LoadingScreen from "./LoadingScreen";
 
-export default function EmotionUpload() {
+export default function EmotionUpload({ errors: serverErrors = {} }) {
     const [mode, setMode] = useState("upload");
     const [file, setFile] = useState(null);
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState(serverErrors);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showSubmitError, setShowSubmitError] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
 
-    // Frases para la pantalla de carga
     const loadingPhrases = [
         "Analizando tu emoción...",
         "Procesando tu expresión facial...",
@@ -25,7 +22,18 @@ export default function EmotionUpload() {
         "Tu recomendación musical está en camino..."
     ];
 
-    // Validación manual
+    useEffect(() => {
+        setErrors(serverErrors);
+    }, [serverErrors]);
+
+    useEffect(() => {
+        return () => {
+            if (videoRef.current && videoRef.current.srcObject) {
+                videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, []);
+
     const validateFile = (file) => {
         const newErrors = {};
 
@@ -34,12 +42,10 @@ export default function EmotionUpload() {
             return newErrors;
         }
 
-        // Validar tamaño (120MB)
-        if (file.size > 120 * 1024 * 1024) {
-            newErrors.photo = "El archivo es demasiado grande (máx. 120MB)";
+        if (file.size > 10 * 1024 * 1024) {
+            newErrors.photo = "El archivo es demasiado grande (máx. 10MB)";
         }
 
-        // Validar tipo
         const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
         if (!allowedTypes.includes(file.type)) {
             newErrors.photo = "Formato no válido (solo PNG, JPEG, JPG)";
@@ -48,7 +54,6 @@ export default function EmotionUpload() {
         return newErrors;
     };
 
-    // --- Cámara ---
     const startCamera = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -61,114 +66,103 @@ export default function EmotionUpload() {
         }
     };
 
+    const stopCamera = () => {
+        if (videoRef.current && videoRef.current.srcObject) {
+            videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+            videoRef.current.srcObject = null;
+        }
+    };
+
     const takePhoto = () => {
-        if (!videoRef.current) {
+        if (!videoRef.current || !canvasRef.current) {
             setErrors({ photo: "La cámara no está disponible" });
             return;
         }
 
         const context = canvasRef.current.getContext("2d");
         context.drawImage(videoRef.current, 0, 0, 300, 200);
+
         canvasRef.current.toBlob(
             (blob) => {
                 const photoFile = new File([blob], "photo.jpg", { type: "image/jpeg" });
                 setFile(photoFile);
                 setErrors(validateFile(photoFile));
-                setShowSubmitError(false); // Ocultar error de envío si ahora hay imagen
             },
             "image/jpeg",
             0.8
         );
     };
 
-    // --- Subida de archivo ---
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         setFile(selectedFile);
         setErrors(validateFile(selectedFile));
-        setShowSubmitError(false); // Ocultar error de envío si ahora hay imagen
     };
 
     const removeFile = () => {
         setFile(null);
         setErrors({});
-        setShowSubmitError(false);
-        // Resetear input file
         const fileInput = document.getElementById("fileInput");
         if (fileInput) fileInput.value = "";
     };
 
-    // --- Enviar al backend ---
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Validar si no hay archivo
         if (!file) {
-            setShowSubmitError(true);
             setErrors({ photo: "Debes subir una imagen antes de continuar" });
             return;
         }
 
-        // Validar archivo existente
         const validationErrors = validateFile(file);
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
-            setShowSubmitError(true);
             return;
         }
 
         setIsSubmitting(true);
-        setErrors({});
-        setShowSubmitError(false);
 
-        const formData = new FormData();
-        formData.append("photo", file);
-
-        try {
-            await router.post(route("emotion.upload"), formData, {
-                forceFormData: true,
-                onSuccess: (page) => {
-                    console.log("Foto enviada correctamente");
-                    setFile(null);
-                    setShowSubmitError(false);
-                    // Resetear cámara si está activa
-                    if (videoRef.current && videoRef.current.srcObject) {
-                        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-                    }
-                },
-                onError: (errors) => {
-                    if (errors.photo) {
-                        setErrors({ photo: Array.isArray(errors.photo) ? errors.photo[0] : errors.photo });
-                    } else {
-                        setErrors({ photo: "Error al subir el archivo" });
-                    }
-                    setShowSubmitError(true);
-                },
-            });
-        } catch (error) {
-            setErrors({ photo: "Error de conexión" });
-            setShowSubmitError(true);
-        }
+        // ✅ Usar Inertia router con FormData
+        router.post(route('emotion.upload'), {
+            photo: file
+        }, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                setFile(null);
+                stopCamera();
+                setIsSubmitting(false);
+            },
+            onError: (errors) => {
+                console.error('Upload errors:', errors);
+                setErrors(errors);
+                setIsSubmitting(false);
+            },
+            onFinish: () => {
+                setIsSubmitting(false);
+            }
+        });
     };
 
     const handleTabChange = (newMode) => {
         setMode(newMode);
         setErrors({});
-        setShowSubmitError(false);
 
-        if (newMode === "camera") {
+        if (newMode === "upload") {
+            stopCamera();
+        } else if (newMode === "camera") {
             startCamera();
         }
     };
 
     return (
         <div className="emotion-upload-container">
-            {/* Tabs */}
             <div className="upload-tabs">
                 <button
                     type="button"
                     className={`tab ${mode === "camera" ? "active" : ""}`}
                     onClick={() => handleTabChange("camera")}
+                    disabled={isSubmitting}
                 >
                     <CameraIcon className="icon" />
                 </button>
@@ -176,12 +170,12 @@ export default function EmotionUpload() {
                     type="button"
                     className={`tab ${mode === "upload" ? "active" : ""}`}
                     onClick={() => handleTabChange("upload")}
+                    disabled={isSubmitting}
                 >
                     <UploadIcon className="icon" />
                 </button>
             </div>
 
-            {/* Cámara */}
             {mode === "camera" && (
                 <div className="camera-box">
                     <video
@@ -208,14 +202,13 @@ export default function EmotionUpload() {
                 </div>
             )}
 
-            {/* Upload */}
             {mode === "upload" && (
                 <div className="upload-box">
                     <label htmlFor="fileInput" className="upload-label">
                         <div className="upload-icon">
                             <UploadIcon className="icon-large" />
                         </div>
-                        <p>Max 120Mb, PNG, JPEG, JPG</p>
+                        <p>Max 10MB, PNG, JPEG, JPG</p>
                         <span className="upload-btn">Sube tu foto</span>
                     </label>
                     <input
@@ -229,7 +222,6 @@ export default function EmotionUpload() {
                 </div>
             )}
 
-            {/* Preview */}
             {file && (
                 <div className="file-preview">
                     <img
@@ -240,7 +232,7 @@ export default function EmotionUpload() {
                     <div className="file-info">
                         <p className="file-name">{file.name}</p>
                         <p className="file-size">
-                            {(file.size / 1024 / 1024).toFixed(2)} Mb
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                     </div>
                     <button
@@ -254,10 +246,9 @@ export default function EmotionUpload() {
                 </div>
             )}
 
-            {/* Mensaje de error al intentar enviar sin imagen */}
-            {showSubmitError && !file && (
+            {errors.photo && (
                 <div className="submit-error-message">
-                    Debes subir una imagen antes de generar recomendaciones
+                    {errors.photo}
                 </div>
             )}
 
@@ -265,12 +256,11 @@ export default function EmotionUpload() {
                 type="button"
                 className="generate-btn"
                 onClick={handleSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !file}
             >
-                {isSubmitting ? "Enviando..." : "Generar recomendación"}
+                {isSubmitting ? "Procesando..." : "Generar recomendación"}
             </button>
 
-            {/* Pantalla de carga */}
             <LoadingScreen
                 isLoading={isSubmitting}
                 phrases={loadingPhrases}

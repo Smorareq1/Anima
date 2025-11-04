@@ -11,6 +11,7 @@ use App\Services\Spotify\SpotifyService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -40,79 +41,37 @@ class EmotionController extends Controller
     public function upload(Request $request, SpotifyService $spotify, RekognitionService $rekognition)
     {
         $request->validate([
-            'photo' => 'required|image|mimes:jpg,jpeg,png|max:10240', // 10 MB
-            'limit' => 'nullable|integer|min:1|max:50',
-            'create_playlist' => 'nullable|boolean',
+            'photo' => 'required|image|mimes:jpg,jpeg,png|max:10240',
         ]);
 
-        $limit  = (int) $request->input('limit', 12);
-        (bool) $request->input('create_playlist', false);
-
-        // 1) Guardar imagen en disco local (no public)
-        $path = $request->file('photo')->store('emotions', 'local');
-        if (!$path) {
-            if ($request->header('X-Inertia')) {
-                return redirect()->back()->withErrors(['photo' => 'Error al guardar imagen'])->withInput();
-            }
-            return response()->json(['error' => 'Error al guardar imagen'], 500);
-        }
-
         try {
-            // 2) Detectar emociones - usar disco local
-            $fullPath = Storage::disk('local')->path($path);
+            $limit = 12;
 
-            Log::info('Procesando imagen:', ['path' => $fullPath, 'exists' => file_exists($fullPath)]);
-
-            $emotions = $rekognition->detectEmotion($fullPath, 3);
+            // Leer el archivo directamente sin guardarlo
+            $imageContent = file_get_contents($request->file('photo')->getRealPath());
+            $emotions = $rekognition->detectEmotion($imageContent, 3);
 
             if (empty($emotions)) {
-                Storage::disk('local')->delete($path);
-
-                if ($request->header('X-Inertia')) {
-                    return redirect()->back()->withErrors(['photo' => 'No se detectaron emociones en la imagen'])->withInput();
-                }
-                return response()->json(['error' => 'No se detectaron emociones en la imagen'], 400);
+                return back()->withErrors(['photo' => 'No se detectaron emociones en la imagen']);
             }
 
-            Log::info('Emociones detectadas:', $emotions);
-
-            //Recomendaciones
             $recs = $spotify->recommendByEmotionsEnhanced(Auth::user(), $emotions, $limit);
 
-            // Payload
-            $payload = [
-                'message'          => 'Análisis y recomendaciones generadas',
-                'emotions'         => $emotions,
-                'emotions_used'    => $recs['emotions_used'] ?? null,
-                'method_used'      => $recs['method'] ?? 'hybrid',
-                'emotion'          => $recs['emotion'] ?? null,
-                'confidence'       => $recs['confidence'] ?? null,
-                'tracks'           => $recs['tracks'] ?? [],
-            ];
-
-            // Guardar en sesión flash y redirigir
-            $request->session()->put('playlistData', $payload);
-
-            return Inertia::location(route('emotion.playlists.temp'));
-
-        } catch (Throwable $e) {
-            Log::error('Error completo en upload:', [
-                'message'  => $e->getMessage(),
-                'trace'    => $e->getTraceAsString(),
-                'file'     => $e->getFile(),
-                'line'     => $e->getLine(),
-                'emotions' => $emotions ?? null,
+            $request->session()->put('playlistData', [
+                'message' => 'Análisis y recomendaciones generadas',
+                'emotions' => $emotions,
+                'emotions_used' => $recs['emotions_used'] ?? null,
+                'method_used' => $recs['method'] ?? 'hybrid',
+                'emotion' => $recs['emotion'] ?? null,
+                'confidence' => $recs['confidence'] ?? null,
+                'tracks' => $recs['tracks'] ?? [],
             ]);
 
-            return redirect()->back()->withErrors([
-                'photo' => 'Error al procesar la solicitud: ' . $e->getMessage()
-            ]);
+            return redirect()->route('emotion.playlists.temp');
 
-        } finally {
-            // Limpiar imagen temporal
-            if (isset($path)) {
-                Storage::disk('local')->delete($path);
-            }
+        } catch (\Throwable $e) {
+            Log::error('Upload error: ' . $e->getMessage());
+            return back()->withErrors(['photo' => 'Error al procesar: ' . $e->getMessage()]);
         }
     }
 

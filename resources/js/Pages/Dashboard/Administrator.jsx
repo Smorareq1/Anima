@@ -1,10 +1,9 @@
 import React from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import DashboardLayout from "../../Layout/DashboardLayout.jsx";
 import "../../../css/administrator.css";
 import RecommendedSongs from "../../Components/RecommendedSongs.jsx";
 import ChartCard from "../../Components/ChartCard.jsx";
-import {Head} from "@inertiajs/react";
+//import curry from "../../../../public/images/curry.png"
 
 export default function Administrator({ dashboardData }) {
     const d = dashboardData;

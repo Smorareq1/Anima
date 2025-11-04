@@ -16,6 +16,7 @@ use App\Http\Controllers\App\Profile\ProfileController;
 use App\Http\Controllers\App\dashboard\ExploreController;
 use App\Http\Controllers\App\dashboard\FavoritesController;
 use App\Http\Controllers\App\dashboard\AdminController;
+use App\Http\Controllers\App\dashboard\StatsController;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
@@ -51,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
     Route::post('/favorites', [FavoritesController::class, 'toggleFavorite'])->name('favorites.toggle');
+    Route::get('/stats', [StatsController::class, 'index'])->name('stats');
     Route::get('/administrator', [AdminController::class, 'index'])->name('administrator');
 
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -116,6 +118,152 @@ Route::get('/test-aws', function () {
             'error' => $e->getMessage(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),
+        ], 500);
+    }
+});
+
+Route::post('/test-upload-direct', function (Request $request) {
+    ini_set('display_errors', '1');
+    error_reporting(E_ALL);
+
+    try {
+        $request->validate([
+            'photo' => 'required|image'
+        ]);
+
+        $path = $request->file('photo')->store('emotions', 'local');
+        $fullPath = Storage::disk('local')->path($path);
+
+        $rekognition = app(RekognitionService::class);
+        $emotions = $rekognition->detectEmotion($fullPath, 3);
+
+        Storage::disk('local')->delete($path);
+
+        return response()->json([
+            'success' => true,
+            'emotions' => $emotions
+        ]);
+
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => explode("\n", $e->getTraceAsString())
+        ], 500);
+    }
+});
+
+Route::get('/test-minimal', function() {
+    try {
+        $rekognition = app(RekognitionService::class);
+        return response()->json([
+            'status' => 'OK',
+            'message' => 'Rekognition loaded successfully',
+            'available' => $rekognition->isAvailable()
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'ERROR',
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+});
+
+// routes/web.php
+Route::get('/container-debug', function () {
+    return response()->json([
+        'php_version' => PHP_VERSION,
+        'laravel_version' => app()->version(),
+        'environment' => app()->environment(),
+        'debug_mode' => config('app.debug'),
+        'memory_limit' => ini_get('memory_limit'),
+        'max_execution_time' => ini_get('max_execution_time'),
+        'upload_max_filesize' => ini_get('upload_max_filesize'),
+        'post_max_size' => ini_get('post_max_size'),
+        'aws_configured' => !empty(env('AWS_ACCESS_KEY_ID')),
+        'storage_writable' => is_writable(storage_path()),
+        'logs_writable' => is_writable(storage_path('logs')),
+        'error_log' => ini_get('error_log'),
+        'display_errors' => ini_get('display_errors'),
+        'last_error' => error_get_last(),
+    ]);
+});
+
+Route::post('/test-upload-container', function (Request $request) {
+    // Forzar output de errores
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+
+    $steps = [];
+
+    try {
+        $steps[] = '1. Starting upload test';
+
+        // Verificar archivo
+        if (!$request->hasFile('photo')) {
+            return response()->json([
+                'error' => 'No file uploaded',
+                'steps' => $steps,
+                'request_content_type' => $request->header('Content-Type'),
+                'request_method' => $request->method(),
+            ]);
+        }
+
+        $steps[] = '2. File received';
+
+        // Guardar archivo
+        $path = $request->file('photo')->store('emotions', 'local');
+        $steps[] = '3. File stored: ' . $path;
+
+        $fullPath = storage_path('app/' . $path);
+        $steps[] = '4. Full path: ' . $fullPath;
+        $steps[] = '5. File exists: ' . (file_exists($fullPath) ? 'yes' : 'no');
+        $steps[] = '6. File size: ' . filesize($fullPath);
+
+        // Intentar cargar Rekognition
+        $steps[] = '7. Loading RekognitionService...';
+
+        // Usar el namespace correcto
+        $rekognition = app(\App\Services\amazon\RekognitionService::class);
+
+        $steps[] = '8. RekognitionService loaded';
+        $steps[] = '9. Service available: ' . ($rekognition->isAvailable() ? 'yes' : 'no');
+
+        if (!$rekognition->isAvailable()) {
+            Storage::disk('local')->delete($path);
+            return response()->json([
+                'error' => 'Rekognition not available',
+                'steps' => $steps,
+                'aws_key_set' => !empty(env('AWS_ACCESS_KEY_ID')),
+                'aws_secret_set' => !empty(env('AWS_SECRET_ACCESS_KEY')),
+            ]);
+        }
+
+        // Detectar emociones
+        $steps[] = '10. Calling detectEmotion...';
+        $emotions = $rekognition->detectEmotion($fullPath, 3);
+        $steps[] = '11. Emotions detected: ' . json_encode($emotions);
+
+        // Limpiar
+        Storage::disk('local')->delete($path);
+        $steps[] = '12. Cleanup complete';
+
+        return response()->json([
+            'success' => true,
+            'emotions' => $emotions,
+            'steps' => $steps
+        ]);
+
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'steps' => $steps,
+            'trace' => array_slice($e->getTrace(), 0, 5)
         ], 500);
     }
 });
