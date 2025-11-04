@@ -15,9 +15,121 @@ import {
 import DashboardLayout from "../../Layout/DashboardLayout.jsx";
 import "../../../css/stats.css";
 import { Head } from "@inertiajs/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { router } from "@inertiajs/react";
+
+// Mapeo
+const EMOCIONES_MAP = {
+    HAPPY: "FELIZ",
+    SAD: "TRISTE",
+    ANGRY: "ENOJADO",
+    CALM: "CALMADO",
+    SURPRISED: "SORPRENDIDO",
+    CONFUSED: "CONFUNDIDO",
+    DISGUSTED: "DISGUSTADO",
+    FEAR: "MIEDO",
+};
+
+// tooltip
+const CustomPieTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length > 0) {
+        const data = payload[0].payload;
+
+        // traducción
+        const emocionesTraducidas = data.emociones?.map(
+            (emo) => EMOCIONES_MAP[emo] || emo
+        );
+
+        return (
+            <div
+                style={{
+                    background: "#ffffff",
+                    border: "1px solid #CDE8C9",
+                    borderRadius: "8px",
+                    padding: "0.6rem 0.8rem",
+                    fontSize: "0.85rem",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                }}
+            >
+                <p
+                    style={{
+                        margin: 0,
+                        fontWeight: 600,
+                        color: data.tipo === "Positivas" ? "#00C49F" : "#FF6B6B",
+                    }}
+                >
+                    {data.tipo}: {data.valor}
+                </p>
+                <ul
+                    style={{
+                        margin: "0.4rem 0 0 0.8rem",
+                        padding: 0,
+                        listStyle: "disc",
+                        color: "#333",
+                    }}
+                >
+                    {emocionesTraducidas?.map((emo, idx) => (
+                        <li key={idx}>{emo}</li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
+    return null;
+};
 
 export default function Stats({ statsData }) {
     const d = statsData;
+    const [semanaIndex, setSemanaIndex] = React.useState(
+        d.emocionesPorSemana.length - 1 // por defecto será la más reciente
+    );
+
+    const semanaActual = d.emocionesPorSemana[semanaIndex];
+
+    const handlePrevWeek = () => {
+        if (semanaIndex > 0) setSemanaIndex(semanaIndex - 1);
+    };
+
+    const handleNextWeek = () => {
+        if (semanaIndex < d.emocionesPorSemana.length - 1)
+            setSemanaIndex(semanaIndex + 1);
+    };
+    const [selectedEmotion, setSelectedEmotion] = React.useState(null);
+    const [playlists, setPlaylists] = React.useState([]);
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+    const handleBarClick = async (data) => {
+        const emotion = data.keyOriginal;
+        const semana = semanaActual?.semana;
+
+        if (!emotion || !semana) return;
+
+        // extraer fechas
+        const partes = semana.split(/[-–]/).map(p => p.trim()).filter(Boolean);
+
+        if (partes.length < 2) {
+            console.warn("Semana no tiene rango válido:", semana);
+            return;
+        }
+
+        const currentYear = new Date().getFullYear();
+        const inicio = `${partes[0]} ${currentYear}`;
+        const fin = `${partes[1]} ${currentYear}`;
+
+        try {
+            const response = await fetch(
+                route('stats.playlists') +
+                `?emotion=${emotion.toUpperCase()}&inicio=${inicio}&fin=${fin}`
+            );
+            const data = await response.json();
+            setPlaylists(data);
+            setSelectedEmotion(emotion);
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error("Error cargando playlists:", error);
+        }
+    };
+
     const COLORS = ["#00C49F", "#FF6B6B"];
 
     return (
@@ -27,21 +139,63 @@ export default function Stats({ statsData }) {
             <div className="stats-container">
                 {/* === Emociones por semana === */}
                 <section className="stats-card full-width">
-                    <h3 className="stats-card-title">Emociones por semana</h3>
-                    <div className="stats-chart-container">
-                        <ResponsiveContainer>
-                            <BarChart
-                                data={d.totalesEmociones}
-                                margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                    <div className="stats-header">
+                        <h3 className="stats-card-title">Emociones por semana</h3>
+                        <div className="stats-nav">
+                            <button
+                                onClick={handlePrevWeek}
+                                disabled={semanaIndex === 0}
+                                className="stats-arrow"
                             >
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="nombre" tick={{ fill: "#001e1d", fontSize: 12 }} />
-                                <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="cantidad" fill="#1D6363" radius={[6, 6, 0, 0]} />
-                            </BarChart>
+                                <ChevronLeft size={20} />
+                            </button>
+                            <span className="stats-week-label">
+                                {semanaActual?.semana || "Sin datos"}
+                            </span>
+                            <button
+                                onClick={handleNextWeek}
+                                disabled={
+                                    semanaIndex === d.emocionesPorSemana.length - 1
+                                }
+                                className="stats-arrow"
+                            >
+                                <ChevronRight size={20} />
+                            </button>
+                        </div>
+                    </div>
 
-                        </ResponsiveContainer>
+                    <div className="stats-chart-container">
+                        {semanaActual ? (
+                            <ResponsiveContainer>
+                                <BarChart
+                                    data={Object.entries(semanaActual)
+                                        .filter(([key]) => key !== "semana")
+                                        .map(([key, value]) => ({
+                                            keyOriginal: key.toUpperCase(), //ingles
+                                            nombre: EMOCIONES_MAP[key.toUpperCase()] || key.toUpperCase(), //esp
+                                            cantidad: value,
+                                        }))}
+                                    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis
+                                        dataKey = "nombre"
+                                        tick={{ fill: "#001e1d", fontSize: 12 }}
+                                    />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Bar
+                                        dataKey="cantidad"
+                                        fill="#1D6363"
+                                        radius={[6, 6, 0, 0]}
+                                        onClick={(data) => handleBarClick(data)}
+                                        cursor="pointer"
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <p style={{ color: "#777" }}>No hay datos para esta semana.</p>
+                        )}
                     </div>
                 </section>
 
@@ -83,11 +237,11 @@ export default function Stats({ statsData }) {
                                         {d.positivasVsNegativas.map((entry, index) => (
                                             <Cell
                                                 key={`cell-${index}`}
-                                                fill={COLORS[index % COLORS.length]}
+                                                fill={index === 0 ? "#00C49F" : "#FF6B6B"}
                                             />
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip content={<CustomPieTooltip />} />
                                     <Legend />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -109,6 +263,49 @@ export default function Stats({ statsData }) {
                     </div>
                 </section>
             </div>
+            {isModalOpen && (
+                <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="modal-title">
+                            Playlists de la emoción: {
+                                EMOCIONES_MAP[selectedEmotion] || selectedEmotion
+                        } ({semanaActual?.semana})
+                        </h3>
+
+                        {playlists.length > 0 ? (
+                            <ul className="modal-playlist-list">
+                                {playlists.map((pl) => (
+                                    <li key={pl.id} className="modal-playlist-item">
+                                        <img
+                                            src={
+                                                pl.playlist_image?.startsWith("http")
+                                                    ? pl.playlist_image
+                                                    : `/storage/${pl.playlist_image}`
+                                            }
+                                            alt={pl.name}
+                                            className="modal-playlist-img"
+                                        />
+                                        <div className="modal-playlist-info">
+                                            <p className="modal-playlist-name">{pl.name}</p>
+                                            <p className="modal-playlist-date">
+                                                {new Date(pl.created_at).toLocaleDateString("es-ES")}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => router.visit(route("emotion.playlists.show", pl.id))}
+                                            className="modal-link modal-detail-btn"
+                                        >
+                                            Ver detalle
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="modal-empty">No hay playlists para esta emoción.</p>
+                        )}
+                    </div>
+                </div>
+            )}
         </DashboardLayout>
     );
 }
