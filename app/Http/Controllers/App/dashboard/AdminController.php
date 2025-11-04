@@ -70,7 +70,7 @@ class AdminController extends Controller
         return [
             'usuarioMasActivo' => [
                 'nombre' => 'Sin datos',
-                'imagen' => '/images/default-avatar.png',
+                'imagen' => '/images/curry.png',
             ],
             'cancionMasEscuchada' => [
                 'titulo' => 'Sin datos',

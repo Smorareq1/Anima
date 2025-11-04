@@ -66,7 +66,7 @@ export default function PlaylistCard({ id, name, songs, date, emotion, image, is
             )}
             <div className="playlist-overlay">
                 <div className="playlist-info">
-                    <h3>{name}</h3>
+                    <h4 className="tituloPlaylist">{name}</h4>
                     <p>{songs} canciones</p>
                     <p className="playlist-date">Recomendada el {date}</p>
                     <span className="playlist-emotion">

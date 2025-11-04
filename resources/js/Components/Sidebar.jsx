@@ -8,6 +8,7 @@ import PlaylistsIcon from "../../../public/images/sidebar/playlist.svg?react";
 import RecordIcon from "../../../public/images/sidebar/record.svg?react";
 import FavoritesIcon from "../../../public/images/sidebar/favorites.svg?react";
 import AdminIcon from "../../../public/images/sidebar/admin.svg?react";
+import StatisticsIcon from "../../../public/images/sidebar/statistics.svg?react";
 import React from "react";
 import {route} from "ziggy-js";
 
@@ -58,6 +59,13 @@ export default function Sidebar() {
                 >
                     <FavoritesIcon className="icon3" />
                     Favoritas
+                </Link>
+                <Link
+                    href={route("stats")}
+                    className={`sidebar-item ${route().current("stats") ? "active" : ""}`}
+                >
+                    <StatisticsIcon className="icon3" />
+                    Estadísticas
                 </Link>
                 <Link
                     href={route("administrator")}
