@@ -66,5 +66,6 @@ test('Flujo completo de favoritos - generar, agregar y validar', async ({ page }
     await addToFavoritesButton.click();
 
     await page.getByRole('link', { name: 'Favoritas' }).click();
-    await expect(page.getByRole('heading', { name: 'Prueba Favoritos' })).toBeVisible();
+    const cardTitle = page.getByRole('heading', { name: 'Prueba Favoritos' }).first();
+    await expect(cardTitle).toBeVisible();
 });
