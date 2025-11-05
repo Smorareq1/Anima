@@ -8,9 +8,10 @@
     },
     "devDependencies": {
         "@faker-js/faker": "^10.0.0",
-        "@playwright/test": "^1.55.1",
+        "@playwright/test": "^1.56.1",
         "@tailwindcss/vite": "^4.0.0",
         "@testsprite/testsprite-mcp": "^0.0.14",
+        "@types/node": "^24.10.0",
         "@vitejs/plugin-react": "^5.0.2",
         "axios": "^1.12.2",
         "concurrently": "^9.0.1",
