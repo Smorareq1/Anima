@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import EmotionItem from "./EmotionItem.jsx";
 import "../../../css/history.css";
+import { ChevronUp } from "lucide-react";
 
 export default function EmotionSummary({ summaryData }) {
     const [open, setOpen] = useState(true);
@@ -25,12 +26,16 @@ export default function EmotionSummary({ summaryData }) {
             <div className="emotion-summary-header">
                 <h3>Resumen</h3>
                 <div className="summary-actions">
-                    <a href="#">Ver todo</a>
                     <button
                         className="toggle-btn"
                         onClick={() => setOpen(!open)}
                     >
-                        {open ? "▲" : "▼"}
+                        <ChevronUp
+                            style={{
+                                transform: open ? "rotate(0deg)" : "rotate(180deg)",
+                                transition: "transform 0.3s ease",
+                            }}
+                        />
                     </button>
                 </div>
             </div>

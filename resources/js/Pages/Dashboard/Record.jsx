@@ -2,17 +2,42 @@ import DashboardLayout from "../../Layout/DashboardLayout.jsx";
 import PlaylistCard from "../../Components/history/PlaylistCard.jsx";
 import EmotionSummary from "../../Components/history/EmotionSummary.jsx";
 import {Link, router} from "@inertiajs/react";
+import {useState} from "react";
 
-export default function Record({ playlists = [], summaryData = [], pagination = {} }) {
+const handleFilterChange = (emotion) => {
+    if (emotion === "") {
+        router.visit(route("Record")); // sin filtro (todas)
+    } else {
+        router.visit(route("Record", { emotion })); // con filtro
+    }
+};
+
+
+export default function Record({ playlists = [], summaryData = [], pagination = {}, currentEmotion }) {
     const totalPages = pagination.total && pagination.per_page
         ? Math.ceil(pagination.total / pagination.per_page)
         : 1;
 
     return (
         <DashboardLayout title={"Historial - Anima"}>
-            <h2 className="history-title">Tu historial de playlists</h2>
             <div className="history-body">
                 <div className="history-playlists-column">
+                    <header className="dashboard-header">
+                        <h2 className="history-title">Tu historial de playlists</h2>
+                        <select className="emotion-filter"
+                                value={currentEmotion ?? ""}
+                                onChange={(e) => handleFilterChange(e.target.value)}>
+                            <option value=''>Todas las emociones</option>
+                            <option value='HAPPY'>Feliz</option>
+                            <option value='SAD'>Triste</option>
+                            <option value='ANGRY'>Enojado</option>
+                            <option value='CALM'>Calmado</option>
+                            <option value='SURPRISED'>Sorprendido</option>
+                            <option value='CONFUSED'>Confundido</option>
+                            <option value='DISGUSTED'>Disgustado</option>
+                            <option value='FEAR'>Miedo</option>
+                        </select>
+                    </header>
                     <div className="history-playlists">
                         {playlists.length > 0 ? (
                             playlists.map((pl, idx) => (
@@ -21,7 +46,7 @@ export default function Record({ playlists = [], summaryData = [], pagination = 
                         ) : (
                             <div className="no-history-wrapper">
                                 <p className="no-history-text">
-                                    Aún no tienes historial de playlists. {" "}
+                                    No se han encontrado playlists.{" "}
                                     <br/>
                                     <span
                                         className="no-history-redirect"
