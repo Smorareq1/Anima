@@ -39,11 +39,14 @@
 }
 
 .carousel-wrapper {
+    width: 100%;
     max-width: 1100px;
     margin: 0 auto;
     padding: 10px 0 60px;
     position: relative;
+    overflow: hidden;
 }
+
 /* === TARJETAS === */
 .track-card {
     width: 100%;
@@ -400,3 +403,50 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
+@media (max-width: 768px) {
+    .carousel-wrapper {
+        padding-bottom: 40px;
+        max-width: 100%;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+
+    .slick-track {
+        display: flex !important;
+    }
+
+
+    /* Centrado del contenido */
+    .carousel-slide {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 0 !important;
+    }
+
+    /* Tarjeta adapta al ancho del slide */
+    .track-card {
+        width: 90% !important;
+        max-width: none !important;
+        margin: 0 auto !important;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .slick-prev,
+    .slick-next {
+        display: none !important;
+    }
+
+    .slick-dots {
+        position: relative;
+        bottom: 0;
+        margin-top: 20px;
+        display: flex !important;
+        justify-content: center;
+        gap: 6px;
+    }
+}
+
+
+

@@ -148,15 +148,6 @@ export default function PlaylistShow({ playlist }) {
         );
     }
 
-    if (!currentPlaylist) {
-        return (
-            <DashboardLayout>
-                <div className="playlist-view">
-                    <p>Playlist no encontrada</p>
-                </div>
-            </DashboardLayout>
-        );
-    }
 
     return (
         <DashboardLayout>
