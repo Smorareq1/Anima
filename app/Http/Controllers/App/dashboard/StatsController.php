@@ -27,6 +27,65 @@ class StatsController extends Controller
 
         return response()->json($playlists);
     }
+    public function emocionesPorDia(Request $request)
+    {
+        $userId = Auth::id();
+        $fecha = Carbon::parse($request->query('fecha'))->toDateString();
+
+        // Agrupar emociones por día específico
+        $emociones = DB::table('playlists')
+            ->select('main_emotion', DB::raw('COUNT(*) as cantidad'))
+            ->where('user_id', $userId)
+            ->whereDate('created_at', $fecha)
+            ->groupBy('main_emotion')
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'emocion' => $row->main_emotion,
+                    'nombre' => match ($row->main_emotion) {
+                        'HAPPY' => 'Feliz',
+                        'SAD' => 'Triste',
+                        'ANGRY' => 'Enojado',
+                        'CALM' => 'Calmado',
+                        'SURPRISED' => 'Sorprendido',
+                        'CONFUSED' => 'Confundido',
+                        'DISGUSTED' => 'Disgustado',
+                        'FEAR' => 'Miedo',
+                        default => ucfirst(strtolower($row->main_emotion)),
+                    },
+                    'icono' => match ($row->main_emotion) {
+                        'HAPPY' => '😊',
+                        'SAD' => '😢',
+                        'ANGRY' => '😠',
+                        'CALM' => '😌',
+                        'SURPRISED' => '😮',
+                        'CONFUSED' => '😕',
+                        'DISGUSTED' => '🤢',
+                        'FEAR' => '😨',
+                        default => '🙂',
+                    },
+                    'cantidad' => $row->cantidad,
+                ];
+            });
+
+        return response()->json($emociones);
+    }
+
+    public function playlistsPorDiaYEmocion(Request $request)
+    {
+        $userId = Auth::id();
+        $fecha = Carbon::parse($request->query('fecha'))->toDateString();
+        $emotion = strtoupper($request->query('emotion'));
+
+        $playlists = DB::table('playlists')
+            ->where('user_id', $userId)
+            ->where('main_emotion', $emotion)
+            ->whereDate('created_at', $fecha)
+            ->orderByDesc('created_at')
+            ->get(['id', 'name', 'playlist_image', 'spotify_url', 'created_at']);
+
+        return response()->json($playlists);
+    }
 
     public function index()
     {
@@ -110,9 +169,10 @@ class StatsController extends Controller
             ->where('user_id', $userId)
             ->orderByDesc('created_at')
             ->limit(5)
-            ->get(['main_emotion', 'created_at'])
+            ->get(['id', 'main_emotion', 'created_at'])
             ->map(function ($row) {
                 return [
+                    'id' => $row->id,
                     'fecha' => date('Y-m-d', strtotime($row->created_at)),
                     'nombre' => match ($row->main_emotion) {
                         'HAPPY' => 'Feliz',

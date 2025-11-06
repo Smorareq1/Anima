@@ -1,4 +1,6 @@
 import React from "react";
+import {useState} from "react";
+
 import {
     BarChart,
     Bar,
@@ -15,7 +17,7 @@ import {
 import DashboardLayout from "../../Layout/DashboardLayout.jsx";
 import "../../../css/stats.css";
 import { Head } from "@inertiajs/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ChevronDownIcon} from "lucide-react";
 import { router } from "@inertiajs/react";
 
 // Mapeo
@@ -97,6 +99,64 @@ export default function Stats({ statsData }) {
     const [selectedEmotion, setSelectedEmotion] = React.useState(null);
     const [playlists, setPlaylists] = React.useState([]);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+    const [selectedDate, setSelectedDate] = React.useState(null);
+    const [dayEmotions, setDayEmotions] = React.useState([]);
+    const [isDayModalOpen, setIsDayModalOpen] = React.useState(false);
+
+    const [expandedEmotion, setExpandedEmotion] = React.useState(null);
+    const [dayPlaylists, setDayPlaylists] = React.useState({});
+
+    const handleDayBarClick = async (data) => {
+        const fecha = data.dia;
+        try {
+            const response = await fetch(
+                route("stats.emotionsByDay") + `?fecha=${fecha}`,
+                { headers: { Accept: "application/json" } }
+            );
+
+            if (!response.ok) throw new Error("Error al cargar emociones");
+
+            const emociones = await response.json();
+            setDayEmotions(emociones);
+            setSelectedDate(fecha);
+            setIsDayModalOpen(true);
+        } catch (error) {
+            console.error("Error cargando emociones:", error);
+        }
+    };
+
+    const toggleEmotionExpand = async (emo) => {
+        const isExpanded = expandedEmotion === emo.emocion;
+        if (isExpanded) {
+            setExpandedEmotion(null);
+            return;
+        }
+
+        setExpandedEmotion(emo.emocion);
+
+        // Si ya tenemos esas playlists cargadas, no se piden nuevamente
+        if (dayPlaylists[emo.emocion]) return;
+
+        try {
+            const response = await fetch(
+                route("stats.playlistsByDay") +
+                `?fecha=${selectedDate}&emotion=${emo.emocion}`,
+                { headers: { Accept: "application/json" } }
+            );
+
+            if (!response.ok) throw new Error("Error al cargar playlists");
+            const data = await response.json();
+
+            setDayPlaylists((prev) => ({
+                ...prev,
+                [emo.emocion]: data,
+            }));
+        } catch (error) {
+            console.error("Error cargando playlists del día:", error);
+        }
+    };
+
 
     const handleBarClick = async (data) => {
         const emotion = data.keyOriginal;
@@ -214,7 +274,13 @@ export default function Stats({ statsData }) {
                                     <XAxis dataKey="dia" />
                                     <YAxis />
                                     <Tooltip />
-                                    <Bar dataKey="cantidad" fill="#1D6363" name="Análisis" />
+                                    <Bar
+                                        dataKey="cantidad"
+                                        fill="#1D6363"
+                                        radius={[6, 6, 0, 0]}
+                                        cursor="pointer"
+                                        onClick={(data) => handleDayBarClick(data)}
+                                    />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -253,8 +319,8 @@ export default function Stats({ statsData }) {
                 <section className="stats-card full-width">
                     <h3 className="stats-card-title">Últimas emociones detectadas</h3>
                     <div className="stats-summary-grid">
-                        {d.ultimasEmociones.map((emo, idx) => (
-                            <div key={idx} className="stats-summary-item">
+                        {d.ultimasEmociones.map((emo) => (
+                            <div key={emo.id} className="stats-summary-item" onClick={ () =>router.visit(route("emotion.playlists.show", emo.id))}>
                                 <div className="stats-summary-icon">{emo.icono}</div>
                                 <p className="stats-summary-label">{emo.fecha}</p>
                                 <p className="stats-song-artist">{emo.nombre}</p>
@@ -302,6 +368,85 @@ export default function Stats({ statsData }) {
                             </ul>
                         ) : (
                             <p className="modal-empty">No hay playlists para esta emoción.</p>
+                        )}
+                    </div>
+                </div>
+            )}
+            {isDayModalOpen && (
+                <div className="modal-overlay" onClick={() => setIsDayModalOpen(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="modal-title">
+                            Emociones del {selectedDate}
+                        </h3>
+
+                        {dayEmotions.length > 0 ? (
+                            <ul className="modal-emotions-list">
+                                {dayEmotions.map((emo, idx) => (
+                                    <li key={idx} className="modal-emotion-item">
+                                        <div className="emotion-header">
+                                            <div className="emotion-left">
+                                                <span className="modal-emotion-icon">{emo.icono}</span>
+                                                <span className="modal-emotion-name">{emo.nombre}</span>
+                                                <span className="modal-emotion-count">
+                                                    {emo.cantidad} registro{emo.cantidad !== 1 && "s"}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                onClick={() => toggleEmotionExpand(emo)}
+                                                className={`chevron-btn ${
+                                                    expandedEmotion === emo.emocion ? "rotated" : ""
+                                                }`}
+                                            >
+                                                <ChevronDown size={20} />
+                                            </button>
+                                        </div>
+
+                                        <div
+                                            className={`emotion-playlists-wrapper ${
+                                                expandedEmotion === emo.emocion ? "open" : ""
+                                            }`}
+                                        >
+                                            <div className="emotion-playlists">
+                                                {dayPlaylists[emo.emocion] ? (
+                                                    dayPlaylists[emo.emocion].length > 0 ? (
+                                                        <ul className="playlist-sublist">
+                                                            {dayPlaylists[emo.emocion].map((pl) => (
+                                                                <li
+                                                                    key={pl.id}
+                                                                    className="playlist-subitem"
+                                                                    onClick={() =>
+                                                                        router.visit(route("playlist.show", pl.id))
+                                                                    }
+                                                                >
+                                                                    <img
+                                                                        src={
+                                                                            pl.playlist_image?.startsWith("http")
+                                                                                ? pl.playlist_image
+                                                                                : `/storage/${pl.playlist_image}`
+                                                                        }
+                                                                        alt={pl.name}
+                                                                        className="playlist-subimg"
+                                                                    />
+                                                                    <span className="playlist-subname">{pl.name}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    ) : (
+                                                        <p className="modal-empty">
+                                                            No hay playlists para esta emoción.
+                                                        </p>
+                                                    )
+                                                ) : (
+                                                    <p className="modal-loading">Cargando...</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="modal-empty">No hubo emociones detectadas ese día.</p>
                         )}
                     </div>
                 </div>
