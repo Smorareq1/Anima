@@ -361,3 +361,31 @@
     margin-bottom: 5px;
     color: var(--color-white);
 }
+
+.emotion-filter {
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-secondary);
+    font-family: "Outfit", sans-serif;
+    background-color: var(--color-light);
+    color: var(--color-dark);
+    cursor: pointer;
+}
+
+.emotion-filter:hover {
+    border-color: var(--color-primary);
+}
+
+.dashboard-header{
+    margin-bottom: 0.5rem;
+    display:flex;
+    justify-content: space-between;
+}
+
+@media (max-width: 600px) {
+    .dashboard-header{
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+}
