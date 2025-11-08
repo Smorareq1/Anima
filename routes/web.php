@@ -267,3 +267,5 @@ Route::post('/test-upload-container', function (Request $request) {
         ], 500);
     }
 });
+
+Route::get('/{any}', [HomeController::class, 'handleError'])->where('any', '.*');

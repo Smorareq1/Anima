@@ -47,3 +47,9 @@ button{
     cursor: pointer;
     color: #333;
 }
+
+.modal-content{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
