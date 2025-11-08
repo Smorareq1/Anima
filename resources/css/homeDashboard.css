@@ -92,6 +92,11 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
+.home-playlist-row:has(.home-empty) {
+    justify-content: center;
+    overflow-x: hidden; /* oculta el scroll si no hay items */
+}
+
 .home-scroll-btn {
     position: absolute;
     top: 50%;
@@ -290,6 +295,18 @@
     justify-content: center;
     width: 100%;
     min-height: 120px;
+
+}
+
+.home-empty{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+    cursor: default;
+    transition: none;
+    pointer-events: none;
 }
 
 .no-home-text {
@@ -299,6 +316,8 @@
     font-style: italic;
     font-weight: 500;
     font-size: 1rem;
+    transition: none;
+    cursor:default;
 }
 
 .home-playlist-row > .no-home-wrapper {
@@ -313,4 +332,13 @@
 .home-playlist-row > .no-home-wrapper:hover {
     transform: none;
     box-shadow: none;
+}
+
+.home-playlist-row .home-empty {
+    flex: 1 1 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    padding: 2rem 0;
 }
