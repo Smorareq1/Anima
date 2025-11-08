@@ -15,7 +15,7 @@ export default function TutorialModal({ isOpen, onClose }) {
             <div className="modal" onClick={(e) => e.stopPropagation()}>
                 <button className="modal-close" onClick={onClose}>×</button>
                 
-                <div className="modal-content">
+                <div className="modal-content-tutorial">
                     <h3>Llevá ÁNIMA a otro nivel con Spotify</h3>
                     <iframe
                         width="100%"

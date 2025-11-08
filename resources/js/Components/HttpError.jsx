@@ -40,9 +40,9 @@ const HttpError = ({
     }
   };
 
-  const errorInfo = errorMessages[errorCode] || {
-    title: 'Error Desconocido',
-    message: 'Ha ocurrido un error inesperado.'
+  const errorInfo = {
+    title: title || errorMessages[errorCode]?.title || 'Error Desconocido',
+    message: message || errorMessages[errorCode]?.message || 'Ha ocurrido un error inesperado.'
   };
 
   const handleGoHome = () =>{
@@ -83,14 +83,8 @@ const HttpError = ({
               </button>
             </div>
           </div>
-
-          <div className="right-content">
-
-          </div>
         </div>
-
       </div>
-
     </div>
   );
 };
