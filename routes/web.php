@@ -53,6 +53,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
     Route::post('/favorites', [FavoritesController::class, 'toggleFavorite'])->name('favorites.toggle');
     Route::get('/stats', [StatsController::class, 'index'])->name('stats');
+    Route::get('/stats/playlists', [StatsController::class, 'playlistsPorEmocion'])->name('stats.playlists');
+    Route::get('/stats/emotions-by-day', [StatsController::class, 'emocionesPorDia'])->name('stats.emotionsByDay');
+    Route::get('/stats/playlists-by-day', [StatsController::class, 'playlistsPorDiaYEmocion'])->name('stats.playlistsByDay');
     Route::get('/administrator', [AdminController::class, 'index'])->name('administrator');
 
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');

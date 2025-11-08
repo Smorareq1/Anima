@@ -9,20 +9,28 @@ use Inertia\Inertia;
 use App\Models\Playlist;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 
 class RecordController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $userId = $user->id;
+        $emotion = $request->query('emotion', null);
 
         $favoritePlaylistIds = $user->favoritePlaylists()->pluck('playlists.id')->toArray();
 
-        $playlists = Playlist::withCount('tracks')
+        $query = Playlist::withCount('tracks')
             ->where('user_id', $userId)
-            ->orderByDesc('created_at')
-            ->paginate(6);
+            ->orderByDesc('created_at');
+
+        if ($emotion) {
+            $query->where('main_emotion', strtoupper($emotion));
+        }
+
+        $playlists = $query->paginate(6);
+
 
         $playlists->getCollection()->transform(function ($playlist) use ($favoritePlaylistIds) {
             $imageUrl = $playlist->playlist_image;
@@ -68,6 +76,7 @@ class RecordController extends Controller
                 'total'        => $playlists->total(),
             ],
             'summaryData' => $summary,
+            'currentEmotion' => $emotion,
         ]);
     }
 }

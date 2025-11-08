@@ -133,6 +133,7 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     width: 130px;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
 }
 
 .stats-summary-item:hover {
@@ -206,3 +207,262 @@
         align-items: center;
     }
 }
+
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+.stats-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stats-week-label {
+    font-weight: 600;
+    color: var(--color-dark);
+    font-size: 0.95rem;
+}
+
+.stats-arrow {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.stats-arrow:hover:not(:disabled) {
+    background-color: var(--color-secondary);
+}
+
+.stats-arrow:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* === MODAL === */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+.modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+}
+
+.modal-playlist-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.modal-playlist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background-color: var(--color-light);
+    border-radius: 10px;
+    padding: 0.6rem;
+    transition: transform 0.15s ease;
+}
+
+.modal-playlist-item:hover {
+    transform: scale(1.02);
+}
+
+.modal-playlist-img {
+    width: 55px;
+    height: 55px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.modal-playlist-info {
+    flex: 1;
+}
+
+.modal-playlist-name {
+    font-weight: 600;
+    color: var(--color-dark);
+}
+
+.modal-playlist-date {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.modal-detail-btn {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.modal-detail-btn:hover {
+    background-color: #145050;
+}
+
+.modal-empty {
+    text-align: center;
+    color: #777;
+    margin-top: 1rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-emotions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.modal-emotion-item {
+    background-color: var(--color-light);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    margin-bottom: 0.8rem;
+}
+
+/* header principal */
+.emotion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.emotion-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.modal-emotion-icon {
+    font-size: 1.6rem;
+}
+
+.modal-emotion-name {
+    font-weight: 600;
+    color: var(--color-dark);
+}
+
+.modal-emotion-count {
+    font-weight: 500;
+    color: var(--color-primary);
+}
+
+.chevron-btn {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--color-dark);
+    transition: transform 0.25s ease;
+    margin-left: auto;
+}
+
+.chevron-btn.rotated {
+    transform: rotate(180deg);
+}
+
+.emotion-playlists-wrapper {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s ease;
+    padding-left: 0;
+}
+
+.emotion-playlists-wrapper.open {
+    max-height: 300px;
+    padding-left: 0.5rem;
+}
+
+.emotion-playlists {
+    margin-top: 0.4rem;
+    animation: fadeIn 0.25s ease-in-out;
+}
+
+/* sublista de playlists */
+.playlist-sublist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.playlist-subitem {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 6px;
+    background-color: var(--color-white);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.playlist-subitem:hover {
+    background-color: var(--color-secondary);
+}
+
+.playlist-subimg {
+    width: 42px;
+    height: 42px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.playlist-subname {
+    font-weight: 500;
+    color: var(--color-dark);
+}
+

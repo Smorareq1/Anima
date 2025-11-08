@@ -49,53 +49,13 @@ export default function Explore({ explorarData }) {
         <DashboardLayout title={"Explorar - Anima"}>
             <div className="explorar-container">
                 <div className="explorar-header">
-                    <h2 className="explorar-title">Explora nuevos álbumes</h2>
+                    <h2 className="explorar-title">Explora nueva música</h2>
                     <p className="explorar-subtitle">
-                        Descubrí música recomendada para ti según tu estado de ánimo.
+                        Descubrí música aleatoria que quizá no conocías.
                     </p>
                 </div>
 
-                <section className="explorar-section">
-                    <div className="explorar-carousel-wrapper">
-                        {canScrollLeft && (
-                            <button
-                                className="explorar-scroll-btn left"
-                                onClick={() => scroll("left")}
-                            >
-                                <ChevronLeft size={24} />
-                            </button>
-                        )}
-
-                        <div className="explorar-albums-row" ref={scrollRef}>
-                            {playlistRecomendada.length > 0 ? (
-                                playlistRecomendada.map((album, idx) => (
-                                    <PlaylistCard
-                                        key={idx}
-                                        {...album}
-                                        showFavoriteIcon={false}
-                                    />
-                                ))
-                            ) : (
-                                <div className="no-explorar-wrapper">
-                                    <p className="no-explorar-text">
-                                        No hay álbumes disponibles en este momento.
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-
-                        {canScrollRight && (
-                            <button
-                                className="explorar-scroll-btn right"
-                                onClick={() => scroll("right")}
-                            >
-                                <ChevronRight size={24} />
-                            </button>
-                        )}
-                    </div>
-                </section>
                 <section className="favorites-section">
-                    <h2 className="explorar-title">Explora nuevas canciones</h2>
 
                     <div className="explorar-carousel">
                         {cancionesRecomendadas && cancionesRecomendadas.length > 0 ? (
