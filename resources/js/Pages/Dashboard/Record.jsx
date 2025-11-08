@@ -2,7 +2,6 @@ import DashboardLayout from "../../Layout/DashboardLayout.jsx";
 import PlaylistCard from "../../Components/history/PlaylistCard.jsx";
 import EmotionSummary from "../../Components/history/EmotionSummary.jsx";
 import {Link, router} from "@inertiajs/react";
-import {useState} from "react";
 import React from "react";
 
 const handleFilterChange = (emotion) => {
