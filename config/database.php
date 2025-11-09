@@ -124,7 +124,8 @@ return [
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_DB', '0'),
             'read_write_timeout' => 10,
-            'timeout' => 10
+            'timeout' => 10,
+            'persistent' => true,
         ],
 
         'cache' => [
@@ -133,8 +134,9 @@ return [
             'password' => env('REDIS_PASSWORD'),
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
-            'read_write_timeout' => 0,
-            'timeout' => 10
+            'read_write_timeout' => 10,
+            'timeout' => 10,
+            'persistent' => true,
         ],
 
     ],
