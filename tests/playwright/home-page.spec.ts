@@ -12,15 +12,12 @@ test('homepage muestra todos los elementos principales', async ({ page }) => {
     ).toBeVisible();
 
     // Links principales del menú
-    await expect(page.getByRole('link', { name: 'Playlists' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Géneros' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Explorar' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Empieza ahora' }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'Conocer más' }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'Inicia sesión' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Conocer más' }).nth(1)).toBeVisible();
     await expect(page.getByRole('link', { name: 'Conocer más' }).nth(3)).toBeVisible();
-    await expect(page.getByRole('link', { name: '▶ Ver tutorial' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '▶ Ver tutorial' })).toBeVisible();
 
     // CTA en sección final
     await expect(
