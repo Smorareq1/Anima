@@ -3,7 +3,7 @@
         "target": "ES2020",
         "module": "commonjs",
         "lib": ["ES2020", "DOM"],
-        "types": ["@playwright/test"],
+        "types": ["node", "@playwright/test"],
         "moduleResolution": "node",
         "esModuleInterop": true,
         "strict": true
