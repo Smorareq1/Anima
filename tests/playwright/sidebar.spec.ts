@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { testConfig } from './env';
+
+const {Email, Password} =  testConfig.TestLogin;
 
 test('Iniciar sesión y verificar sidebar', async ({ page }) => {
     // Ir a la página principal
@@ -8,8 +11,8 @@ test('Iniciar sesión y verificar sidebar', async ({ page }) => {
     await page.getByRole('link', { name: 'Inicia sesión' }).click();
 
     // Completar credenciales
-    await page.locator('#email').fill('ysmorareq@gmail.com');
-    await page.getByRole('textbox', { name: 'Contraseña' }).fill('Morales@2005');
+    await page.locator('#email').fill(Email);
+    await page.getByRole('textbox', { name: 'Contraseña' }).fill(Password);
 
     // Enviar formulario
     await page.getByRole('button', { name: 'Iniciar sesión' }).click();
@@ -19,9 +22,10 @@ test('Iniciar sesión y verificar sidebar', async ({ page }) => {
 
     // Verificar botones del sidebar
     await expect(page.getByRole('link', { name: 'Inicio' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Recomendar' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Explorar' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'PlayList' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Recomendar' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Historial' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Favoritas' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Estadísticas' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
 });
