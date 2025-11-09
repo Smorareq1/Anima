@@ -42,7 +42,7 @@ APP_NAME=Anima
 APP_ENV=local
 APP_KEY=base64:... # se genera con key:generate
 APP_DEBUG=true
-APP_URL=http://localhost:8000
+APP_URL=http://127.0.0.1:8080
 SESSION_DRIVER=file
 SESSION_SECURE_COOKIE=false
 ```
