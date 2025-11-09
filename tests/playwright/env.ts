@@ -3,8 +3,8 @@ export const testConfig = {
       baseUrl: 'http://127.0.0.1:8080/',
     },
     TestLogin: {
-        Email: 'basic_user@gmail.com',
-        Password: 'SomePassword123'
+        Email: 'admin@gmail.com',
+        Password: 'Admin@1234'
     },
     TestRecommendation: {
         Email: 'admin@gmail.com',
