@@ -1,61 +1,154 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Anima
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicación web para generar playlists personalizadas a partir de tus emociones, usando Inertia.js (React) en el frontend y Laravel 12 en el backend. Integra Spotify (OAuth y API) y Amazon Rekognition para análisis de imágenes.
 
-## About Laravel
+## Tecnologías
+- PHP 8.2, Laravel 12, Composer
+- Inertia.js + React 19, Vite 7
+- Tailwind CSS 4
+- Redis/Predis (opcional)
+- Spotify API (Socialite + SocialiteProviders/Spotify)
+- Amazon Rekognition (aws/aws-sdk-php)
+- Tests: PHPUnit, Jest (React Testing Library) y Playwright
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Requisitos
+- PHP >= 8.2 y Composer
+- Node.js >= 18 y npm
+- PostgreSQL 
+- Credenciales de Spotify (client_id, client_secret, redirect)
+- Credenciales de AWS para Rekognition
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Instalación rápida
+1. Clonar el repositorio e instalar dependencias:
+   - Backend: `composer install`
+   - Frontend: `npm install`
+2. Copiar variables de entorno y generar key:
+   - `cp .env.example .env`
+   - `php artisan key:generate`
+3. Configurar `.env` (ver sección Variables de Entorno) y base de datos.
+4. Ejecutar migraciones (y enlace de storage si aplica):
+   - `php artisan migrate`
+   - `php artisan storage:link`
+5. Iniciar entorno de desarrollo:
+   - Backend y Vite por separado: `php artisan serve` y `npm run dev`
+   - Ó bien, script combinado (con logs y cola): `composer run dev`
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Variables de Entorno
+Ajusta en tu `.env` las siguientes claves (ejemplos):
 
-## Learning Laravel
+- App/URL
+```
+APP_NAME=Anima
+APP_ENV=local
+APP_KEY=base64:... # se genera con key:generate
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+SESSION_DRIVER=file
+SESSION_SECURE_COOKIE=false
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- Base de datos (PostgrESQL recomendado)
+```
+DB_CONNECTION=pgsql
+DB_HOST=...
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- Spotify
+```
+SPOTIFY_CLIENT_ID=tu_client_id
+SPOTIFY_CLIENT_SECRET=tu_client_secret
+# Debe coincidir con la ruta de callback y estar configurada en el panel de Spotify
+SPOTIFY_REDIRECT_URI=${APP_URL}/spotify/callback
+# Scopes sugeridos (ver config/services.php si aplica)
+SPOTIFY_SCOPES=user-read-email,user-read-private,playlist-modify-private,playlist-modify-public
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- AWS Rekognition 
+```
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_DEFAULT_REGION=us-east-1
+```
 
-## Laravel Sponsors
+- Otros
+```
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync # En dev; para colas reales usar database/redis
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Rutas principales
+- GET `/` Home (Inertia)
+- GET `/info` Info
+- Auth (guest):
+  - GET `/auth/register`, POST `/auth/register`
+  - GET `/auth/login`, POST `/auth/login`
+- Auth (auth):
+  - POST `/auth/logout`
+  - GET `/dashboard`
+  - GET `/first-upload`
+  - GET `/recommend`
+  - GET `/records`
+  - GET `/explore`
+  - GET `/favorites`, POST `/favorites` (toggle)
+  - GET `/stats` y sub-rutas de estadísticas
+  - GET `/administrator`
+  - POST `/profile`
+  - Grupo `emotion/`:
+    - POST `/emotion/upload`
+    - POST `/emotion/playlists`
+    - GET `/emotion/playlist/temp`
+    - GET `/emotion/playlist/{id}`
+  - GET `/playlist/{id}` (detalles)
+- Spotify:
+  - GET `/spotify/redirect`
+  - GET `/spotify/callback`
+- Utilidad/Debug:
+  - GET `/spotify-test-public`
+  - GET `/test-basic`
+  - GET `/test-aws`
 
-### Premium Partners
+## Flujo de autenticación
+- Frontend con Inertia y middleware `HandleInertiaRequests` comparte `auth.user`, `hasSpotify` y `flash`.
+- Login/Register bajo prefijo `/auth` y middleware `guest`.
+- Logout bajo `/auth/logout` con middleware `auth`.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Scripts útiles
+- Backend:
+  - `composer run dev` → inicia servidor Laravel, cola, logs y Vite (requiere Node)
+  - `composer test` → limpia config y ejecuta PHPUnit
+- Frontend:
+  - `npm run dev` → Vite en modo desarrollo
+  - `npm run build` → build de producción
+  - `npm test` → Jest + React Testing Library
 
-## Contributing
+## Tests
+- PHP: `php artisan test`
+- JS (Jest): `npm test`
+- E2E (Playwright): revisar `playwright.config.ts` y ejecutar `npx playwright test` (si aplica)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Estructura relevante
+- Backend:
+  - `app/Http/Controllers/App/...` controladores para dashboard, auth, emoción, spotify, etc.
+  - `app/Http/Middleware/HandleInertiaRequests.php` comparte props a Inertia
+  - `app/Exceptions/Handler.php` (personalizado en `app/Http/Controllers/App/Exceptions/Handler.php` en este repo) renderiza página de error Inertia
+  - `app/Services/...` integración con Spotify, Rekognition, Playlists y generación de collages
+  - `routes/web.php` define la mayoría de rutas
+- Frontend:
+  - `resources/js/app.jsx` configuración de Inertia + Vite, carga páginas `./Pages/**/*.jsx`
+  - `resources/js/Pages` páginas React (dashboard, Error.jsx, etc.)
+  - `resources/js/Components` componentes reutilizables (HttpError.jsx, LoginForm.jsx, etc.)
 
-## Code of Conduct
+## Despliegue rápido (resumen)
+1. Configura `.env` con URL pública, base de datos y credenciales de Spotify/AWS.
+2. Ejecuta `php artisan migrate --force` y `npm run build`.
+3. Sirve `public/` detrás de Nginx/Apache y configura HTTPS para callbacks de Spotify si corresponde.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Solución de problemas
+- 419 (Sesión expirada) con Inertia:
+  - Verifica cookies, dominio y `SESSION_DRIVER`; limpia cachés (`php artisan config:clear`)
+- Error de callback de Spotify (redirect_uri_mismatch):
+  - Asegúrate de que `SPOTIFY_REDIRECT_URI` coincida exactamente con la configurada en Spotify
+- AWS Rekognition AccessDenied:
+  - Revisa IAM policies y región; confirma `AWS_DEFAULT_REGION`
+- Vite no recarga o falla build:
+  - Borra `node_modules` y reinstala; valida versión de Node compatible
