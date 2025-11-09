@@ -17,6 +17,8 @@ class LoginController extends Controller
 
     public function store(Request $request)
     {
+        // Simulación de error interno del servidor (para demo)
+        //abort(500, 'Error interno simulado en el login.');
         $credentials = $request->validate([
             'email'    => 'required|email',
             'password' => 'required',

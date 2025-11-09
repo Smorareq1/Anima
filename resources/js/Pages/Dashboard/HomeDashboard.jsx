@@ -111,7 +111,7 @@ export default function HomeDashboard({ recientesData }) {
                                 ))
                             ) : (
                                 <div className="home-empty">
-                                    <p>No hay playlists recientes.</p>
+                                    <p className="no-home-text">No hay playlists recientes.</p>
                                 </div>
                             )}
                         </div>
