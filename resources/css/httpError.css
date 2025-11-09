@@ -1,0 +1,95 @@
+.logo-error{
+  height: 50px;
+  width: 170px;
+}
+
+.http-error {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+}
+
+.error-container{
+  max-width: 1200px;
+  width: 100%;
+  background: white;
+  border-radius: 20px;
+  padding: 60px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  background-image: url('../../public//images/decoration/Bg-error.png');
+  background-size: 90%;
+  background-repeat: no-repeat;
+}
+
+.error-container .error-content h1{
+  font-size: 8rem;
+  font-weight: 900;
+  color: #1D6363;
+  margin: 0;
+  line-height: 1;
+}
+
+.error-content .left-content{
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  justify-content: center;
+  align-items: center;
+}
+
+.error-content .left-content .error-actions{
+  display: flex;
+  gap: 10px;
+}
+
+.btn-primary-error {
+  background-color: #1D6363;
+  color: white;
+}
+
+.btn-primary-error:hover{
+  background-color: transparent;
+  color: #1D6363;
+  border: solid 1px #1D6363;
+}
+
+.error-container .error-content h4{
+  font-size: 2.5rem;
+  color: #2d3748;
+  margin-bottom: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.error-container .error-content p{
+  font-size: 1.2rem;
+  opacity: 50%;
+  text-align: center;
+}
+
+.btn-error {
+  padding: 12px 30px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 100%;
+  margin-top: 0;
+}
+
+.btn-secondary-error {
+  background-color: transparent;
+  color: #1D6363;
+  border: solid 1px #1D6363;
+}
+
+.btn-secondary-error:hover {
+  background-color: #1D6363;
+  color: white;
+}
