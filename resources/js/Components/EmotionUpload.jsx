@@ -27,12 +27,23 @@ export default function EmotionUpload({ errors: serverErrors = {} }) {
     }, [serverErrors]);
 
     useEffect(() => {
+        const handleNavigation = () => stopCamera();
+
+        // Inertia Router expone "on" para eventos globales
+        router.on('before', handleNavigation);
+        
         return () => {
-            if (videoRef.current && videoRef.current.srcObject) {
-                videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+            stopCamera();
+
+            // Eliminamos manualmente el listener del objeto interno del router
+            if (router._events && router._events.before) {
+                router._events.before = router._events.before.filter(
+                    (fn) => fn !== handleNavigation
+                );
             }
         };
     }, []);
+
 
     const validateFile = (file) => {
         const newErrors = {};

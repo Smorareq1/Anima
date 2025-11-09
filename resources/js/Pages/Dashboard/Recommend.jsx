@@ -1,7 +1,8 @@
 import DashboardLayout from "../../Layout/DashboardLayout.jsx";
 import EmotionUpload from "../../Components/EmotionUpload.jsx";
 import "../../../css/dashboard.css"
-
+import React from "react";
+import { route } from "ziggy-js";
 export default function Recommend() {
     return (
         <DashboardLayout title={"Recomendar | Anima"}>
