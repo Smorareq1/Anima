@@ -112,15 +112,25 @@ class EmotionController extends Controller
     }
 
 
-    public function show($id)
+   public function show($id)
     {
-        $playlist = Playlist::with('tracks')
-            ->where('id', $id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+        try {
+            $playlist = Playlist::with('tracks')
+                ->where('id', $id)
+                ->where('user_id', Auth::id())
+                ->firstOrFail();
 
-        return Inertia::render('PlaylistShow', [
-            'playlist' => $playlist
-        ]);
+            return Inertia::render('PlaylistShow', [
+                'playlist' => $playlist
+            ]);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Mostrar tu componente Error personalizado
+            return Inertia::render('Error', [
+                'status' => 404,
+                'title' => 'Playlist No Encontrada',
+                'message' => 'La playlist que buscas no existe o no tienes permisos para verla.',
+            ]);
+        }
     }
 }
