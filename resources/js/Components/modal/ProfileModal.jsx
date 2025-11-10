@@ -75,14 +75,21 @@ export default function ProfileModal({ isOpen, onClose, user, hasSpotify }) {
 
                 // Esperar un poco antes de cerrar para que el usuario vea la notificación
                 setTimeout(() => {
-                    onClose();
-                    router.reload({ only: ['user'] });
-                }, 2000); // 2 segundos
+                    window.location.reload();
+                }, 2000); // refresca 2s después del éxito
 
             } catch (error) {
                 if (error.response && error.response.status === 422) {
                     setErrors(error.response.data.errors);
-                } else {
+
+                    // Mostrar notificación con el primer mensaje de error
+                    const firstError = Object.values(error.response.data.errors)[0][0];
+                    setNotification({
+                        type: 'error',
+                        message: firstError
+                    });
+                }
+                else {
                     console.error("An unexpected error occurred:", error);
                     setNotification({ type: 'error', message: 'Ocurrió un error inesperado.' });
                 }

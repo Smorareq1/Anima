@@ -23,7 +23,18 @@ class ProfileController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', Password::min(8)->mixedCase()->numbers()],
             'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
-        ]);
+        ],
+            [
+            'username.unique' => 'El nombre de usuario ya está en uso.',
+            'email.unique' => 'El correo electrónico ya está en uso.',
+            'username.regex' => 'El nombre de usuario solo puede contener letras, números, espacios y guiones bajos.',
+            'password.min' => 'La contraseña debe tener al menos :min caracteres.',
+            'password.mixedCase' => 'La contraseña debe contener al menos una letra mayúscula y una minúscula.',
+            'password.numbers' => 'La contraseña debe contener al menos un número.',
+            'photo.image' => 'El archivo debe ser una imagen válida.',
+            'photo.mimes' => 'La imagen debe ser un archivo de tipo: jpeg, png, jpg.',
+            'photo.max' => 'La imagen no debe ser mayor de 2 MB.',
+            ]);
 
         $updateData = $request->only('first_name', 'last_name', 'username', 'email');
 
