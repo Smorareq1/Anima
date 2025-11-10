@@ -34,16 +34,20 @@ class SpotifyController extends Controller
     }
 
     public function callback(Request $request, SpotifyService $service)
-    {
-        try {
-            $user = $service->handleCallback();
-            Auth::login($user, remember: true);
-        } catch (InvalidStateException $e) {
-            Log::info("Spotify session expired");
-            return redirect()->route('auth.login.show')
-                ->with('error', 'La sesión de Spotify caducó. Intenta de nuevo.');
-        }
+        {
+            try {
+                $user = $service->handleCallback();
 
-        return redirect()->intended(route('Dashboard'));
-    }
+                Auth::login($user, remember: false);
+
+                $request->session()->regenerate();
+
+            } catch (InvalidStateException $e) {
+                Log::info("Spotify session expired");
+                return redirect()->route('auth.login.show')
+                    ->with('error', 'La sesión de Spotify caducó. Intenta de nuevo.');
+            }
+
+            return redirect()->intended(route('Dashboard'));
+        }
 }
