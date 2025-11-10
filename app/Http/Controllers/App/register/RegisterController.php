@@ -25,6 +25,9 @@ class RegisterController extends Controller
             'username'   => 'required|string|max:255|unique:users',
             'email'      => 'required|string|email|max:255|unique:users',
             'password'   => ['required', 'confirmed', Password::min(8)],
+        ],[
+            'username.unique' => 'El nombre de usuario ya está en uso.',
+            'email.unique' => 'El correo electrónico ya está en uso.',
         ]);
 
         $user = User::create($validated);

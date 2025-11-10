@@ -31,7 +31,7 @@ export default function EmotionUpload({ errors: serverErrors = {} }) {
 
         // Inertia Router expone "on" para eventos globales
         router.on('before', handleNavigation);
-        
+
         return () => {
             stopCamera();
 
@@ -133,7 +133,7 @@ export default function EmotionUpload({ errors: serverErrors = {} }) {
 
         setIsSubmitting(true);
 
-        // ✅ Usar Inertia router con FormData
+        // Usar Inertia router con FormData
         router.post(route('emotion.upload'), {
             photo: file
         }, {
