@@ -285,11 +285,19 @@ class SpotifyService
             $all = [];
 
             // 40% categorías ponderadas por pesos por emoción
-            $catLimit = (int) floor($budget * 0.4);
-            $all = array_merge($all, $this->getTracksFromCategoriesMulti($token, $topEmotions, $market, $catLimit));
+            // ***** INICIO: CAMBIO PARA EVITAR 404s *****
+            // Comentamos la llamada a categorías que está fallando
+            // $catLimit = (int) floor($budget * 0.4);
+            // $all = array_merge($all, $this->getTracksFromCategoriesMulti($token, $topEmotions, $market, $catLimit));
+            $catLimit = 0; // Se pone a 0
+            // ***** FIN: CAMBIO PARA EVITAR 404s *****
+
 
             // 40% búsqueda compuesta
-            $searchLimit = (int) floor($budget * 0.4);
+            // ***** INICIO: CAMBIO PARA EVITAR 404s *****
+            // Se asigna el presupuesto de categorías (40%) a búsqueda (40% + 40% = 80%)
+            $searchLimit = (int) floor($budget * 0.8);
+            // ***** FIN: CAMBIO PARA EVITAR 404s *****
             $all = array_merge($all, $this->getTracksFromSearchMulti($token, $topEmotions, $market, $searchLimit));
 
             // 20% top (neutral)
@@ -308,6 +316,7 @@ class SpotifyService
             }
 
             // 4) Audio features: score multi-emoción (promedio ponderado de coincidencias)
+            // Esta función ya maneja el error 403 internamente
             $ranked = $this->filterByAudioFeaturesMulti($unique, $topEmotions, $token);
 
             // 5) Scoring multicriterio adicional (usamos la dominante para pesos prácticos)
@@ -317,7 +326,7 @@ class SpotifyService
             $this->cacheEmotionPoolBySignature($signature, $ranked);
 
             $tracks = $ranked;
-            $method = 'hybrid';
+            $method = 'hybrid (no-categories)'; // Se actualiza el método
         }
 
         // 7) Diversificación artistas y corte al límite
@@ -326,7 +335,9 @@ class SpotifyService
 
         // 8) Historial (si existe tabla)
         if ($user) {
-            $this->saveUserEmotionHistory($user, $emotions, $final);
+            // ***** INICIO: CAMBIO SOLICITADO *****
+            // $this->saveUserEmotionHistory($user, $emotions, $final);
+            // ***** FIN: CAMBIO SOLICITADO *****
         }
 
         return [
@@ -341,7 +352,7 @@ class SpotifyService
     }
 
     /* =========================
-     *   Multi-emoción helpers
+     * Multi-emoción helpers
      * ========================= */
 
     private function pickTopEmotions(array $emotions, int $k = 3): array
@@ -386,7 +397,7 @@ class SpotifyService
     }
 
     /* ===============================
-     *   Híbrido multi-emoción
+     * Híbrido multi-emoción
      * =============================== */
 
     /** Categorías multi: reparte el budget según weights de las emociones */
@@ -479,7 +490,7 @@ class SpotifyService
     }
 
     /* ==========================================
-     *   Audio features: score multi-emoción
+     * Audio features: score multi-emoción
      * ========================================== */
 
     /**
@@ -543,6 +554,7 @@ class SpotifyService
             return array_map(fn($x) => $x['track'], $scored);
 
         } catch (\Exception $e) {
+            // El error 403 Forbidden entra aquí. Se loguea y se devuelven los tracks sin ordenar.
             Log::warning('Could not get audio features: ' . $e->getMessage());
             return $tracks;
         }
@@ -722,7 +734,7 @@ class SpotifyService
     }
 
     /* ======================
-     *   Cache por firma
+     * Cache por firma
      * ====================== */
 
     private function getCachedEmotionPoolBySignature(string $signature): ?array
@@ -771,6 +783,7 @@ class SpotifyService
             if (count($tracks) >= $limit) break;
 
             try {
+                // Esta es la llamada que está dando 404
                 $response = $this->apiGet("browse/categories/{$categoryId}/playlists", $token, [
                     'country' => $market,
                     'limit'   => 5,
@@ -796,6 +809,7 @@ class SpotifyService
                 }
 
             } catch (\Exception $e) {
+                // Aquí es donde se loguean los 404
                 Log::debug("Could not get category {$categoryId}: " . $e->getMessage());
                 continue;
             }
