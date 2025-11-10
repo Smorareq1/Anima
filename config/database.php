@@ -115,6 +115,11 @@ return [
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
             'prefix' => env('REDIS_PREFIX', Str::slug((string) env('APP_NAME', 'laravel'), '_').'_database_'),
+            'parameters' => [
+                'timeout' => 30,
+                'read_write_timeout' => 30,
+                'persistent' => true,
+            ],
         ],
 
         'default' => [
