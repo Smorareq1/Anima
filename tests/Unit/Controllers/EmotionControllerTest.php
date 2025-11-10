@@ -195,14 +195,9 @@ class EmotionControllerTest extends TestCase
 
     public function testShowDisplaysPlaylistForOwner(): void
     {
-        $playlist = Playlist::factory()->create([
-            'user_id' => $this->user->id,
-            'name' => 'My Playlist',
-        ]);
-
-        $track = Track::factory()->create([
-            'playlist_id' => $playlist->id,
-        ]);
+        $playlist = Playlist::factory()
+            ->has(Track::factory()->count(3))
+            ->create(['user_id' => $this->user->id, 'name' => 'My Playlist']);
 
         $response = $this->actingAs($this->user)
             ->get(route('emotion.playlists.show', $playlist->id));

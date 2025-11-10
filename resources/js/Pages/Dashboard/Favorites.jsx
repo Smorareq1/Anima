@@ -5,7 +5,10 @@ import "../../../css/favorites.css";
 import PlaylistCard from "../../Components/history/PlaylistCard.jsx";
 
 export default function Favorites({ favoritosData }) {
-    const { playlistsFavoritas, cancionesFavoritas } = favoritosData;
+    // Hacemos la desestructuración segura: si favoritosData no existe,
+    // se usan arrays vacíos por defecto para evitar errores.
+    const { playlistsFavoritas = [], cancionesFavoritas = [] } = favoritosData || {};
+
     const scrollRef = useRef(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
