@@ -75,6 +75,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/playlist/{id}', [PlaylistController::class, 'show'])->name('playlist.show');
 });
 
+// --- RUTA DE PRUEBA PARA ERRORES ---
+// Esta ruta simula un error 503 "Servicio No Disponible".
+// Es útil para probar cómo la aplicación muestra las páginas de error.
+Route::get('/503-error', function () {
+    abort(503, 'El servicio no está disponible en este momento. Inténtalo de nuevo más tarde.');
+})->middleware('auth')->name('test.503');
+
+
 Route::get('/spotify-test-public', function (SpotifyService $spotify) {
     try {
         $results = $spotify->testSpotifyAPI(null);
