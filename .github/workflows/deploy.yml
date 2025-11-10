@@ -2,7 +2,7 @@ name: Deploy to Azure Container Apps
 
 on:
   push:
-    branches: [ dev-sebas ]
+    branches: [ master ]
   workflow_dispatch:
 
 env:
