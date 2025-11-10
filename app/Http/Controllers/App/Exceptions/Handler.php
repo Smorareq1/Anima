@@ -13,11 +13,10 @@ class Handler extends ExceptionHandler
     {
         // PARA INERTIA: Siempre mostrar nuestra pantalla de error
         if ($request->header('X-Inertia')) {
-            
-            $status = method_exists($exception, 'getStatusCode') 
-                ? $exception->getStatusCode() 
+            $status = method_exists($exception, 'getStatusCode')
+                ? $exception->getStatusCode()
                 : 500;
-            
+
             return Inertia::render('Error', [
                 'status' => $status,
                 'title' => $this->getErrorTitle($status),
@@ -34,7 +33,7 @@ class Handler extends ExceptionHandler
         return match($status) {
             400 => 'Solicitud Incorrecta',
             401 => 'No Autorizado',
-            403 => 'Acceso Denegado', 
+            403 => 'Acceso Denegado',
             404 => 'Página No Encontrada',
             419 => 'Sesión Expirada',
             429 => 'Demasiadas Solicitudes',
