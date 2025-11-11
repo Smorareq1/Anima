@@ -416,7 +416,7 @@ export default function Stats({ statsData }) {
                                                                     key={pl.id}
                                                                     className="playlist-subitem"
                                                                     onClick={() =>
-                                                                        router.visit(route("playlist.show", pl.id))
+                                                                        router.visit(route("emotion.playlists.show", pl.id))
                                                                     }
                                                                 >
                                                                     <img
